@@ -464,9 +464,6 @@ public class VuforiaSkyStoneNavigation extends LinearOpMode {
                 telemetry.addData("Visible Target", "none");
             }
 
-                /*telemetry.addData("SkyStone Position", positionSkyStone);
-                telemetry.update();*/
-
             if (positionSkyStone.equals("left")) {
                 telemetry.addData("Sampling", "left");
             } else if (positionSkyStone.equals("center")) {
@@ -476,7 +473,7 @@ public class VuforiaSkyStoneNavigation extends LinearOpMode {
             }
             telemetry.update();
 
-            /*if (opModeIsActive()) {
+            if (opModeIsActive()) {
 
                 // first skystone process
                 move(15, movePower/1.5, true);
@@ -513,9 +510,56 @@ public class VuforiaSkyStoneNavigation extends LinearOpMode {
                 // arm commands to place the skystone on the foundation
 
                 // go back to the second stone
+                move(20, movePower, true);
+                rotate(90, rotationPower);
+
+                // strafe until wall in sight
 
                 // commands for the second skystone depending upon the location of the first one
-            }*/
+                targetVisible = false;
+                for (VuforiaTrackable trackable : allTrackables) {
+                    if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+                        telemetry.addData("Visible Target", trackable.getName());
+
+                        if (trackable.getName().equals("Stone Target")) {
+                            telemetry.addLine("SkyStone target is visible.");
+                        }
+
+                        targetVisible = true;
+
+                        // getUpdatedRobotLocation() will return null if no new information is available since
+                        // the last time that call was made, or if the trackable is not currently visible.
+                        OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
+                        if (robotLocationTransform != null) {
+                            lastLocation = robotLocationTransform;
+                        }
+                        break;
+                    }
+                }
+
+                if (targetVisible) {
+                    // express position (translation) of robot in inches.
+                    VectorF translation = lastLocation.getTranslation();
+                    telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+                            translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+
+                    double position = translation.get(1);
+                    if (position < -3) {   // change the value after a couple of trials
+                        positionSkyStone = "left";
+                    } else {
+                        positionSkyStone = "center";
+                    }
+                    // express the rotation of the robot in degrees.
+                    Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
+                    telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+                } else {
+                    positionSkyStone = "right";
+                    telemetry.addData("Visible Target", "none");
+                }
+
+
+
+            }
         }
 
 
