@@ -2,8 +2,7 @@
  * Autonomous on the blue building site side.
  *
  * NOTES:
- * - Fix the irregular movement part
- * - Bump into the wall to fix the angle (try again if PID loops counter this)
+ * - Check if we need to move forward a bit before moving to the line from the foundation
  */
 
 package org.firstinspires.ftc.teamcode;

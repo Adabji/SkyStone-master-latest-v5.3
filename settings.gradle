@@ -1,2 +1,2 @@
-include ':FtcRobotController', ':rev-extensions-2'
+include ':FtcRobotController'
 include ':TeamCode'
