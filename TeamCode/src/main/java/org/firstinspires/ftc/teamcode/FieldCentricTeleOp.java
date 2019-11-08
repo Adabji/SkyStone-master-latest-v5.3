@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -25,33 +26,29 @@ import java.util.Arrays;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Field Centric Mecanum", group = "TeleOp")
 public class FieldCentricTeleOp extends OpMode {
-    private static double JoyStickAngleRad;
-    private static double JoyStickAngleDeg;
-    private static DcMotor leftFrontWheel;
-    private static DcMotor leftBackWheel;
-    private static DcMotor rightFrontWheel;
-    private static DcMotor rightBackWheel;
-    private static DcMotor intakeMotor;
-    private static DcMotor liftMotor1;
-    private static DcMotor liftMotor2;
-    private static DcMotor liftMotor3;
-    private static ExpansionHubMotor intakeMotorRE2;
-    private static ExpansionHubMotor lift1RE2;
-    private static ExpansionHubMotor lift2RE2;
-    private static ExpansionHubMotor lift3RE2;
-    private static double PosXAngPosY;
-    private static double PosXAngNegY;
-    private static double NegXAng;
-    private static double Theta;
-    private static double r;
-    private static double outputX;
-    private static double outputY;
-    private static double heading;
+    private static double JoyStickAngleRad, JoyStickAngleDeg;
+    private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, intakeMotor, liftMotor1, liftMotor2, liftMotor3;
+    private static ExpansionHubMotor intakeMotorRE2, lift1RE2, lift2RE2, lift3RE2;
+    private static Servo leftElbow, rightElbow, wrist, grip;
+    private static double PosXAngPosY, PosXAngNegY, NegXAng, Theta, r, outputX, outputY, heading;
     Double Deg = Math.PI;
     BNO055IMU imu;
     Orientation angles;
     double zeroPos = 0;
+    int liftstage = 0;
 
+    // encoder things
+    static final double     COUNTS_PER_MOTOR_REV  = 537.6;
+    static final double     DRIVE_GEAR_REDUCTION  = 1.0;
+    static final double     WHEEL_DIAMETER_INCHES = 3.937;
+    static final double     COUNTS_PER_INCH       = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
+            (WHEEL_DIAMETER_INCHES * 3.1415);
+
+    // PID things
+    int P, I, D = 1;
+    int integral, previous_error, setpoint = 0;
+    double derivative, backdrivePower;
+    boolean aIsPressed = false;
 
     @Override
     public void init() {
@@ -69,6 +66,11 @@ public class FieldCentricTeleOp extends OpMode {
         lift1RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift1");
         lift2RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift2");
         lift3RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift3");
+
+        leftElbow = hardwareMap.servo.get("leftv4b");
+        rightElbow = hardwareMap.servo.get("rightv4b");
+        wrist = hardwareMap.servo.get("rotategrabber");
+        grip = hardwareMap.servo.get("grabber");
 
 
         leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -123,22 +125,28 @@ public class FieldCentricTeleOp extends OpMode {
         //telemetry.addData("Angle:",imu.getPosition().z);
         telemetry.update();
         heading = Math.toRadians(getAbsoluteHeading());
-        if (gamepad2.a){
-            heading = 0;
-        }
 
+        /*if (gamepad2.x){
+            heading = 0;
+        }*/
+
+        // intake in
         if (gamepad1.a) {
-            intakeMotor.setPower(1);
+            aIsPressed = true;
+            intakeMotor.setPower(-1);
         }
 
         if (gamepad1.b || gamepad1.x) {
             intakeMotor.setPower(0);
         }
 
+        // intake out
         if (gamepad1.y) {
-            intakeMotor.setPower(-1);
+            aIsPressed = false;
+            intakeMotor.setPower(1);
         }
 
+        // lift
         if (gamepad2.left_stick_y > 0.1 || gamepad2.left_stick_y < -0.1) {
             liftMotor1.setPower(-gamepad2.left_stick_y);
             liftMotor2.setPower(-gamepad2.left_stick_y);
@@ -148,30 +156,106 @@ public class FieldCentricTeleOp extends OpMode {
             liftMotor2.setPower(0);
             liftMotor3.setPower(0);
 
+            liftMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            liftMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            liftMotor3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
             liftMotor1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
             liftMotor2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
             liftMotor3.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+            /*liftMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            liftMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            liftMotor3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            liftMotor1.setTargetPosition((int)Math.ceil(((liftstage * 4) + 5) * COUNTS_PER_INCH));
+            liftMotor2.setTargetPosition((int)Math.ceil(((liftstage * 4) + 5) * COUNTS_PER_INCH));
+            liftMotor3.setTargetPosition((int)Math.ceil(((liftstage * 4) + 5) * COUNTS_PER_INCH));*/
+
+            /*double error;
+            setpoint = liftMotor1.getTargetPosition();
+            error = setpoint - liftMotor1.getCurrentPosition();
+            integral += error * 0.02;
+            derivative = (error - previous_error)/0.02;
+            backdrivePower = P*error + I*integral + D*derivative;
+.
+            liftMotor1.setPower(backdrivePower);
+            liftMotor2.setPower(backdrivePower);
+            liftMotor3.setPower(backdrivePower);
+
+            if (liftMotor1.getCurrentPosition() >= liftMotor1.getTargetPosition()) {
+                liftMotor1.setPower(0.2);
+                liftMotor2.setPower(0.2);
+                liftMotor3.setPower(0.2);
+                return;
+            } else if (liftMotor1.getTargetPosition() > liftMotor1.getCurrentPosition()) {
+                liftMotor1.setPower(-0.2);
+                liftMotor2.setPower(-0.2);
+                liftMotor3.setPower(-0.2);
+            } else {
+                liftMotor1.setPower(0.2);
+                liftMotor2.setPower(0.2);
+                liftMotor3.setPower(0.2);
+            }*/
+        }
+
+        // Elbow in
+        if (gamepad2.a) {
+            leftElbow.setPosition(0.15);
+            rightElbow.setPosition(0.85);
+        }
+
+        // Elbow out
+        if (gamepad2.b) {
+            leftElbow.setPosition(0.75);
+            rightElbow.setPosition(0.2);
+        }
+
+        if (gamepad2.left_bumper) {
+            wrist.setPosition(0.25);
+        }
+
+        if (gamepad2.right_bumper) {
+            wrist.setPosition(0.6);
+        }
+
+        if (gamepad2.x) {
+            grip.setPosition(0.45);
+        }
+
+        if (gamepad2.y) {
+            grip.setPosition(0.55);
+        }
+
+        if (gamepad2.dpad_up) {
+            liftstage++;
+        }
+
+        if (gamepad2.dpad_down) {
+            liftstage--;
         }
 
         telemetry.addData("lift1 current", lift1RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
         telemetry.addData("lift2 current", lift2RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
         telemetry.addData("lift3 current", lift3RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
+        telemetry.addData("intake motor", intakeMotorRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
 
         try {
-            if (intakeMotorRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS) > 5) {
+            if (aIsPressed && intakeMotorRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS) > 7) {
                 telemetry.addLine("Intake Motor stalling. Restarting motor...");
                 telemetry.update();
                 intakeMotor.setPower(0);
-                Thread.sleep(500);
-                intakeMotor.setPower(-1);
-                Thread.sleep(500);
+                Thread.sleep(200);
                 intakeMotor.setPower(1);
+                Thread.sleep(200);
+                intakeMotor.setPower(-1);
             }
         } catch (InterruptedException ie) {
             telemetry.addLine("Thread interrupted. Exiting...");
             telemetry.update();
         }
     }
+
     public double adjustAngle(double angle) {
         while (angle > 180) angle -= 360;
         while (angle <= -180) angle += 360;
