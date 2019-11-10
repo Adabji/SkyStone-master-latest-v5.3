@@ -22,7 +22,7 @@ Teams who use and reference this code are expected to understand code they use.
 If you use our code and see us at competition, come say hello!
 */
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Robot Centric Tele Op", group = "TeleOp")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Robot Centric TeleOp", group = "TeleOp")
 public class RobotCentricTeleOp extends OpMode {
 
     private static DcMotor leftFrontWheel;
