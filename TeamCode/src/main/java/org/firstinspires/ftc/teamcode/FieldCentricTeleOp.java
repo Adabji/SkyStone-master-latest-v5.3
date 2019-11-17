@@ -54,6 +54,8 @@ public class FieldCentricTeleOp extends OpMode {
     double fightGPower = -0.226;
     PIDController pidLiftPower;
     double correction = 0;
+    double liftPower = 0.8;
+    double pidLPower = 0.8;
 
     PIDFCoefficients pidfCoeff;
     DcMotorEx motor1;
@@ -84,7 +86,6 @@ public class FieldCentricTeleOp extends OpMode {
         lift2RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift2");
         lift3RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift3");
 
-        setLiftMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         leftElbow = hardwareMap.servo.get("leftv4b");
         rightElbow = hardwareMap.servo.get("rightv4b");
@@ -92,25 +93,18 @@ public class FieldCentricTeleOp extends OpMode {
         grip = hardwareMap.servo.get("grabber");
         foundationServo = hardwareMap.servo.get("foundationServo");
 
-        pidLiftPower = new PIDController(.05, 0, 0);
+        pidLiftPower = new PIDController(0.8, 0.5, 0);
 
         leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-
         liftMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        liftMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        liftMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        liftMotor3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        setLiftMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setLiftMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // pidfCoeff = new PIDFCoefficients(12, 4, 0.00006, 0);
         /*motor1 = (DcMotorEx)hardwareMap.dcMotor.get("lift1");
         motor1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoeff);*/
-
-        leftFrontWheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftBackWheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFrontWheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightBackWheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         /*BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -126,10 +120,10 @@ public class FieldCentricTeleOp extends OpMode {
         wrist.setPosition(0.6);
         grip.setPosition(0.49);
 
-        pidLiftPower.setSetpoint(0);
+        /*pidLiftPower.setSetpoint(0);
         pidLiftPower.setOutputRange(-1, 1);
         pidLiftPower.setInputRange(-1, 1);
-        pidLiftPower.enable();
+        pidLiftPower.enable();*/
     }
 
     @Override
@@ -264,7 +258,7 @@ public class FieldCentricTeleOp extends OpMode {
             foundationServo.setPosition(position);
         }
 
-        if (gamepad2.left_stick_y > 0.1 || gamepad2.left_stick_y < -0.1) {
+        /*if (gamepad2.left_stick_y > 0.1 || gamepad2.left_stick_y < -0.1) {
             //while (gamepad2.right_trigger != 0) {
             setLiftMotorPower(-gamepad2.left_stick_y);
             // while (liftMotor1.isBusy() && liftMotor2.isBusy() && liftMotor3.isBusy()) { }
@@ -273,25 +267,19 @@ public class FieldCentricTeleOp extends OpMode {
             // targetPos = liftMotor1.getCurrentPosition();
         } else {
             setLiftMotorPower(0);
-        }
-
-        /*if (gamepad2.left_trigger != 0) {
-            //while (gamepad2.right_trigger != 0) {
-                telemetry.addData("lift down", gamepad2.left_trigger);
-                telemetry.update();
-                setLiftMotorPower(gamepad2.left_trigger);
-                while (liftMotor1.isBusy() && liftMotor2.isBusy() && liftMotor3.isBusy()) { }
-            //}
-            // targetPos = liftMotor1.getCurrentPosition();
         }*/
 
         // lift - up a stage
         if (gamepad2.dpad_up) {
-            // if (liftstage != 4) {
-            telemetry.addLine("Going up 1 stage...");
-
             liftstage++;
             targetPos = (int)((liftstage * 4) * COUNTS_PER_INCH);
+
+            /*pidLiftPower.reset();
+            pidLiftPower.setSetpoint(targetPos);
+            pidLiftPower.setInputRange(0, targetPos);
+            pidLiftPower.setOutputRange(0, liftPower);
+            pidLiftPower.enable();*/
+
             // setLiftMotorPower(1);
 
                 /*int currentStage = liftstage++;
@@ -315,18 +303,19 @@ public class FieldCentricTeleOp extends OpMode {
             // setLiftMotorPower(fightGPower);
             // applyBrakes();
             // liftstage = currentStage;
-            // }
         }
 
         // lift - down a stage
         if (gamepad2.dpad_down) {
             if (liftstage != 0) {
-                telemetry.addLine("Going down 1 stage...");
-                telemetry.update();
-
                 liftstage--;
                 targetPos = (int)((liftstage * 4) * COUNTS_PER_INCH);
-                // setLiftMotorPower(-1);
+
+                /*pidLiftPower.reset();
+                pidLiftPower.setSetpoint(targetPos);
+                pidLiftPower.setInputRange(0, targetPos);
+                pidLiftPower.setOutputRange(0, liftPower);
+                pidLiftPower.enable();*/
 
                 /*int currentStage = liftstage--;
                 int targetPos = (int)(((currentStage - liftstage) * 4) * COUNTS_PER_INCH);
@@ -351,24 +340,6 @@ public class FieldCentricTeleOp extends OpMode {
                 // liftstage = currentStage;
             }
         }
-
-        telemetry.addData("lift1 encoder count", liftMotor1.getCurrentPosition());
-        telemetry.addData("lift2 encoder count", liftMotor2.getCurrentPosition());
-        telemetry.addData("lift3 encoder count", liftMotor3.getCurrentPosition());
-
-        telemetry.addData("lift1 current", lift1RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
-        telemetry.addData("lift2 current", lift2RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
-        telemetry.addData("lift3 current", lift3RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
-        telemetry.addData("intake current", intakeMotorRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
-
-
-        telemetry.addData("Liftstage", liftstage);
-        telemetry.addData("COUNTS_PER_INCH", COUNTS_PER_INCH);
-        telemetry.addData("Correction", correction);
-        telemetry.addData("targetPos", targetPos);
-
-        // telemetry.addData("lift 1 PIDF", motor1.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION));
-        telemetry.update();
 
         // lift PID things
         // even older lift things
@@ -446,12 +417,24 @@ public class FieldCentricTeleOp extends OpMode {
             }
         }*/
 
-        pidLiftPower.setSetpoint(0);
-        pidLiftPower.setOutputRange(0, 1);
-        pidLiftPower.setInputRange(0, 1);
+        pidLiftPower.setSetpoint(targetPos);
+        pidLiftPower.setInputRange(0, 690);
+        pidLiftPower.setOutputRange(0, liftPower);
         pidLiftPower.enable();
 
-        if (liftstage != 0 && liftMotor1.getCurrentPosition() != targetPos) {
+        // liftPower = pidLiftPower.performPID(liftMotor1.getCurrentPosition());
+        // setLiftMotorPower(liftPower);
+
+        if (liftMotor1.getCurrentPosition() < targetPos) {
+            pidLPower = pidLiftPower.performPID(liftMotor1.getCurrentPosition());
+            setLiftMotorPower(pidLPower);
+            telemetry.addData("liftpower", pidLPower);
+            telemetry.update();
+        } else {
+            setLiftMotorPower(0);
+        }
+
+        /*if (liftstage != 0 && liftMotor1.getCurrentPosition() != targetPos) {
             if (liftMotor1.getCurrentPosition() < targetPos) {
                 correction = pidLiftPower.performPID(liftMotor1.getPower());
                 lmotor1poower = liftMotor1.getPower();
@@ -471,7 +454,7 @@ public class FieldCentricTeleOp extends OpMode {
         } else {
             setLiftMotorPower(0);
             // applyBrakes();
-        }
+        }*/
 
 
         // intake - counter stall
@@ -505,6 +488,24 @@ public class FieldCentricTeleOp extends OpMode {
                 setLiftMotorPower(lPower);
             }
         }
+
+        telemetry.addData("lift1 encoder count", liftMotor1.getCurrentPosition());
+        telemetry.addData("lift2 encoder count", liftMotor2.getCurrentPosition());
+        telemetry.addData("lift3 encoder count", liftMotor3.getCurrentPosition());
+
+        telemetry.addData("lift1 current", lift1RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
+        telemetry.addData("lift2 current", lift2RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
+        telemetry.addData("lift3 current", lift3RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
+        // telemetry.addData("intake current", intakeMotorRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
+
+
+        telemetry.addData("Liftstage", liftstage);
+        // telemetry.addData("COUNTS_PER_INCH", COUNTS_PER_INCH);
+       //  telemetry.addData("liftPower", liftPower);
+        telemetry.addData("targetPos", targetPos);
+
+        // telemetry.addData("lift 1 PIDF", motor1.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION));
+        telemetry.update();
     }
 
 
