@@ -7,6 +7,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.text.method.Touch;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,6 +16,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+
 
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
@@ -38,7 +43,8 @@ public class FieldCentricTeleOp extends OpMode {
     BNO055IMU imu;
     Orientation angles;
     double zeroPos = 0;
-
+    private TouchSensor liftTouch;
+    private TouchSensor intakeTouch;
     // encoder things
     static final double COUNTS_PER_MOTOR_REV = 537.6;
     static final double DRIVE_GEAR_REDUCTION = 1.0;
@@ -65,7 +71,7 @@ public class FieldCentricTeleOp extends OpMode {
     double pidLPower = 1;
     double lTestPower;
 
-
+    boolean fourBarIn = true;
     boolean aIsPressed = false;
 
     double position = 0.25;
@@ -87,6 +93,9 @@ public class FieldCentricTeleOp extends OpMode {
         lift1RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift1");
         lift2RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift2");
         lift3RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift3");
+
+        intakeTouch = hardwareMap.get(TouchSensor.class, "intakeTouch");
+        liftTouch = hardwareMap.get(TouchSensor.class, "liftTouch");
 
 
         leftElbow = hardwareMap.servo.get("leftv4b");
@@ -182,16 +191,26 @@ public class FieldCentricTeleOp extends OpMode {
             intakeMotor.setPower(1);
         }
 
+        // automating block to move out of the robot after touch sensor is pressed
+        if (intakeTouch.isPressed()) {
+            //fourBarIn = false;
+            intakeMotor.setPower(0);
+            grip.setPosition(0.55);
+            leftElbow.setPosition(0.08);
+            rightElbow.setPosition(0.92);
+        }
         // Elbow out
         if (gamepad2.a) {
             leftElbow.setPosition(0.08);
             rightElbow.setPosition(0.92);
+            fourBarIn = false;
         }
 
         // Elbow in
         if (gamepad2.b) {
             leftElbow.setPosition(0.85);
             rightElbow.setPosition(0.15);
+            fourBarIn = true;
         }
 
         // grabber direction - horizontal
@@ -206,7 +225,7 @@ public class FieldCentricTeleOp extends OpMode {
 
         // grabber - not grabbing
         if (gamepad2.x) {
-            grip.setPosition(0.49);
+            grip.setPosition(0.45);
         }
 
         // grabber - grabbing
@@ -379,7 +398,7 @@ public class FieldCentricTeleOp extends OpMode {
 
 
         // intake - counter stall
-        try {
+        /*try {
             if (aIsPressed && intakeMotorRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS) > 7) {
                 telemetry.addLine("Intake Motor stalling. Restarting motor...");
                 telemetry.update();
@@ -392,7 +411,7 @@ public class FieldCentricTeleOp extends OpMode {
         } catch (InterruptedException ie) {
             telemetry.addLine("Thread interrupted. Exiting...");
             telemetry.update();
-        }
+        }*/
 
         // increase lift power by 0.02
         if (gamepad2.dpad_right) {
