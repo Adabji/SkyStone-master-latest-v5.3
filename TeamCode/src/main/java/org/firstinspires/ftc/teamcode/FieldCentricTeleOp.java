@@ -96,7 +96,7 @@ public class FieldCentricTeleOp extends OpMode {
 
         intakeTouch = hardwareMap.get(TouchSensor.class, "intakeTouch");
         liftTouch = hardwareMap.get(TouchSensor.class, "liftTouch");
-
+        //hardwareMap.touchSensor.get("intakeTouch");
 
         leftElbow = hardwareMap.servo.get("leftv4b");
         rightElbow = hardwareMap.servo.get("rightv4b");
@@ -192,57 +192,64 @@ public class FieldCentricTeleOp extends OpMode {
         }
 
         // automating block to move out of the robot after touch sensor is pressed
-        if (intakeTouch.isPressed()) {
-            //fourBarIn = false;
+        try{ if (intakeTouch.isPressed() && fourBarIn)  {
+            fourBarIn = false;
             intakeMotor.setPower(0);
             grip.setPosition(0.55);
+            Thread.sleep(500);
             leftElbow.setPosition(0.08);
             rightElbow.setPosition(0.92);
+        }}
+        catch (InterruptedException ie) {
+            telemetry.addLine("Thread interrupted. Exiting...");
+            telemetry.update();
         }
+
         // Elbow out
-        if (gamepad2.a) {
+        if (gamepad2.b) {
             leftElbow.setPosition(0.08);
             rightElbow.setPosition(0.92);
             fourBarIn = false;
         }
 
         // Elbow in
-        if (gamepad2.b) {
+        if (gamepad2.a) {
             leftElbow.setPosition(0.85);
             rightElbow.setPosition(0.15);
             fourBarIn = true;
+            grip.setPosition(.45);
         }
 
         // grabber direction - horizontal
-        if (gamepad2.left_bumper) {
+        if (gamepad2.dpad_up) {
             wrist.setPosition(0.22);
         }
 
         // grabber direction - vertical
-        if (gamepad2.right_bumper) {
+        if (gamepad2.dpad_down) {
             wrist.setPosition(0.6);
         }
 
         // grabber - not grabbing
-        if (gamepad2.x) {
+        if (gamepad2.y) {
             grip.setPosition(0.45);
         }
 
         // grabber - grabbing
-        if (gamepad2.y) {
+        if (gamepad2.x) {
             grip.setPosition(0.55);
         }
 
         // foundation servo - Up
-        if (gamepad1.dpad_up) {
-            foundationServoLeft.setPosition(0.81);
-            foundationServoRight.setPosition(0.174);
+        if (gamepad1.right_bumper) {
+            foundationServoLeft.setPosition(0.41);
+            foundationServoRight.setPosition(0.674);
         }
 
         // foundation servo - Down
-        if (gamepad1.dpad_down) {
-            foundationServoLeft.setPosition(0.189);
-            foundationServoRight.setPosition(0.795);
+        if (gamepad1.left_bumper) {
+            foundationServoLeft.setPosition(0.2);
+            foundationServoRight.setPosition(0.884);
         }
 
         // foundation servo - Up by 0.02
@@ -260,19 +267,25 @@ public class FieldCentricTeleOp extends OpMode {
         }
 
         // lift - up a stage
-        if (gamepad2.dpad_up) {
+        try {if (gamepad2.right_bumper) {
             if (liftstage != 6) {
                 liftstage++;
                 targetPos = (int) ((liftstage * 4) * LIFT_COUNTS_PER_INCH);
+                Thread.sleep(500);
             }
         }
 
         // lift - down a stage
-        if (gamepad2.dpad_down) {
+        if (gamepad2.left_bumper) {
             if (liftstage != 0) {
                 liftstage--;
-                targetPos = (int)((liftstage * 4) * LIFT_COUNTS_PER_INCH);
+                targetPos = (int) ((liftstage * 4) * LIFT_COUNTS_PER_INCH);
+                Thread.sleep(500);
             }
+        }}
+        catch (InterruptedException ie) {
+            telemetry.addLine("Thread interrupted. Exiting...");
+            telemetry.update();
         }
 
         // lift PID things
@@ -428,7 +441,7 @@ public class FieldCentricTeleOp extends OpMode {
                 setLiftMotorPower(lPower);
             }
         }
-
+        telemetry.addData("Touch  Sensor",intakeTouch.isPressed());
         telemetry.addData("lift1 encoder count", liftMotor1.getCurrentPosition());
         telemetry.addData("lift2 encoder count", liftMotor2.getCurrentPosition());
         telemetry.addData("lift3 encoder count", liftMotor3.getCurrentPosition());
