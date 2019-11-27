@@ -284,12 +284,13 @@ public class FieldCentricTeleOp extends OpMode {
             setLiftMotorPower(0);
         }
 
-        // normal elbow out position
+        // ---BRING THIS BACK AGAIN---
+        /* normal elbow out position for capstone
         if (gamepad2.right_bumper) {
             leftElbow.setPosition(0.17);
             rightElbow.setPosition(0.83);
             fourBarIn = false;
-        }
+        }*/
 
         // lift - up a stage
         try {
@@ -314,19 +315,33 @@ public class FieldCentricTeleOp extends OpMode {
             telemetry.update();
         }
 
+        // ---ATTEMPT #1 AFTER SCRIMMAGE
         if (liftstage == 0 && !liftTouch.isPressed()) {
             setLiftMotorPower(-0.1);
-        } else if (liftTouch.isPressed()) {
+        } else if (liftstage == 0 && liftTouch.isPressed()) {
             setLiftMotorPower(0);
-        } else if (liftstage != 0 && liftMotor1.getCurrentPosition() < targetPos && !liftTouch.isPressed()) {
+        } else if (liftstage != 0 && liftMotor1.getCurrentPosition() < targetPos) {
             liftMotor1.setTargetPosition(targetPos);
             setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
             setLiftMotorPower(0.8);
-        } else if (liftstage != 0 && liftMotor1.getCurrentPosition() > targetPos && !liftTouch.isPressed()) {
+            while (liftMotor1.isBusy()) { }
+        } else if (liftstage != 0 && liftMotor1.getCurrentPosition() > targetPos) {
             liftMotor1.setTargetPosition(targetPos);
             setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
             setLiftMotorPower(-0.1);
+            while (liftMotor1.isBusy()) { }
         }
+
+        /* ---ATTEMPT #2 AFTER SCRIMMAGE
+        if (liftstage == 0 && liftTouch.isPressed()) {
+            setLiftMotorPower(0);
+        } else if (liftstage == 0 && !liftTouch.isPressed()) {
+            setLiftMotorPower(-0.1);
+        } else if (liftstage != 0 && liftMotor1.getCurrentPosition() < targetPos) {
+            setLiftMotorPower(0.8);
+        } else if (liftstage != 0 && liftMotor1.getCurrentPosition() > targetPos) {
+            setLiftMotorPower(-0.1);
+        }*/
 
         // lift PID things
         // even older lift things
