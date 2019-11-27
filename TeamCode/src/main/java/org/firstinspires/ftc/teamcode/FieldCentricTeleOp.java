@@ -76,9 +76,8 @@ public class FieldCentricTeleOp extends OpMode {
 
     double position = 0.25;
 
-    double setTime = -1;
-    boolean intakeTouchPressed = false;
-    ElapsedTime time;
+    boolean gp2RightBumperPressed = false;
+    boolean gp2LeftBumperPressed = false;
 
     @Override
     public void init() {
@@ -339,7 +338,7 @@ public class FieldCentricTeleOp extends OpMode {
         } else if (liftstage == 0 && !liftTouch.isPressed()) {
             setLiftMotorPower(-0.1);
         } else if (liftstage != 0 && ((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition())/3) < targetPos) {
-            setLiftMotorPower(1);
+            setLiftMotorPower(0.5);
         } else if (liftstage != 0 && ((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition())/3) > targetPos) {
             setLiftMotorPower(0);
             applyLiftBrakes();
