@@ -159,7 +159,7 @@ public class VuforiaSkyStoneNavigation extends LinearOpMode {
     // my vars
     DcMotor                 leftFront, leftBack, rightFront, rightBack, intakeMotor;
     private static ExpansionHubMotor intakeMotorRE2;
-    Servo                   foundationServo;
+    // Servo                   foundationServo;
     private ColorSensor sensorColor;
     private DistanceSensor sensorColorDistance;
     BNO055IMU               imu;
@@ -190,9 +190,9 @@ public class VuforiaSkyStoneNavigation extends LinearOpMode {
         sensorColor = hardwareMap.get(ColorSensor.class, "sensor_color_distance");
         sensorColorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
 
-        foundationServo = hardwareMap.servo.get("foundationServo");
+        // foundationServo = hardwareMap.servo.get("foundationServo");
 
-        foundationServo.setPosition(0);
+        // foundationServo.setPosition(0);
 
         rightFront.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.REVERSE);

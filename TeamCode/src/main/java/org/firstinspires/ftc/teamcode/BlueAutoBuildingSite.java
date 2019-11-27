@@ -25,8 +25,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import org.openftc.revextensions2.*;
 
-@Autonomous(name="Autonomous Building Site", group="Autonomous")
-public class AutonomousBuildingSite extends LinearOpMode {
+@Autonomous(name="Auto Building Site - BLUE", group="Autonomous")
+public class BlueAutoBuildingSite extends LinearOpMode {
     DcMotor                 leftFront, leftBack, rightFront, rightBack, intakeMotor;
     BNO055IMU               imu;
     Orientation             lastAngles = new Orientation();
@@ -43,6 +43,7 @@ public class AutonomousBuildingSite extends LinearOpMode {
     DistanceSensor leftRange, rightRange;
     private ColorSensor sensorColor;
     private DistanceSensor sensorColorDistance;
+    Servo foundationServoLeft, foundationServoRight;
 
     // called when init button is  pressed.
     @Override
@@ -55,6 +56,9 @@ public class AutonomousBuildingSite extends LinearOpMode {
         intakeMotor = hardwareMap.dcMotor.get("intake motor");
 
         intakeMotorRE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("intake motor");
+
+        foundationServoLeft = hardwareMap.servo.get("foundationServoLeft");
+        foundationServoRight = hardwareMap.servo.get("foundationServoRight");
 
         /*leftRange = hardwareMap.get(DistanceSensor.class, "left_distance");
         rightRange= hardwareMap.get(DistanceSensor.class, "right_distance");*/
@@ -122,12 +126,16 @@ public class AutonomousBuildingSite extends LinearOpMode {
         if (opModeIsActive()) {
 
             // Use gyro to drive in a straight line.
-            correction = pidDrive.performPID(getAngle());
+            // correction = pidDrive.performPID(getAngle());
 
             // Moving to the foundation, pulling it, and then moving to the line
 
-            move(5, movePower/2, false);
-            // foundationServo.setPosition(0.5);
+            /*move(5, movePower/2, false);
+
+            // Up
+            foundationServoLeft.setPosition(0.41);
+            foundationServoRight.setPosition(0.674);
+
             strafe(24, movePower, true);
 
             // move(25, movePower, false);
@@ -148,19 +156,53 @@ public class AutonomousBuildingSite extends LinearOpMode {
             while(leftFront.isBusy() && leftBack.isBusy() && rightFront.isBusy() && rightBack.isBusy()) { }
 
             setMotorPower(0, 0, 0, 0);
-            applyBrakes();
 
             Thread.sleep(300);
             move(3, movePower/3, false);
-            // foundationServo.setPosition(0);
+
             Thread.sleep(300);
-            move(27, movePower/1.7, true);
-            // foundationServo.setPosition(0.5);
-            Thread.sleep(15000);
-            strafe(20, movePower, false);
-            move(5, movePower, false);
-            // foundationServo.setPosition(0);
-            strafe(28, movePower, false);
+
+            // down
+            foundationServoLeft.setPosition(0.2);
+            foundationServoRight.setPosition(0.884);
+
+            move(35, movePower/1.7, true);
+            // rotate(-20, rotationPower/1.5);
+            // Thread.sleep(4000);
+
+            // Up
+            foundationServoLeft.setPosition(0.41);
+            foundationServoRight.setPosition(0.674);
+
+            move(1, movePower/2, false);
+            strafe(48, movePower, false);
+            // move(5, movePower, false);
+
+            // down - not necessary
+            foundationServoLeft.setPosition(0.2);
+            foundationServoRight.setPosition(0.884);
+
+            rotate(90, rotationPower);
+            rotate(90, rotationPower);*/
+
+            move(2, movePower/2, true);
+            strafe(18, movePower/1.5, true);
+            move(2, movePower/2, false);
+
+            /*boolean inSight = false;
+            while (!inSight) {
+                setMotorPower(-movePower, -movePower, -movePower, -movePower);
+
+                if (sensorColorDistance.getDistance(DistanceUnit.INCH) < 2) {
+                    inSight = true;
+                }
+            }
+
+            while(leftFront.isBusy() && leftBack.isBusy() && rightFront.isBusy() && rightBack.isBusy()) { }
+
+            setMotorPower(0, 0, 0, 0);*/
+
+            // strafe(28, movePower, false);
         }
     }
 
