@@ -2,7 +2,7 @@
  * Field centric tele op: front is always the field's front, not the robot's front
  * <p>
  * NOTES:
- * -
+ * - BRING BACK CAPSTONE POSITION COMMAND
  */
 
 package org.firstinspires.ftc.teamcode;
@@ -116,7 +116,7 @@ public class FieldCentricTeleOp extends OpMode {
         liftMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         setLiftMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        setLiftMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        setLiftMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -128,7 +128,7 @@ public class FieldCentricTeleOp extends OpMode {
         imu.initialize(parameters);
 
         foundationServoLeft.setPosition(0.2);
-        foundationServoRight.setPosition(0.77);
+        foundationServoRight.setPosition(0.87);
         // leftElbow.setPosition(0.85);
         // rightElbow.setPosition(0.15);
         wrist.setPosition(0.6);
@@ -262,7 +262,7 @@ public class FieldCentricTeleOp extends OpMode {
         // foundation servo - Down
         if (gamepad1.right_bumper) {
             foundationServoLeft.setPosition(0.2);
-            foundationServoRight.setPosition(0.77);
+            foundationServoRight.setPosition(0.87);
         }
 
         // foundation servo - Up by 0.02
@@ -316,7 +316,7 @@ public class FieldCentricTeleOp extends OpMode {
         }
 
         // ---ATTEMPT #1 AFTER SCRIMMAGE
-        if (liftstage == 0 && !liftTouch.isPressed()) {
+        /*if (liftstage == 0 && !liftTouch.isPressed()) {
             setLiftMotorPower(-0.1);
         } else if (liftstage == 0 && liftTouch.isPressed()) {
             setLiftMotorPower(0);
@@ -330,18 +330,20 @@ public class FieldCentricTeleOp extends OpMode {
             setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
             setLiftMotorPower(-0.1);
             while (liftMotor1.isBusy()) { }
-        }
+        }*/
 
-        /* ---ATTEMPT #2 AFTER SCRIMMAGE
+        // ---ATTEMPT #2 AFTER SCRIMMAGE
         if (liftstage == 0 && liftTouch.isPressed()) {
             setLiftMotorPower(0);
+            // setLiftMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         } else if (liftstage == 0 && !liftTouch.isPressed()) {
             setLiftMotorPower(-0.1);
-        } else if (liftstage != 0 && liftMotor1.getCurrentPosition() < targetPos) {
-            setLiftMotorPower(0.8);
-        } else if (liftstage != 0 && liftMotor1.getCurrentPosition() > targetPos) {
-            setLiftMotorPower(-0.1);
-        }*/
+        } else if (liftstage != 0 && ((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition())/3) < targetPos) {
+            setLiftMotorPower(1);
+        } else if (liftstage != 0 && ((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition())/3) > targetPos) {
+            setLiftMotorPower(0);
+            applyLiftBrakes();
+        }
 
         // lift PID things
         // even older lift things
@@ -554,7 +556,7 @@ public class FieldCentricTeleOp extends OpMode {
         liftMotor3.setTargetPosition(target);
     }
 
-    private void applyBrakes() {
+    private void applyLiftBrakes() {
         liftMotor1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         liftMotor2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         liftMotor3.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
