@@ -9,15 +9,22 @@ package org.firstinspires.ftc.teamcode;
 
 import android.text.method.Touch;
 
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorControllerEx;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.config.Config;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -34,10 +41,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import java.util.*;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Field Centric TeleOp", group = "TeleOp")
+
+@Config
 public class FieldCentricTeleOp extends OpMode {
     private static double JoyStickAngleRad, JoyStickAngleDeg;
     private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, intakeMotor, liftMotor1, liftMotor2, liftMotor3;
     private static ExpansionHubMotor intakeMotorRE2, lift1RE2, lift2RE2, lift3RE2;
+    private static DcMotorEx liftEx1, liftEx2, liftEx3;
     private static Servo leftElbow, rightElbow, wrist, grip, foundationServoLeft, foundationServoRight;
     private static double PosXAngPosY, PosXAngNegY, NegXAng, Theta, r, outputX, outputY, heading;
     Double Deg = Math.PI;
@@ -66,6 +76,7 @@ public class FieldCentricTeleOp extends OpMode {
     double lPower = 0;
     double fightGPower = -0.226;
     PIDController pidLiftPower;
+    PIDFCoefficients pidfCoefficients;
     double correction = 0;
     double liftPower = 1;
     double pidLPower = 1;
@@ -75,6 +86,11 @@ public class FieldCentricTeleOp extends OpMode {
     boolean aIsPressed = false;
 
     double position = 0.25;
+
+    double lkp = 0.8;
+    double lki = 0;
+    double lkd = 0;
+    double lkf = 0;
 
     boolean gp2RightBumperPressed = false;
     boolean gp2LeftBumperPressed = false;
@@ -86,7 +102,6 @@ public class FieldCentricTeleOp extends OpMode {
         rightFrontWheel = hardwareMap.dcMotor.get("right front");
         rightBackWheel = hardwareMap.dcMotor.get("right back");
 
-
         intakeMotor = hardwareMap.dcMotor.get("intake motor");
         intakeMotorRE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("intake motor");
 
@@ -96,10 +111,18 @@ public class FieldCentricTeleOp extends OpMode {
         lift1RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift1");
         lift2RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift2");
         lift3RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift3");
+        liftEx1 = (DcMotorEx) hardwareMap.dcMotor.get("lift1");
+        liftEx2 = (DcMotorEx) hardwareMap.dcMotor.get("lift2");
+        liftEx3 = (DcMotorEx) hardwareMap.dcMotor.get("lift3");
+
+        pidfCoefficients = new PIDFCoefficients(lkp, lki, lkd, lkf);
+        liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
+        liftEx2.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
+        liftEx3.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
 
         intakeTouch = hardwareMap.get(TouchSensor.class, "intakeTouch");
         liftTouch = hardwareMap.get(TouchSensor.class, "liftTouch");
-        //hardwareMap.touchSensor.get("intakeTouch");
+        // hardwareMap.touchSensor.get("intakeTouch");
 
         leftElbow = hardwareMap.servo.get("leftv4b");
         rightElbow = hardwareMap.servo.get("rightv4b");
@@ -108,14 +131,17 @@ public class FieldCentricTeleOp extends OpMode {
         foundationServoLeft = hardwareMap.servo.get("foundationServoLeft");
         foundationServoRight = hardwareMap.servo.get("foundationServoRight");
 
-        pidLiftPower = new PIDController(0.8, 0, 0);
+        // pidLiftPower = new PIDController(0.8, 0, 0);
 
         leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         liftMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        setLiftMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        setLiftMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // setLiftMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        // setLiftMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        setLExMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setLExMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -136,9 +162,6 @@ public class FieldCentricTeleOp extends OpMode {
 
     @Override
     public void loop() {
-        // fight gravity to keep up in the air
-        // setLiftMotorPower(fightGPower);
-
         double inputY = gamepad1.left_stick_y;
         double inputX = -gamepad1.left_stick_x;
         double inputC = -gamepad1.right_stick_x;
@@ -152,13 +175,16 @@ public class FieldCentricTeleOp extends OpMode {
         } else {
             JoyStickAngleRad = NegXAng;
         }
+
         r = Math.sqrt(gamepad1.left_stick_x * gamepad1.left_stick_x + gamepad1.left_stick_y * gamepad1.left_stick_y);
         if (gamepad1.left_stick_y < 0) {
             Theta = -Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x);
         }
+
         if (gamepad1.left_stick_y >= 0) {
             Theta = 2 * Math.PI - Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x);
         }
+
         outputX = -Math.cos(heading - Theta) * r;
         outputY = Math.sin(heading - Theta) * r;
         /*telemetry.addData("LeftX",gamepad1.left_stick_x);
@@ -331,17 +357,49 @@ public class FieldCentricTeleOp extends OpMode {
             while (liftMotor1.isBusy()) { }
         }*/
 
-        // ---ATTEMPT #2 AFTER SCRIMMAGE
-        if (liftstage == 0 && liftTouch.isPressed()) {
+        // ---ATTEMPT #2 AFTER SCRIMMAGE---
+        /*if (liftstage == 0 && liftTouch.isPressed()) {
             setLiftMotorPower(0);
-            // setLiftMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         } else if (liftstage == 0 && !liftTouch.isPressed()) {
+            setLiftMotorPower(-0.2);
+        } else if (liftstage != 0 && ((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition())/3) - targetPos > 100) {
             setLiftMotorPower(-0.1);
         } else if (liftstage != 0 && ((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition())/3) < targetPos) {
             setLiftMotorPower(0.5);
         } else if (liftstage != 0 && ((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition())/3) > targetPos) {
             setLiftMotorPower(0);
-            applyLiftBrakes();
+            // applyLiftBrakes();
+        }*/
+
+        // ---ATTEMPT #3 AFTER SCRIMMAGE---
+        /*pidLiftPower.setSetpoint(targetPos);
+        pidLiftPower.setInputRange(0, 690);
+        pidLiftPower.setOutputRange(-liftPower, liftPower);
+        pidLiftPower.enable();
+
+        if (liftstage == 0 && liftTouch.isPressed()) {
+            setLiftMotorPower(0);
+        } else if (liftstage == 0 && !liftTouch.isPressed()) {
+            setLiftMotorPower(-0.2);
+        } else if (liftstage != 0 && (liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition()) / 3 != targetPos) {
+            pidLPower = pidLiftPower.performPID((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition()) / 3);
+            // lTestPower = pidLPower;
+            setMotorTargetPosition(targetPos);
+            setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
+            setLiftMotorPower(pidLPower);
+        }*/
+
+        // ---ATTEMPT #4 AFTER SCRIMMAGE---
+        if (liftstage == 0 && liftTouch.isPressed()) {
+            setLExPower(0);
+        } else if (liftstage == 0 && !liftTouch.isPressed()) {
+            setLExPower(-0.2);
+        } else if (liftstage != 0 && (liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition()) / 3 != targetPos) {
+            // pidLPower = pidLiftPower.performPID((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition()) / 3);
+            // lTestPower = pidLPower;
+            setLExTargetPos(targetPos);
+            setLExMode(DcMotor.RunMode.RUN_TO_POSITION);
+            setLExPower(0.5);
         }
 
         // lift PID things
@@ -501,7 +559,7 @@ public class FieldCentricTeleOp extends OpMode {
         }
 
         // telemetry.addData("Touch  Sensor", intakeTouch.isPressed());
-        telemetry.addData("liftTouchSensor", liftTouch.isPressed());
+        /*telemetry.addData("liftTouchSensor", liftTouch.isPressed());
 
         telemetry.addData("lift1 encoder count", liftMotor1.getCurrentPosition());
         telemetry.addData("lift2 encoder count", liftMotor2.getCurrentPosition());
@@ -524,7 +582,7 @@ public class FieldCentricTeleOp extends OpMode {
         // telemetry.addData("foundationServoLeft Position", foundationServoLeft.getPosition());
         // telemetry.addData("foundationServoRight Position", foundationServoRight.getPosition());
 
-        telemetry.update();
+        telemetry.update();*/
     }
 
 
@@ -535,6 +593,24 @@ public class FieldCentricTeleOp extends OpMode {
             }
         }
         return 0;
+    }
+
+    private void setLExMode(DcMotor.RunMode m) {
+        liftEx1.setMode(m);
+        liftEx2.setMode(m);
+        liftEx3.setMode(m);
+    }
+
+    private void setLExPower(double p) {
+        liftEx1.setPower(p);
+        liftEx2.setPower(p);
+        liftEx3.setPower(p);
+    }
+
+    private void setLExTargetPos(int target) {
+        liftEx1.setTargetPosition(target);
+        liftEx2.setTargetPosition(target);
+        liftEx3.setTargetPosition(target);
     }
 
     private void setLiftMotorMode(DcMotor.RunMode m) {
