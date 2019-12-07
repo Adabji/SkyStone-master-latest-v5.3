@@ -32,6 +32,7 @@ public class BlueAutoBuildingSite extends LinearOpMode {
     Orientation             lastAngles = new Orientation();
     PIDController           pidRotate, pidDrive;
     double                  globalAngle, power = .30, correction, rotation;
+    double                  leftMoveMod = 0, rightMoveMod = 0;
     double                  rotationPower = 0.5;
     double                  movePower = 0.4;    // this is a slow move speed--required for this auto to prevent the robot from smashing into things
     static final double     COUNTS_PER_MOTOR_REV  = 537.6;
@@ -41,8 +42,8 @@ public class BlueAutoBuildingSite extends LinearOpMode {
             (WHEEL_DIAMETER_INCHES * 3.1415);
     ExpansionHubMotor intakeMotorRE2;
     DistanceSensor leftRange, rightRange;
-    private ColorSensor sensorColor;
-    private DistanceSensor sensorColorDistance;
+    private ColorSensor colorSensor;
+    private DistanceSensor colorSensorDistance;
     Servo foundationServoLeft, foundationServoRight;
 
     // called when init button is  pressed.
@@ -57,14 +58,14 @@ public class BlueAutoBuildingSite extends LinearOpMode {
 
         intakeMotorRE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("intake motor");
 
-        foundationServoLeft = hardwareMap.servo.get("foundationServoLeft");
-        foundationServoRight = hardwareMap.servo.get("foundationServoRight");
+        // foundationServoLeft = hardwareMap.servo.get("foundationServoLeft");
+        // foundationServoRight = hardwareMap.servo.get("foundationServoRight");
 
         /*leftRange = hardwareMap.get(DistanceSensor.class, "left_distance");
         rightRange= hardwareMap.get(DistanceSensor.class, "right_distance");*/
 
-        sensorColor = hardwareMap.get(ColorSensor.class, "sensor_color_distance");
-        sensorColorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
+        colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color_distance");
+        colorSensorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
 
         rightFront.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.REVERSE);
@@ -124,85 +125,72 @@ public class BlueAutoBuildingSite extends LinearOpMode {
         pidDrive.enable();
 
         if (opModeIsActive()) {
-
             // Use gyro to drive in a straight line.
-            // correction = pidDrive.performPID(getAngle());
+            correction = pidDrive.performPID(getAngle());
 
-            // Moving to the foundation, pulling it, and then moving to the line
-
-            /*move(5, movePower/2, false);
+            move(5, movePower/2, false);
 
             // Up
-            foundationServoLeft.setPosition(0.41);
-            foundationServoRight.setPosition(0.674);
+            // foundationServoLeft.setPosition(0.41);
+            // foundationServoRight.setPosition(0.674);
 
             strafe(24, movePower, true);
 
-            // move(25, movePower, false);
-
             setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
             setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
             boolean inSight = false;
             while (!inSight) {
                 setMotorPower(-movePower, -movePower, -movePower, -movePower);
-
-                if (sensorColorDistance.getDistance(DistanceUnit.INCH) < 4) {
+                if (colorSensorDistance.getDistance(DistanceUnit.INCH) < 4) {
                     inSight = true;
                 }
             }
 
             while(leftFront.isBusy() && leftBack.isBusy() && rightFront.isBusy() && rightBack.isBusy()) { }
-
             setMotorPower(0, 0, 0, 0);
 
-            Thread.sleep(300);
+            sleep(200);
             move(3, movePower/3, false);
-
-            Thread.sleep(300);
+            sleep(300);
 
             // down
-            foundationServoLeft.setPosition(0.2);
-            foundationServoRight.setPosition(0.884);
+            // foundationServoLeft.setPosition(0.2);
+            // foundationServoRight.setPosition(0.884);
 
-            move(35, movePower/1.7, true);
-            // rotate(-20, rotationPower/1.5);
-            // Thread.sleep(4000);
+            rightMoveMod = 0.2; // to move "back" in a curve
+            while (getAngle() < 90) {
+                move(1, movePower/1.5, true);
+            }
 
-            // Up
-            foundationServoLeft.setPosition(0.41);
-            foundationServoRight.setPosition(0.674);
+            leftMoveMod = 0;
 
-            move(1, movePower/2, false);
-            strafe(48, movePower, false);
+            // move(1, movePower/2, false);
+
+            // move the foundation onto the line
+            move(18, movePower, false);
             // move(5, movePower, false);
 
-            // down - not necessary
-            foundationServoLeft.setPosition(0.2);
-            foundationServoRight.setPosition(0.884);
+            // Up
+            // foundationServoLeft.setPosition(0.41);
+            // foundationServoRight.setPosition(0.674);
 
-            rotate(90, rotationPower);
-            rotate(90, rotationPower);*/
+            move(44, movePower, true);
+            rotate(-90, rotationPower);
 
-            move(2, movePower/2, true);
-            strafe(18, movePower/1.5, true);
-            move(2, movePower/2, false);
 
-            /*boolean inSight = false;
+            inSight = false;
             while (!inSight) {
                 setMotorPower(-movePower, -movePower, -movePower, -movePower);
 
-                if (sensorColorDistance.getDistance(DistanceUnit.INCH) < 2) {
+                if (colorSensorDistance.getDistance(DistanceUnit.INCH) < 2) {
                     inSight = true;
                 }
             }
 
-            while(leftFront.isBusy() && leftBack.isBusy() && rightFront.isBusy() && rightBack.isBusy()) { }
+            while (leftFront.isBusy() && leftBack.isBusy() && rightFront.isBusy() && rightBack.isBusy()) { }
 
-            setMotorPower(0, 0, 0, 0);*/
-
-            // strafe(28, movePower, false);
+            setMotorPower(0, 0, 0, 0);
         }
     }
 
@@ -255,11 +243,8 @@ public class BlueAutoBuildingSite extends LinearOpMode {
         }
 
         setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
         setMotorTargetPosition(strafeDistance, -strafeDistance, -strafeDistance, strafeDistance);
-
         setMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-
         setMotorPower(myPower + correction, -myPower - correction, -myPower - correction, myPower + correction);
 
         while (leftFront.isBusy() && leftBack.isBusy() && rightFront.isBusy() && rightBack.isBusy()) { }
@@ -289,14 +274,11 @@ public class BlueAutoBuildingSite extends LinearOpMode {
         }
 
         setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
         setMotorTargetPosition(moveDistance, moveDistance,moveDistance, moveDistance);
-
         setMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
+        setMotorPower(myPower + leftMoveMod + correction, myPower + leftMoveMod + correction, myPower + rightMoveMod + correction, myPower + rightMoveMod + correction);
 
-        setMotorPower(myPower + correction, myPower + correction, myPower + correction, myPower + correction);
-
-        while(leftFront.isBusy() && leftBack.isBusy() && rightBack.isBusy() && rightFront.isBusy()) { }
+        while (leftFront.isBusy() && leftBack.isBusy() && rightBack.isBusy() && rightFront.isBusy()) { }
 
         setMotorPower(0, 0, 0, 0);
 

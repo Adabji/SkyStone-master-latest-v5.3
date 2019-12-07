@@ -40,14 +40,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.*;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Field Centric TeleOp", group = "TeleOp")
 
 @Config
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Field Centric TeleOp", group = "TeleOp")
 public class FieldCentricTeleOp extends OpMode {
     private static double JoyStickAngleRad, JoyStickAngleDeg;
-    private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, intakeMotor, liftMotor1, liftMotor2, liftMotor3;
-    private static ExpansionHubMotor intakeMotorRE2, lift1RE2, lift2RE2, lift3RE2;
-    private static DcMotorEx liftEx1, liftEx2, liftEx3;
+    private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, intakeMotor, liftMotor1;
+    private static ExpansionHubMotor intakeMotorRE2, liftRE2;
+    private static DcMotorEx liftEx1;
     private static Servo leftElbow, rightElbow, wrist, grip, foundationServoLeft, foundationServoRight;
     private static double PosXAngPosY, PosXAngNegY, NegXAng, Theta, r, outputX, outputY, heading;
     Double Deg = Math.PI;
@@ -56,44 +56,43 @@ public class FieldCentricTeleOp extends OpMode {
     double zeroPos = 0;
     private TouchSensor liftTouch;
     private TouchSensor intakeTouch;
+
     // encoder things
     static final double COUNTS_PER_MOTOR_REV = 537.6;
     static final double DRIVE_GEAR_REDUCTION = 1.0;
     static final double WHEEL_DIAMETER_INCHES = 3.937;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-            (WHEEL_DIAMETER_INCHES * 3.1415);
+            (WHEEL_DIAMETER_INCHES * 3.1415);   // 43.4667
 
 
-    static final double LIFT_COUNTS_PER_MOTOR_REV = 103.6;
+    static final double LIFT_COUNTS_PER_MOTOR_REV = 537.6;
     static final double LIFT_DRIVE_GEAR_REDUCTION = 1.0;
     static final double LIFT_WHEEL_DIAMETER_INCHES = 1.25;
     static final double LIFT_COUNTS_PER_INCH = (LIFT_COUNTS_PER_MOTOR_REV * LIFT_DRIVE_GEAR_REDUCTION) /
-            (LIFT_WHEEL_DIAMETER_INCHES * 3.1415);  // 26.38
+            (LIFT_WHEEL_DIAMETER_INCHES * 3.1415);  // 136.90275
 
     // lift things
     int liftstage = 0;
     int targetPos = 0;
-    double lPower = 0;
     double fightGPower = -0.226;
     PIDController pidLiftPower;
     PIDFCoefficients pidfCoefficients;
-    double correction = 0;
-    double liftPower = 1;
-    double pidLPower = 1;
-    int depositStage = 0;
 
     boolean fourBarIn = true;
     boolean aIsPressed = false;
 
     double position = 0.25;
 
-    double lkp = 0.8;
+    double lkp = 0;
     double lki = 0;
     double lkd = 0;
     double lkf = 0;
 
-    boolean gp2RightBumperPressed = false;
-    boolean gp2LeftBumperPressed = false;
+    boolean previousGP2LBPos = false;
+    boolean previousGP2RBPos = false;
+
+    boolean currentGP2LBPos;
+    boolean currentGP2RBPos;
 
     @Override
     public void init() {
@@ -106,23 +105,16 @@ public class FieldCentricTeleOp extends OpMode {
         intakeMotorRE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("intake motor");
 
         liftMotor1 = hardwareMap.dcMotor.get("lift1");
-        liftMotor2 = hardwareMap.dcMotor.get("lift2");
-        liftMotor3 = hardwareMap.dcMotor.get("lift3");
-        lift1RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift1");
-        lift2RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift2");
-        lift3RE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift3");
+        liftRE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift1");
         liftEx1 = (DcMotorEx) hardwareMap.dcMotor.get("lift1");
-        liftEx2 = (DcMotorEx) hardwareMap.dcMotor.get("lift2");
-        liftEx3 = (DcMotorEx) hardwareMap.dcMotor.get("lift3");
+
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
 
         pidfCoefficients = new PIDFCoefficients(lkp, lki, lkd, lkf);
-        liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
-        liftEx2.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
-        liftEx3.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
 
         intakeTouch = hardwareMap.get(TouchSensor.class, "intakeTouch");
         liftTouch = hardwareMap.get(TouchSensor.class, "liftTouch");
-        // hardwareMap.touchSensor.get("intakeTouch");
 
         leftElbow = hardwareMap.servo.get("leftv4b");
         rightElbow = hardwareMap.servo.get("rightv4b");
@@ -131,17 +123,15 @@ public class FieldCentricTeleOp extends OpMode {
         foundationServoLeft = hardwareMap.servo.get("foundationServoLeft");
         foundationServoRight = hardwareMap.servo.get("foundationServoRight");
 
-        // pidLiftPower = new PIDController(0.8, 0, 0);
-
         leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-        liftMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        // setLiftMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        // setLiftMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        liftMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        setLExMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        setLExMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -219,8 +209,8 @@ public class FieldCentricTeleOp extends OpMode {
             intakeMotor.setPower(1);
         }
 
-        // automating block to move out of the robot after touch sensor is pressed
-        try {
+        // automating block to move out of the robot after touch sensor is pressed - remove try catch
+        /*try {
             if (intakeTouch.isPressed() && fourBarIn)  {
                 fourBarIn = false;
                 intakeMotor.setPower(0);
@@ -232,7 +222,7 @@ public class FieldCentricTeleOp extends OpMode {
         } catch (InterruptedException ie) {
             telemetry.addLine("Intake thread interrupted. Exiting...");
             telemetry.update();
-        }
+        }*/
 
         // Lower elbow out position
         if (gamepad2.b) {
@@ -304,227 +294,52 @@ public class FieldCentricTeleOp extends OpMode {
             foundationServoRight.setPosition(1.025 - position);
         }
 
-        // Kill lift power (temp fix bc current issues)
-        if(liftTouch.isPressed() && fourBarIn && liftstage == 0){
-            setLiftMotorPower(0);
-        }
-
         // ---BRING THIS BACK AGAIN---
-        /* normal elbow out position for capstone
+        /* elbow out position for capstone
         if (gamepad2.right_bumper) {
             leftElbow.setPosition(0.17);
             rightElbow.setPosition(0.83);
             fourBarIn = false;
         }*/
 
+        currentGP2LBPos = gamepad2.left_bumper;
+        currentGP2RBPos = gamepad2.right_bumper;
+
         // lift - up a stage
-        try {
-            if (gamepad2.right_bumper) {
-                if (liftstage != 6) {
-                    liftstage++;
-                    targetPos = (int) ((liftstage * 4) * LIFT_COUNTS_PER_INCH);
-                    Thread.sleep(100);
-                }
+        if (currentGP2RBPos && !previousGP2RBPos) {
+            if (liftstage != 6) {
+                liftstage++;
+                targetPos = (int) ((liftstage * 4) * LIFT_COUNTS_PER_INCH);
             }
 
-            //  lift - down a stage
-            if (gamepad2.left_bumper) {
-                if (liftstage != 0) {
-                    liftstage--;
-                    targetPos = (int) ((liftstage * 4) * LIFT_COUNTS_PER_INCH);
-                    Thread.sleep(100);
-                }
-            }
-        } catch (InterruptedException ie) {
-            telemetry.addLine("Lift thread interrupted. Exiting...");
-            telemetry.update();
+            previousGP2RBPos = currentGP2RBPos;
+        } else {
+            previousGP2RBPos = currentGP2RBPos;
         }
 
-        // ---ATTEMPT #1 AFTER SCRIMMAGE
-        /*if (liftstage == 0 && !liftTouch.isPressed()) {
-            setLiftMotorPower(-0.1);
-        } else if (liftstage == 0 && liftTouch.isPressed()) {
-            setLiftMotorPower(0);
-        } else if (liftstage != 0 && liftMotor1.getCurrentPosition() < targetPos) {
-            liftMotor1.setTargetPosition(targetPos);
-            setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-            setLiftMotorPower(0.8);
-            while (liftMotor1.isBusy()) { }
-        } else if (liftstage != 0 && liftMotor1.getCurrentPosition() > targetPos) {
-            liftMotor1.setTargetPosition(targetPos);
-            setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-            setLiftMotorPower(-0.1);
-            while (liftMotor1.isBusy()) { }
-        }*/
+        //  lift - down a stage
+        if (currentGP2LBPos && !previousGP2LBPos) {
+            if (liftstage != 0) {
+                liftstage--;
+                targetPos = (int) ((liftstage * 4) * LIFT_COUNTS_PER_INCH);
+            }
 
-        // ---ATTEMPT #2 AFTER SCRIMMAGE---
-        /*if (liftstage == 0 && liftTouch.isPressed()) {
-            setLiftMotorPower(0);
-        } else if (liftstage == 0 && !liftTouch.isPressed()) {
-            setLiftMotorPower(-0.2);
-        } else if (liftstage != 0 && ((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition())/3) - targetPos > 100) {
-            setLiftMotorPower(-0.1);
-        } else if (liftstage != 0 && ((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition())/3) < targetPos) {
-            setLiftMotorPower(0.5);
-        } else if (liftstage != 0 && ((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition())/3) > targetPos) {
-            setLiftMotorPower(0);
-            // applyLiftBrakes();
-        }*/
+            previousGP2LBPos = currentGP2LBPos;
+        } else {
+            previousGP2LBPos = currentGP2LBPos;
+        }
 
-        // ---ATTEMPT #3 AFTER SCRIMMAGE---
-        /*pidLiftPower.setSetpoint(targetPos);
-        pidLiftPower.setInputRange(0, 690);
-        pidLiftPower.setOutputRange(-liftPower, liftPower);
-        pidLiftPower.enable();
-
-        if (liftstage == 0 && liftTouch.isPressed()) {
-            setLiftMotorPower(0);
-        } else if (liftstage == 0 && !liftTouch.isPressed()) {
-            setLiftMotorPower(-0.2);
-        } else if (liftstage != 0 && (liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition()) / 3 != targetPos) {
-            pidLPower = pidLiftPower.performPID((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition()) / 3);
-            // lTestPower = pidLPower;
-            setMotorTargetPosition(targetPos);
-            setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-            setLiftMotorPower(pidLPower);
-        }*/
-
+        // LIFT DcMotorEx
         // ---ATTEMPT #4 AFTER SCRIMMAGE---
         if (liftstage == 0 && liftTouch.isPressed()) {
-            setLExPower(0);
+            liftEx1.setPower(0);
         } else if (liftstage == 0 && !liftTouch.isPressed()) {
-            setLExPower(-0.2);
-        } else if (liftstage != 0 && (liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition()) / 3 != targetPos) {
-            // pidLPower = pidLiftPower.performPID((liftMotor1.getCurrentPosition() + liftMotor2.getCurrentPosition() + liftMotor3.getCurrentPosition()) / 3);
-            // lTestPower = pidLPower;
-            setLExTargetPos(targetPos);
-            setLExMode(DcMotor.RunMode.RUN_TO_POSITION);
-            setLExPower(0.5);
+            liftEx1.setPower(-0.2);
+        } else if (liftstage != 0 && liftEx1.getCurrentPosition() != targetPos) {
+            liftEx1.setTargetPositionTolerance(targetPos);
+            liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            liftEx1.setPower(0.5);
         }
-
-        // lift PID things
-        // even older lift things
-        /*targetPos = (liftstage * 4) * COUNTS_PER_INCH;
-        if (liftstage != 0 && liftMotor1.getCurrentPosition() != targetPos) {
-            if (liftMotor1.getCurrentPosition() < targetPos) {
-                goalStage = liftstage--;
-                correction = pidLiftPower.performPID(liftMotor1.getCurrentPosition());
-                setMotorTargetPosition((int)(((goalStage - liftstage) * 4) * COUNTS_PER_INCH) + (int)correction);
-                setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-                setLiftMotorPower(-0.5);
-            } else if (liftMotor1.getCurrentPosition() > targetPos) {
-                goalStage = liftstage++;
-                correction = pidLiftPower.performPID(liftMotor1.getCurrentPosition());
-                setMotorTargetPosition((int)(((goalStage - liftstage) * 4) * COUNTS_PER_INCH) + (int)correction);
-                setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-                setLiftMotorPower(0.5);
-            }
-        }*/
-
-        // targetPos = (liftstage * 4) * COUNTS_PER_INCH;
-        // old lift algorithm
-        /*if (liftstage != 0 && liftMotor1.getCurrentPosition() != targetPos) {
-            if (/*liftMotor1.getCurrentPosition() < targetPos targetPos - liftMotor1.getCurrentPosition() > 5) {
-                // correction = pidLiftPower.performPID(liftMotor1.getCurrentPosition());
-                // setMotorTargetPosition((int)((liftstage * 4) * COUNTS_PER_INCH) + (int)correction);
-                setMotorTargetPosition((int)targetPos);
-                setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-                setLiftMotorPower(-0.5);
-            } else if (/*liftMotor1.getCurrentPosition() > targetPos targetPos - liftMotor1.getCurrentPosition() < -5) {
-                // correction = pidLiftPower.performPID(liftMotor1.getCurrentPosition());
-                // setMotorTargetPosition((int)(-(liftstage * 4) * COUNTS_PER_INCH) + (int)correction);
-                setMotorTargetPosition(-(int)targetPos);
-                setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-                setLiftMotorPower(.5);
-            }
-        }*/
-
-        // new lift code
-        /*targetPos = (liftstage * 4) * COUNTS_PER_INCH;
-        // if (liftstage != 0 && liftMotor1.getCurrentPosition() != targetPos) {
-            if (targetPos - liftMotor1.getCurrentPosition() > 5) {
-                correction = pidLiftPower.performPID(liftMotor1.getPower());
-                // setMotorTargetPosition((int)((liftstage * 4) * COUNTS_PER_INCH) + (int)correction);
-                liftMotor1.setTargetPosition((int)targetPos);   // setMotorTargetPosition((int)targetPos);
-                liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);    // setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-                setLiftMotorPower(1 + correction);
-            } else if (targetPos - liftMotor1.getCurrentPosition() < -5) {
-                correction = pidLiftPower.performPID(liftMotor1.getPower());
-                // setMotorTargetPosition((int)(-(liftstage * 4) * COUNTS_PER_INCH) + (int)correction);
-                liftMotor1.setTargetPosition((int)targetPos);  // setMotorTargetPosition((int)targetPos);
-                liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);    // setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-                setLiftMotorPower(-1 + correction);
-            }*/
-        // }
-
-        // lift power without encoders - whatever
-        // correction = pidLiftPower.performPID(liftMotor1.getCurrentPosition());
-        /*if (liftstage != 0 && liftMotor1.getCurrentPosition() != targetPos) {
-            if (targetPos - liftMotor1.getCurrentPosition() > 5) {
-                // correction = pidLiftPower.performPID(liftMotor1.getPower());
-                // setMotorTargetPosition((int)((liftstage * 4) * COUNTS_PER_INCH) + (int)correction);
-                // liftMotor1.setTargetPosition((int) targetPos);   // setMotorTargetPosition((int)targetPos);
-                // liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);    // setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-                setLiftMotorPower(1);
-            } else if (targetPos - liftMotor1.getCurrentPosition() < -5) {
-                correction = pidLiftPower.performPID(liftMotor1.getPower());
-                // setMotorTargetPosition((int)(-(liftstage * 4) * COUNTS_PER_INCH) + (int)correction);
-                // liftMotor1.setTargetPosition((int) targetPos);  // setMotorTargetPosition((int)targetPos);
-                // liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);    // setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-                setLiftMotorPower(-1);
-            } else {
-                setLiftMotorPower(0);
-                applyBrakes();
-            }
-        }*/
-
-
-        // ---LIFT PID---
-        /*pidLiftPower.setSetpoint(targetPos);
-        pidLiftPower.setInputRange(0, 690);
-        pidLiftPower.setOutputRange(-liftPower, liftPower);
-        pidLiftPower.enable();
-
-        // liftPower = pidLiftPower.performPID(liftMotor1.getCurrentPosition());
-        // setLiftMotorPower(liftPower);
-
-        if (liftstage != 0 && liftMotor1.getCurrentPosition() != targetPos /*Math.abs(targetPos - liftMotor1.getCurrentPosition()) > 5) {
-            pidLPower = pidLiftPower.performPID(liftMotor1.getCurrentPosition());
-            // lTestPower = pidLPower;
-            setMotorTargetPosition(targetPos);
-            setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-            setLiftMotorPower(pidLPower);
-        } else if (liftstage == 0 && liftMotor1.getCurrentPosition() > 0) {
-            setMotorTargetPosition(0);
-            setLiftMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-            setLiftMotorPower(-0.2);
-        } else {
-            setLiftMotorPower(0);
-            applyBrakes();
-        }*/
-
-        /*if (liftstage != 0 && liftMotor1.getCurrentPosition() != targetPos) {
-            if (liftMotor1.getCurrentPosition() < targetPos) {
-                correction = pidLiftPower.performPID(liftMotor1.getPower());
-                lmotor1poower = liftMotor1.getPower();
-                // setLiftMotorPower(1 + correction);
-                if (correction > 0) {
-                    setLiftMotorPower(1 - correction);
-                } else {
-                    setLiftMotorPower(1 + correction);
-                }
-            } else if (liftMotor1.getCurrentPosition() > targetPos) {
-                // correction = pidLiftPower.performPID(liftMotor1.getPower());
-                setLiftMotorPower(0);
-            } else {
-                setLiftMotorPower(0);
-                // applyBrakes();
-            }
-        } else {
-            setLiftMotorPower(0);
-            // applyBrakes();
-        }*/
-
 
         // intake - counter stall
         /*try {
@@ -542,99 +357,21 @@ public class FieldCentricTeleOp extends OpMode {
             telemetry.update();
         }*/
 
-        // increase lift power by 0.02
-        if (gamepad2.dpad_right) {
-            if (lPower != 1) {
-                lPower += 0.02;
-                setLiftMotorPower(lPower);
-            }
-        }
-
-        // decrease lift power by 0.02
-        if (gamepad2.dpad_left) {
-            if (lPower != 0) {
-                lPower -= 0.02;
-                setLiftMotorPower(lPower);
-            }
-        }
-
         // telemetry.addData("Touch  Sensor", intakeTouch.isPressed());
-        /*telemetry.addData("liftTouchSensor", liftTouch.isPressed());
+        telemetry.addData("liftTouchSensor", liftTouch.isPressed());
 
-        telemetry.addData("lift1 encoder count", liftMotor1.getCurrentPosition());
-        telemetry.addData("lift2 encoder count", liftMotor2.getCurrentPosition());
-        telemetry.addData("lift3 encoder count", liftMotor3.getCurrentPosition());
-
-        telemetry.addData("lift1 current", lift1RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
-        telemetry.addData("lift2 current", lift2RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
-        telemetry.addData("lift3 current", lift3RE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
+        // telemetry.addData("lift1 encoder count", liftMotor1.getCurrentPosition());
+        // telemetry.addData("lift1 current", liftRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
         // telemetry.addData("intake current", intakeMotorRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
-
-
-        // telemetry.addData("pidLPower", pidLPower);
         telemetry.addData("Liftstage", liftstage);
-        // telemetry.addData("COUNTS_PER_INCH", COUNTS_PER_INCH);
-        // telemetry.addData("liftPower", liftPower);
         telemetry.addData("targetPos", targetPos);
-        // telemetry.addData("difference", targetPos - liftMotor1.getCurrentPosition());
+        // telemetry.addData("lift pidfCoefficients", liftEx1.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION));
 
         // telemetry.addData("Servo Position", position);
         // telemetry.addData("foundationServoLeft Position", foundationServoLeft.getPosition());
         // telemetry.addData("foundationServoRight Position", foundationServoRight.getPosition());
 
-        telemetry.update();*/
-    }
-
-
-    private int calcTargetPos(double tPos) {
-        while (liftMotor1.getCurrentPosition() != liftMotor1.getTargetPosition()) {
-            if (liftMotor1.getCurrentPosition() < liftMotor1.getTargetPosition()) {
-                return -((int) tPos - liftMotor1.getCurrentPosition());
-            }
-        }
-        return 0;
-    }
-
-    private void setLExMode(DcMotor.RunMode m) {
-        liftEx1.setMode(m);
-        liftEx2.setMode(m);
-        liftEx3.setMode(m);
-    }
-
-    private void setLExPower(double p) {
-        liftEx1.setPower(p);
-        liftEx2.setPower(p);
-        liftEx3.setPower(p);
-    }
-
-    private void setLExTargetPos(int target) {
-        liftEx1.setTargetPosition(target);
-        liftEx2.setTargetPosition(target);
-        liftEx3.setTargetPosition(target);
-    }
-
-    private void setLiftMotorMode(DcMotor.RunMode m) {
-        liftMotor1.setMode(m);
-        liftMotor2.setMode(m);
-        liftMotor3.setMode(m);
-    }
-
-    private void setLiftMotorPower(double p) {
-        liftMotor1.setPower(p);
-        liftMotor2.setPower(p);
-        liftMotor3.setPower(p);
-    }
-
-    private void setMotorTargetPosition(int target) {
-        liftMotor1.setTargetPosition(target);
-        liftMotor2.setTargetPosition(target);
-        liftMotor3.setTargetPosition(target);
-    }
-
-    private void applyLiftBrakes() {
-        liftMotor1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        liftMotor2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        liftMotor3.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        telemetry.update();
     }
 
     public double adjustAngle(double angle) {
