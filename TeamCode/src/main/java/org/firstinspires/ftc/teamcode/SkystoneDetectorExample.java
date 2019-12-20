@@ -242,6 +242,19 @@ public class SkystoneDetectorExample extends LinearOpMode {
 
             // move until foundation in sight
             // WHAT IF FOUNDATION IS NOT MOVED
+            // FOCUS ON JUST MOVING THEM FIRST
+            /*
+             * if (inchesc > 44 or something) {
+             *  turnLeft 90 deg
+             *  foundation Servo Up
+             *  moveForward a bit
+             *  foundation Servo Down
+             *  pull back in a curve
+             *  push forward
+             *  release grabber
+             *  go for second stone or stop on the line
+             * }
+             */
             boolean inSight = false;
             while (!inSight) {
                 setMotorPower(-movePower, -movePower, -movePower, -movePower);
@@ -303,15 +316,11 @@ public class SkystoneDetectorExample extends LinearOpMode {
         }
 
         setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
         setMotorTargetPosition(strafeDistance, -strafeDistance, -strafeDistance, strafeDistance);
-
         setMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-
         setMotorPower(myPower, -myPower, -myPower, myPower);
 
         while (leftFrontWheel.isBusy() && leftBackWheel.isBusy() && rightFrontWheel.isBusy() && rightBackWheel.isBusy()) { }
-
         setMotorPower(0, 0, 0, 0);
         applyBrakes();
     }
@@ -333,15 +342,11 @@ public class SkystoneDetectorExample extends LinearOpMode {
         }
 
         setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
         setMotorTargetPosition(moveDistance, moveDistance, moveDistance, moveDistance);
-
         setMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-
         setMotorPower(myPower, myPower, myPower, myPower);
 
         while (leftFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy() && rightFrontWheel.isBusy()) { }
-
         setMotorPower(0, 0, 0, 0);
         applyBrakes();
     }
