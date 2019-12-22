@@ -8,7 +8,9 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.getMotorVeloci
 import android.support.annotation.NonNull;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import org.openftc.revextensions2.RevBulkData;
  * Optimized mecanum drive implementation for REV ExHs. The time savings may significantly improve
  * trajectory following performance with moderate additional complexity.
  */
+
 public class SampleMecanumDriveREVOptimized extends SampleMecanumDriveBase {
     private ExpansionHubEx hub;
     private ExpansionHubMotor leftFront, leftRear, rightRear, rightFront;
@@ -48,10 +51,10 @@ public class SampleMecanumDriveREVOptimized extends SampleMecanumDriveBase {
         // upward (normal to the floor) using a command like the following:
         // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
 
-        leftFront = hardwareMap.get(ExpansionHubMotor.class, "leftFront");
-        leftRear = hardwareMap.get(ExpansionHubMotor.class, "leftRear");
-        rightRear = hardwareMap.get(ExpansionHubMotor.class, "rightRear");
-        rightFront = hardwareMap.get(ExpansionHubMotor.class, "rightFront");
+        leftFront = hardwareMap.get(ExpansionHubMotor.class, "left front");
+        leftRear = hardwareMap.get(ExpansionHubMotor.class, "left back");
+        rightRear = hardwareMap.get(ExpansionHubMotor.class, "right back");
+        rightFront = hardwareMap.get(ExpansionHubMotor.class, "right front");
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
@@ -67,6 +70,8 @@ public class SampleMecanumDriveREVOptimized extends SampleMecanumDriveBase {
         }
 
         // TODO: reverse any motors using DcMotor.setDirection()
+        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));

@@ -38,7 +38,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
  * ctor.
  */
 @Config
-@Autonomous(group = "drive")
+@Autonomous(name = "DriveVelocityPIDTuner", group = "Autonomous")
 public class DriveVelocityPIDTuner extends LinearOpMode {
     public static double DISTANCE = 72;
 
@@ -57,6 +57,7 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
                 DriveConstants.BASE_CONSTRAINTS.maxVel,
                 DriveConstants.BASE_CONSTRAINTS.maxAccel,
                 DriveConstants.BASE_CONSTRAINTS.maxJerk);
+
     }
 
     private void addPidVariable() {

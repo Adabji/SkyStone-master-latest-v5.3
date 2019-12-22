@@ -83,7 +83,7 @@ public class NEWLiftMotorsTest extends OpMode {
          * UPDATE FIRMWARE
          */
 
-        if (gamepad1.left_stick_y > 0.1 && gamepad1.left_stick_y < -0.1) {
+        if (gamepad1.left_stick_y > 0.1 || gamepad1.left_stick_y < -0.1) {
             liftMotor1.setPower(gamepad1.left_stick_y);
         } else {
             liftMotor1.setPower(0);
