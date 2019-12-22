@@ -4,39 +4,17 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import android.text.method.Touch;
-
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorControllerEx;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.config.Config;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.openftc.revextensions2.*;
-
-import java.util.Locale;
-import java.lang.Math;
-import java.util.Arrays;
-
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-import java.util.*;
-
 
 @Config
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "LIFT TEST NEW", group = "TeleOp")
@@ -70,6 +48,7 @@ public class LiftTestNew extends OpMode {
     public static double lkd = 0;
     public static double lkf = 0;
     public static double liftCurrentPos;
+    public static double liftPower = 0.5;
 
     boolean previousGP2LBPos = false;
     boolean previousGP2RBPos = false;
@@ -90,15 +69,10 @@ public class LiftTestNew extends OpMode {
 
         liftTouch = hardwareMap.get(TouchSensor.class, "liftTouch");
 
-        liftMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
         liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         // liftMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
         liftEx1.setDirection(DcMotorSimple.Direction.REVERSE);
-        liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
     }
 
     @Override
@@ -137,12 +111,15 @@ public class LiftTestNew extends OpMode {
         // ---ATTEMPT #4 AFTER SCRIMMAGE---
         if (liftstage == 0 && liftTouch.isPressed()) {
             liftEx1.setPower(0);
+            liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         } else if (liftstage == 0 && !liftTouch.isPressed()) {
             liftEx1.setPower(-0.2);
         } else if (liftstage != 0 && liftEx1.getCurrentPosition() != targetPos) {
-            liftEx1.setTargetPositionTolerance(targetPos);
+            liftEx1.setTargetPosition(targetPos);
+            // liftEx1.setTargetPositionTolerance(5);
             liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            liftEx1.setPower(0.5);
+            liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
+            liftEx1.setPower(liftPower);
         }
 
         liftCurrentPos = liftMotor1.getCurrentPosition();
@@ -158,6 +135,7 @@ public class LiftTestNew extends OpMode {
         telemetry.addData("lkd", lkd);
         telemetry.addData("lkf", lkf);
         telemetry.addData("Current Lift Position", liftCurrentPos);
+        telemetry.addData("LiftPower", liftPower);
 
         telemetry.update();
     }
