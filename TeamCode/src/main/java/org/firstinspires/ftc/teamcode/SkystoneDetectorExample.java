@@ -5,11 +5,8 @@ import com.disnodeteam.dogecv.detectors.skystone.SkystoneDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorControllerEx;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -27,6 +24,11 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.revextensions2.ExpansionHubMotor;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+
+import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
+import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
+
 import java.util.Locale;
 
 /*
@@ -35,21 +37,19 @@ import java.util.Locale;
  * Original Work Copright(c) 2019 OpenFTC Team
  * Derived Work Copyright(c) 2019 DogeDevs
  */
-@Autonomous(name = "Skystone Detector OpMode", group="Autonomous")
 
+@Autonomous(name = "Skystone Detector OpMode", group="Autonomous")
 public class SkystoneDetectorExample extends LinearOpMode {
     private OpenCvCamera phoneCam;
     private SkystoneDetector skyStoneDetector;
 
     // hardware stuff
-    private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, intakeMotor, liftMotor1;
+    private static DcMotor intakeMotor, liftMotor1;
     private static ExpansionHubMotor intakeMotorRE2, liftRE2;
     private static DcMotorEx liftEx1;
     private static Servo leftElbow, rightElbow, wrist, grip, foundationServoLeft, foundationServoRight;
     private TouchSensor liftTouch;
     private TouchSensor intakeTouch;
-    BNO055IMU imu;
-    PIDController           pidRotate, pidDrive;
     double                  globalAngle, power = .30, correction, rotation;
     double                  rotationPower = 0.5;
     double                  movePower = 0.7;
@@ -123,69 +123,7 @@ public class SkystoneDetectorExample extends LinearOpMode {
         phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
 
         // hardware stuff
-        /*leftFrontWheel = hardwareMap.dcMotor.get("left front");
-        leftBackWheel = hardwareMap.dcMotor.get("left back");
-        rightFrontWheel = hardwareMap.dcMotor.get("right front");
-        rightBackWheel = hardwareMap.dcMotor.get("right back");
 
-        intakeMotor = hardwareMap.dcMotor.get("intake motor");
-        intakeMotorRE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("intake motor");
-
-        liftMotor1 = hardwareMap.dcMotor.get("lift1");
-        liftRE2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("lift1");
-        liftEx1 = (DcMotorEx) hardwareMap.dcMotor.get("lift1");
-
-        colorSensorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
-
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        telemetry = dashboard.getTelemetry();
-
-        pidfCoefficients = new PIDFCoefficients(lkp, lki, lkd, lkf);
-
-        intakeTouch = hardwareMap.get(TouchSensor.class, "intakeTouch");
-        liftTouch = hardwareMap.get(TouchSensor.class, "liftTouch");
-
-        leftElbow = hardwareMap.servo.get("leftv4b");
-        rightElbow = hardwareMap.servo.get("rightv4b");
-        wrist = hardwareMap.servo.get("rotategrabber");
-        grip = hardwareMap.servo.get("grabber");
-        foundationServoLeft = hardwareMap.servo.get("foundationServoLeft");
-        foundationServoRight = hardwareMap.servo.get("foundationServoRight");
-
-        leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        liftMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        // liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
-
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
-        parameters.loggingEnabled      = true;
-        parameters.loggingTag          = "IMU";
-        imu = hardwareMap.get(BNO055IMU.class,"imu");
-        imu.initialize(parameters);
-
-        // Set PID proportional value to start reducing power at about 50 degrees of rotation.
-        // P by itself may stall before turn completed so we add a bit of I (integral) which
-        // causes the PID controller to gently increase power if the turn is not completed.
-        pidRotate = new PIDController(.003, .00003, 0);
-
-        // Set PID proportional value to produce non-zero correction value when robot veers off
-        // straight line. P value controls how sensitive the correction is.
-        pidDrive = new PIDController(.05, 0, 0);
-
-        foundationServoLeft.setPosition(0.2);
-        foundationServoRight.setPosition(0.87);
-        // leftElbow.setPosition(0.85);
-        // rightElbow.setPosition(0.15);
-        wrist.setPosition(0.6);
-        grip.setPosition(0.49);*/
 
         /*
          * Wait for the user to press start on the Driver Station
@@ -255,223 +193,8 @@ public class SkystoneDetectorExample extends LinearOpMode {
              *  go for second stone or stop on the line
              * }
              */
-            boolean inSight = false;
-            while (!inSight) {
-                setMotorPower(-movePower, -movePower, -movePower, -movePower);
-                if (colorSensorDistance.getDistance(DistanceUnit.INCH) < 6) {
-                    inSight = true;
-                }
-            }
-
-            while (leftFrontWheel.isBusy() && leftBackWheel.isBusy() && rightFrontWheel.isBusy() && rightBackWheel.isBusy()) { }
-            setMotorPower(0, 0, 0, 0);
 
             // deposit stone
         }
-    }
-
-    private void setMotorMode(DcMotor.RunMode m) {
-        leftFrontWheel.setMode(m);
-        leftBackWheel.setMode(m);
-        rightFrontWheel.setMode(m);
-        rightBackWheel.setMode(m);
-    }
-
-    private void setMotorPower(double lf, double lb, double rf, double rb) {
-        leftFrontWheel.setPower(lf);
-        leftBackWheel.setPower(lb);
-        rightFrontWheel.setPower(rf);
-        rightBackWheel.setPower(rb);
-    }
-
-    private void applyBrakes() {
-        leftFrontWheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        leftBackWheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightFrontWheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightBackWheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-    }
-
-    private void setMotorTargetPosition(int lf, int lb, int rf, int rb) {
-        leftFrontWheel.setTargetPosition(lf);
-        leftBackWheel.setTargetPosition(lb);
-        rightFrontWheel.setTargetPosition(rf);
-        rightBackWheel.setTargetPosition(rb);
-    }
-
-    // set direction to true if strafing right, false if strafing left
-    private void strafe(double distance, double power, boolean direction) {
-        if(distance == 0) return;
-
-        int targetPos = (int)(distance * COUNTS_PER_INCH);
-
-        double myPower;
-        int strafeDistance;
-
-        if(direction) {
-            myPower = power;
-            strafeDistance = targetPos;
-        } else {
-            myPower = -power;
-            strafeDistance = -targetPos;
-        }
-
-        setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        setMotorTargetPosition(strafeDistance, -strafeDistance, -strafeDistance, strafeDistance);
-        setMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-        setMotorPower(myPower, -myPower, -myPower, myPower);
-
-        while (leftFrontWheel.isBusy() && leftBackWheel.isBusy() && rightFrontWheel.isBusy() && rightBackWheel.isBusy()) { }
-        setMotorPower(0, 0, 0, 0);
-        applyBrakes();
-    }
-
-    private void move(double distance, double power, boolean direction) {
-        if(distance == 0) return;
-
-        int targetPos = (int)(distance * COUNTS_PER_INCH);
-
-        double myPower;
-        int moveDistance;
-
-        if(direction) {
-            myPower = power;
-            moveDistance = targetPos;
-        } else {
-            myPower = -power;
-            moveDistance = -targetPos;
-        }
-
-        setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        setMotorTargetPosition(moveDistance, moveDistance, moveDistance, moveDistance);
-        setMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-        setMotorPower(myPower, myPower, myPower, myPower);
-
-        while (leftFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy() && rightFrontWheel.isBusy()) { }
-        setMotorPower(0, 0, 0, 0);
-        applyBrakes();
-    }
-
-    /**
-     * Resets the cumulative angle tracking to zero.
-     */
-    private void resetAngle() {
-        lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-
-        globalAngle = 0;
-    }
-
-    /**
-     * Get current cumulative angle rotation from last reset.
-     * @return Angle in degrees. + = left, - = right.
-     */
-    private double getAngle() {
-        // We experimentally determined the Z axis is the axis we want to use for heading angle.
-        // We have to process the angle because the imu works in euler angles so the Z axis is
-        // returned as 0 to +180 or 0 to -180 rolling back to -179 or +179 when rotation passes
-        // 180 degrees. We detect this transition and track the total cumulative angle of rotation.
-
-        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-
-        double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
-
-        if (deltaAngle < -180)
-            deltaAngle += 360;
-        else if (deltaAngle > 180)
-            deltaAngle -= 360;
-
-        globalAngle += deltaAngle;
-
-        lastAngles = angles;
-
-        return globalAngle;
-    }
-
-    /**
-     * See if we are moving in a straight line and if not return a power correction value.
-     * @return Power adjustment, + is adjust left - is adjust right.
-     */
-    private double checkDirection() {
-        // The gain value determines how sensitive the correction is to direction changes.
-        // You will have to experiment with your robot to get small smooth direction changes
-        // to stay on a straight line.
-        double correction, angle, gain = .10;
-
-        angle = getAngle();
-
-        if (angle == 0)
-            correction = 0;             // no adjustment.
-        else
-            correction = -angle;        // reverse sign of angle for correction.
-
-        correction *= gain;
-
-        return correction;
-    }
-
-    /**
-     * Rotate left or right the number of degrees. Does not support turning more than 359 degrees.
-     * @param degrees Degrees to turn, + is left - is right
-     */
-    private void rotate(int degrees, double power)
-    {
-        // restart imu angle tracking.
-        resetAngle();
-
-        // if degrees > 359 we cap at 359 with same sign as original degrees.
-        if (Math.abs(degrees) > 359) degrees = (int) Math.copySign(359, degrees);
-
-        // start pid controller. PID controller will monitor the turn angle with respect to the
-        // target angle and reduce power as we approach the target angle. This is to prevent the
-        // robots momentum from overshooting the turn after we turn off the power. The PID controller
-        // reports onTarget() = true when the difference between turn angle and target angle is within
-        // 1% of target (tolerance) which is about 1 degree. This helps prevent overshoot. Overshoot is
-        // dependant on the motor and gearing configuration, starting power, weight of the robot and the
-        // on target tolerance. If the controller overshoots, it will reverse the sign of the output
-        // turning the robot back toward the setpoint value.
-
-        pidRotate.reset();
-        pidRotate.setSetpoint(degrees);
-        pidRotate.setInputRange(0, degrees);
-        pidRotate.setOutputRange(0, power);
-        pidRotate.setTolerance(1);
-        pidRotate.enable();
-
-        // getAngle() returns + when rotating counter clockwise (left) and - when rotating
-        // clockwise (right).
-
-        // rotate until turn is completed.
-
-        if (degrees < 0)
-        {
-            // On right turn we have to get off zero first.
-            while (opModeIsActive() && getAngle() == 0)
-            {
-                setMotorPower(power, power, -power, -power);
-                sleep(100);
-            }
-
-            do
-            {
-                power = pidRotate.performPID(getAngle()); // power will be - on right turn.
-                setMotorPower(-power, -power, power, power);
-            } while (opModeIsActive() && !pidRotate.onTarget());
-        }
-        else    // left turn.
-            do
-            {
-                power = pidRotate.performPID(getAngle()); // power will be + on left turn.
-                setMotorPower(-power, -power, power, power);
-            } while (opModeIsActive() && !pidRotate.onTarget());
-
-        // turn the motors off.
-        setMotorPower(0, 0,0, 0);
-
-        rotation = getAngle();
-
-        // wait for rotation to stop.
-        sleep(500);
-
-        // reset angle tracking on new heading.
-        resetAngle();
     }
 }

@@ -7,8 +7,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import android.text.method.Touch;
-
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -211,7 +209,7 @@ public class FieldCentricTeleOp extends OpMode {
 
         // automating block to move out of the robot after touch sensor is pressed - remove try catch
         /*try {
-            if (intakeTouch.isPressed() && fourBarIn)  {
+            if (intakeTouch.isPressed() && fourBarIn) {
                 fourBarIn = false;
                 intakeMotor.setPower(0);
                 grip.setPosition(0.55);

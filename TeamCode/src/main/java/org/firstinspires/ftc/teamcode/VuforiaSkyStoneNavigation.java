@@ -36,6 +36,7 @@ package org.firstinspires.ftc.teamcode;
 import android.graphics.Camera;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -99,7 +100,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
  * is explained below.
  */
 
-
+@Disabled
 @Autonomous(name="SKYSTONE Vuforia Nav", group ="Autonomous")
 public class VuforiaSkyStoneNavigation extends LinearOpMode {
 

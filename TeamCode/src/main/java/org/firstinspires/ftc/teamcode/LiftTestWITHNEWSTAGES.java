@@ -17,8 +17,8 @@ import com.acmerobotics.dashboard.config.Config;
 import org.openftc.revextensions2.*;
 
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "LIFT TEST NEW", group = "TeleOp")
-public class LiftTestNew extends OpMode {
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "LIFT TEST WITH NEW STAGES", group = "TeleOp")
+public class LiftTestWITHNEWSTAGES extends OpMode {
     private static DcMotor liftMotor1;
     private static ExpansionHubMotor liftRE2;
     private static DcMotorEx liftEx1;
@@ -39,7 +39,8 @@ public class LiftTestNew extends OpMode {
             (LIFT_WHEEL_DIAMETER_INCHES * 3.1415);  // 136.90275
 
     // lift things
-    int liftstage = 0;
+    int currentLiftStage = 0;
+    int nextLiftStage = 0;
     int targetPos = 0;
     PIDFCoefficients pidfCoefficients;
 
@@ -48,13 +49,17 @@ public class LiftTestNew extends OpMode {
     public static double lkd = 0;
     public static double lkf = 0;
     public static double liftCurrentPos;
-    public static double liftPower = 0.6;
+    public static double liftPower = 0.7;
 
     boolean previousGP2LBPos = false;
     boolean previousGP2RBPos = false;
+    boolean previousGP2LTPos = false;
+    boolean previousGP2RTPos = false;
 
     boolean currentGP2LBPos;
     boolean currentGP2RBPos;
+    boolean currentGP2LTPos;
+    boolean currentGP2RTPos;
 
     @Override
     public void init() {
@@ -76,17 +81,16 @@ public class LiftTestNew extends OpMode {
 
     @Override
     public void loop() {
-        /**
-         * UPDATE FIRMWARE
-         */
         currentGP2LBPos = gamepad2.left_bumper;
         currentGP2RBPos = gamepad2.right_bumper;
+        currentGP2LTPos = gamepad2.left_trigger < 0.5;
+        currentGP2RTPos = gamepad2.right_trigger < 0.5;
 
-        // lift - up a stage
+        // lift - 1 stage above the previous stage
         if (currentGP2RBPos && !previousGP2RBPos) {
-            if (liftstage != 7) {
-                liftstage++;
-                targetPos = (int) ((liftstage * 4) * LIFT_COUNTS_PER_INCH);
+            if (nextLiftStage <= 7) {
+                currentLiftStage = nextLiftStage;
+                targetPos = (int) ((currentLiftStage * 4) * LIFT_COUNTS_PER_INCH);
             }
 
             previousGP2RBPos = currentGP2RBPos;
@@ -94,26 +98,54 @@ public class LiftTestNew extends OpMode {
             previousGP2RBPos = currentGP2RBPos;
         }
 
-        //  lift - down a stage
+        //  lift - completely down
         if (currentGP2LBPos && !previousGP2LBPos) {
-            if (liftstage != 0) {
-                liftstage--;
-                targetPos = (int) ((liftstage * 4) * LIFT_COUNTS_PER_INCH);
+            currentLiftStage = 0;
+            if (nextLiftStage != 7) {
+                nextLiftStage++;
             }
 
             previousGP2LBPos = currentGP2LBPos;
         } else {
             previousGP2LBPos = currentGP2LBPos;
+        }
+
+        // lift - down 1 stage
+        if (currentGP2RTPos && !previousGP2RTPos) {
+            if (nextLiftStage > 0 && nextLiftStage <= 7) {
+                nextLiftStage--;
+            }
+
+            currentLiftStage = nextLiftStage;
+            targetPos = (int) ((currentLiftStage * 4) * LIFT_COUNTS_PER_INCH);
+
+            previousGP2RTPos = currentGP2RTPos;
+        } else {
+            previousGP2RTPos = currentGP2RTPos;
+        }
+
+        // lift - up 1 stage
+        if (currentGP2LTPos && !previousGP2LTPos) {
+            if (nextLiftStage > 0 && nextLiftStage < 7) {
+                nextLiftStage++;
+            }
+
+            currentLiftStage = nextLiftStage;
+            targetPos = (int) ((currentLiftStage * 4) * LIFT_COUNTS_PER_INCH);
+
+            previousGP2RTPos = currentGP2RTPos;
+        } else {
+            previousGP2RTPos = currentGP2RTPos;
         }
 
         // LIFT DcMotorEx
         // ---ATTEMPT #4 AFTER SCRIMMAGE---
-        if (liftstage == 0 && liftTouch.isPressed()) {
+        if (currentLiftStage == 0 && liftTouch.isPressed()) {
             liftEx1.setPower(0);
             liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        } else if (liftstage == 0 && !liftTouch.isPressed()) {
-            liftEx1.setPower(-0.2);
-        } else if (liftstage != 0 && liftEx1.getCurrentPosition() != targetPos) {
+        } else if (currentLiftStage == 0 && !liftTouch.isPressed()) {
+            liftEx1.setPower(-0.3);
+        } else if (currentLiftStage != 0 && liftEx1.getCurrentPosition() != targetPos) {
             liftEx1.setTargetPosition(targetPos);
             liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
@@ -125,7 +157,8 @@ public class LiftTestNew extends OpMode {
         telemetry.addData("liftTouchSensor", liftTouch.isPressed());
         telemetry.addData("lift1 encoder count", liftMotor1.getCurrentPosition());
         telemetry.addData("lift1 current", liftRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
-        telemetry.addData("Lift stage", liftstage);
+        telemetry.addData("Lift stage", currentLiftStage);
+        telemetry.addData("Next Lift Stage", nextLiftStage);
         telemetry.addData("targetPos", targetPos);
         telemetry.addData("Lift PIDFCoefficients", liftEx1.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION));
         telemetry.addData("lkp", lkp);
