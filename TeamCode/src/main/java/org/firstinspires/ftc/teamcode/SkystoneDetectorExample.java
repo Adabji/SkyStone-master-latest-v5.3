@@ -160,7 +160,7 @@ public class SkystoneDetectorExample extends LinearOpMode {
             telemetry.update();
 
             // FIRST SKYSTONE - OUTER ONE
-            move(1, movePower/2, true);
+            /*move(1, movePower/2, true);
             if (skystoneLoc.equals("right")) {
                 strafe(11, movePower/1.5, true);
             } else if (skystoneLoc.equals("center")) {
@@ -169,7 +169,7 @@ public class SkystoneDetectorExample extends LinearOpMode {
 
             rotate(90, rotationPower);
             strafe(25, movePower, true);
-            move(1, movePower/2, true);
+            move(1, movePower/2, true);*/
 
             do {
                 intakeMotor.setPower(-1);

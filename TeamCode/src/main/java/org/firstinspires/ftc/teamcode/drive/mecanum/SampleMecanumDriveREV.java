@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
 
@@ -28,8 +29,11 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.getMotorVeloci
  */
 public class SampleMecanumDriveREV extends SampleMecanumDriveBase {
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
+    private DcMotorEx intakeMotor1, intakeMotor2;
+    private DcMotorEx liftMotor1;
     private List<DcMotorEx> motors;
     private BNO055IMU imu;
+    private Servo foundationServoLeft, foundationServoRight;
 
     public SampleMecanumDriveREV(HardwareMap hardwareMap) {
         super();
@@ -51,6 +55,14 @@ public class SampleMecanumDriveREV extends SampleMecanumDriveBase {
         rightRear = hardwareMap.get(DcMotorEx.class, "right back");
         rightFront = hardwareMap.get(DcMotorEx.class, "right front");
 
+        intakeMotor1 = hardwareMap.get(DcMotorEx.class, "intake motor 1");
+        intakeMotor2 = hardwareMap.get(DcMotorEx.class, "intake motor 2");
+
+        liftMotor1 = hardwareMap.get(DcMotorEx.class, "lift motor 1");
+
+        foundationServoLeft = hardwareMap.get(Servo.class, "foundationServoLeft");
+        foundationServoRight = hardwareMap.get(Servo.class, "foundationServoRight");
+
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
         for (DcMotorEx motor : motors) {
@@ -67,6 +79,7 @@ public class SampleMecanumDriveREV extends SampleMecanumDriveBase {
         // TODO: reverse any motors using DcMotor.setDirection()
         rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        intakeMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
