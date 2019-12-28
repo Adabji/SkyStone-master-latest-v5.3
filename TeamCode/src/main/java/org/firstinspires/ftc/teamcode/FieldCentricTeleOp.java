@@ -2,12 +2,13 @@
  * Field centric tele op: front is always the field's front, not the robot's front
  * <p>
  * NOTES:
- * - BRING BACK CAPSTONE POSITION COMMAND
+ * - One button for no automation
+ * - Lower stone placement
+ * - Button to make movement slower
+ *
  */
 
 package org.firstinspires.ftc.teamcode;
-
-import android.graphics.Color;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -92,8 +93,13 @@ public class FieldCentricTeleOp extends OpMode {
     long gamePad2ATimer = -1;
     long gamePad2BTimer = -1;
     long liftDownExtTimer = -1;
-    long intakeDistanceTimer = -1;
-    long stonePresentTimer = -1;
+    long stoneDropTimer= -1;
+    long stoneAfterDropTimer = -1;
+    long liftInTimer = -1;
+    long stoneInRobotTimer = -1;
+
+    boolean servoPositionsAfterStart = true;
+    boolean isAutomationOn = true;
 
     @Override
     public void init() {
@@ -143,6 +149,23 @@ public class FieldCentricTeleOp extends OpMode {
 
     @Override
     public void loop() {
+        // servo position settings initialization at start
+        if (servoPositionsAfterStart) {
+            foundationServoLeft.setPosition(0.77);
+            foundationServoRight.setPosition(0.37);
+            liftHoExt.setPosition(0.45);
+            wrist.setPosition(0.18);
+            grabber.setPosition(0.6);
+            servoPositionsAfterStart = false;
+        }
+
+        // AUTOMATION KILL SWITCH
+        if (gamepad1.left_trigger > 0.5) {
+            isAutomationOn = false;
+        } else {
+            isAutomationOn = true;
+        }
+
         double inputY = gamepad1.left_stick_y;
         double inputX = -gamepad1.left_stick_x;
         double inputC = -gamepad1.right_stick_x;
@@ -168,9 +191,9 @@ public class FieldCentricTeleOp extends OpMode {
 
         outputX = -Math.cos(heading - Theta) * r;
         outputY = Math.sin(heading - Theta) * r;
-        /*telemetry.addData("LeftX",gamepad1.left_stick_x);
+        /*telemetry.addData("LeftX", gamepad1.left_stick_x);
         telemetry.addData("LeftY", -gamepad1.left_stick_y);
-        telemetry.addData("r",r);
+        telemetry.addData("r", r);
         telemetry.addData("Theta", Math.toDegrees(Theta));
         telemetry.addData("outputX",outputX);
         telemetry.addData("outputY",outputY);
@@ -179,7 +202,7 @@ public class FieldCentricTeleOp extends OpMode {
         telemetry.update();*/
         heading = Math.toRadians(getAbsoluteHeading());
 
-        /*if (gamepad2.x){
+        /*if (gamepad1.dpad_right) {
             heading = 0;
         }*/
 
@@ -201,6 +224,21 @@ public class FieldCentricTeleOp extends OpMode {
             intakeMotor2.setPower(1);
         }
 
+        // grabber - deposit stone - then not grabbing - doesn't happen when the current lift stage is equal to 0
+        if (currentLiftStage > 0) {
+            if (gamepad1.dpad_down && stoneDropTimer == -1) {
+                targetPos = (int) (((currentLiftStage * 4) - 2) * LIFT_COUNTS_PER_INCH);
+                stoneDropTimer = System.currentTimeMillis();
+            } else if (stoneDropTimer > 0 && System.currentTimeMillis() - stoneDropTimer > 1500 && stoneAfterDropTimer == -1) {
+                grabber.setPosition(0.6);
+                stoneDropTimer = -1;
+                stoneAfterDropTimer = System.currentTimeMillis();
+            } else if (stoneAfterDropTimer > 0 && System.currentTimeMillis() - stoneAfterDropTimer > 500) {
+                targetPos = (int) ((currentLiftStage * 4) * LIFT_COUNTS_PER_INCH);
+                stoneAfterDropTimer = -1;
+            }
+        }
+
         // lift extension out position
         if (currentLiftStage > 0 && gamepad2.b && gamePad2BTimer == -1) {
             liftHoExt.setPosition(0.92);
@@ -212,12 +250,16 @@ public class FieldCentricTeleOp extends OpMode {
 
         // lift extension in
         if (gamepad2.a && gamePad2ATimer == -1) {
-            wrist.setPosition(0.2);
+            wrist.setPosition(0.18);
             grabber.setPosition(0.32);
             gamePad2ATimer = System.currentTimeMillis();
-        } else if (gamePad2ATimer > 0 && System.currentTimeMillis() - gamePad2ATimer > 300) {
+        } else if (gamePad2ATimer > 0 && System.currentTimeMillis() - gamePad2ATimer > 300 && liftInTimer == -1) {
             liftHoExt.setPosition(0.45);
             gamePad2ATimer = -1;
+            liftInTimer = System.currentTimeMillis();
+        } else if (liftInTimer > 0 && System.currentTimeMillis() - liftInTimer > 700) {
+            grabber.setPosition(0.6);
+            liftInTimer = -1;
         }
 
         // grabber direction - out
@@ -227,12 +269,12 @@ public class FieldCentricTeleOp extends OpMode {
 
         // grabber direction - in
         if (gamepad2.dpad_down) {
-            wrist.setPosition(0.2);
+            wrist.setPosition(0.18);
         }
 
         // grabber - not grabbing
         if (gamepad2.y) {
-            grabber.setPosition(0.55);
+            grabber.setPosition(0.6);
         }
 
         // grabber - grabbing
@@ -262,25 +304,19 @@ public class FieldCentricTeleOp extends OpMode {
             foundationServoRight.setPosition(0.95);
         }
 
-        /*if (intakeColor.getDistance(DistanceUnit.CM) < 10) {
-            stoneHolder.setPosition(0); // holding
-            grabber.setPosition(0.32);
-            stonePresentTimer = -1;
-        } else if (stonePresentTimer == -1 && System.currentTimeMillis() - stonePresentTimer > 1000) {
-            stoneHolder.setPosition(0.3);   // not holding
-            stonePresentTimer = System.currentTimeMillis();
-        } else {
-            stoneHolder.setPosition(0.3);
-        }*/
-
-        if (intakeColor.getDistance(DistanceUnit.CM) > 6 && intakeColor.getDistance(DistanceUnit.CM) < 11) {
+        // If the stone is inside the robot, push it in place using the stoneHolder servo
+        if (isAutomationOn && intakeColor.getDistance(DistanceUnit.CM) > 6 && intakeColor.getDistance(DistanceUnit.CM) < 11) {
             stoneHolder.setPosition(0);
-            grabber.setPosition(0.55);
-        } else if (intakeColor.getDistance(DistanceUnit.CM) < 6) {
+            grabber.setPosition(0.6);
+        } else if (isAutomationOn && intakeColor.getDistance(DistanceUnit.CM) < 6) {
             stoneHolder.setPosition(0.3);
+            stoneInRobotTimer = System.currentTimeMillis();
+        } else if (isAutomationOn){
+            stoneHolder.setPosition(0.3);
+        }
+
+        if (isAutomationOn && intakeColor.getDistance(DistanceUnit.CM) < 6 && System.currentTimeMillis() - stoneInRobotTimer > 700) {
             grabber.setPosition(0.32);
-        } else {
-            stoneHolder.setPosition(0.3);
         }
 
         currentGP2LBPos = gamepad2.left_bumper;
@@ -300,15 +336,15 @@ public class FieldCentricTeleOp extends OpMode {
             previousGP2RBPos = currentGP2RBPos;
         }
 
-        //  lift - completely down
+        // lift - completely down
         if (currentGP2LBPos && !previousGP2LBPos) {
             if (currentLiftStage == 0) {
                 return;
             }
 
             liftDownExtTimer = System.currentTimeMillis();
-            wrist.setPosition(0.2);
-            grabber.setPosition(0.32);
+            wrist.setPosition(0.18);
+            grabber.setPosition(0.6);
 
             while (System.currentTimeMillis() - liftDownExtTimer < 300) { }
 
@@ -356,7 +392,7 @@ public class FieldCentricTeleOp extends OpMode {
         if (currentLiftStage == 0 && !liftTouch.isPressed()) {
             liftEx1.setTargetPosition(targetPos);
             liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            liftEx1.setPower(-0.3);
+            liftEx1.setPower(-0.4);
         } else if (currentLiftStage == 0 && liftTouch.isPressed()) {
             liftEx1.setPower(0);
             liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -367,33 +403,12 @@ public class FieldCentricTeleOp extends OpMode {
             liftEx1.setPower(liftPower);
         }
 
-        // intake - counter stall
-        /*try {
-            if (aIsPressed && intakeMotorRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS) > 7) {
-                telemetry.addLine("Intake Motor stalling. Restarting motor...");
-                telemetry.update();
-                intakeMotor.setPower(0);
-                Thread.sleep(200);
-                intakeMotor.setPower(1);
-                Thread.sleep(200);
-                intakeMotor.setPower(-1);
-            }
-        } catch (InterruptedException ie) {
-            telemetry.addLine("Thread interrupted. Exiting...");
-            telemetry.update();
-        }*/
-
         // telemetry.addData("lift1 encoder count", liftMotor1.getCurrentPosition());
-        // telemetry.addData("lift1 current", liftRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
-        // telemetry.addData("intake current", intakeMotorRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
+        telemetry.addData("lift1 current", liftRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
         telemetry.addData("Liftstage", currentLiftStage);
         telemetry.addData("targetPos", targetPos);
         telemetry.addData("intakeDistanceSensor Reading", intakeColor.getDistance(DistanceUnit.CM));
-        // telemetry.addData("lift pidfCoefficients", liftEx1.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION));
-
-        // telemetry.addData("Servo Position", position);
-        // telemetry.addData("foundationServoLeft Position", foundationServoLeft.getPosition());
-        // telemetry.addData("foundationServoRight Position", foundationServoRight.getPosition());
+        telemetry.addData("liftTouchSensor", liftTouch.isPressed());
 
         telemetry.update();
     }
