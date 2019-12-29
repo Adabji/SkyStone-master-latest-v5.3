@@ -39,8 +39,6 @@ import java.util.Locale;
 import java.lang.Math;
 import java.util.Arrays;
 
-import com.qualcomm.robotcore.util.ElapsedTime;
-
 import java.util.*;
 
 
@@ -53,10 +51,11 @@ public class FieldCentricTeleOp extends OpMode {
     private static DcMotorEx liftEx1;
     private static Servo liftHoExt, wrist, grabber, foundationServoLeft, foundationServoRight, stoneHolder;
     private static double PosXAngPosY, PosXAngNegY, NegXAng, Theta, r, outputX, outputY, heading;
+    double headingAdjAfterReset = 0;
+    static double slowMoReductionFactor = 1;
     Double Deg = Math.PI;
     BNO055IMU imu;
     Orientation angles;
-    double zeroPos = 0;
     private TouchSensor liftTouch;
     private DistanceSensor intakeColor;
 
@@ -156,15 +155,12 @@ public class FieldCentricTeleOp extends OpMode {
             liftHoExt.setPosition(0.45);
             wrist.setPosition(0.18);
             grabber.setPosition(0.6);
+
             servoPositionsAfterStart = false;
         }
 
         // AUTOMATION KILL SWITCH
-        if (gamepad1.left_trigger > 0.5) {
-            isAutomationOn = false;
-        } else {
-            isAutomationOn = true;
-        }
+        // isAutomationOn =  gamepad1.left_trigger < 0.5;
 
         double inputY = gamepad1.left_stick_y;
         double inputX = -gamepad1.left_stick_x;
@@ -189,8 +185,9 @@ public class FieldCentricTeleOp extends OpMode {
             Theta = 2 * Math.PI - Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x);
         }
 
-        outputX = -Math.cos(heading - Theta) * r;
-        outputY = Math.sin(heading - Theta) * r;
+        outputX = -Math.cos(heading - Theta + headingAdjAfterReset) * r;
+        outputY = Math.sin(heading - Theta + headingAdjAfterReset) * r;
+
         /*telemetry.addData("LeftX", gamepad1.left_stick_x);
         telemetry.addData("LeftY", -gamepad1.left_stick_y);
         telemetry.addData("r", r);
@@ -200,11 +197,24 @@ public class FieldCentricTeleOp extends OpMode {
         telemetry.addData("angle:",adjustAngle(getAbsoluteHeading()));
         telemetry.addData("Angle:",imu.getPosition().z);
         telemetry.update();*/
+
         heading = Math.toRadians(getAbsoluteHeading());
 
-        /*if (gamepad1.dpad_right) {
-            heading = 0;
-        }*/
+        // reset heading
+        if (gamepad1.dpad_right) {
+            if (getAbsoluteHeading() < 0) {
+                headingAdjAfterReset = Math.toRadians(getAbsoluteHeading());
+            } else {
+                headingAdjAfterReset = -Math.toRadians(getAbsoluteHeading());
+            }
+        }
+
+        // slow-mo
+        if (gamepad1.right_trigger > 0.5) {
+            slowMoReductionFactor = 2;
+        } else {
+            slowMoReductionFactor = 1;
+        }
 
         // intake in
         if (gamepad1.y) {
@@ -224,7 +234,7 @@ public class FieldCentricTeleOp extends OpMode {
             intakeMotor2.setPower(1);
         }
 
-        // grabber - deposit stone - then not grabbing - doesn't happen when the current lift stage is equal to 0
+        // grabber - DEPOSIT STONE - then not grabbing - doesn't happen when the current lift stage is equal to 0
         if (currentLiftStage > 0) {
             if (gamepad1.dpad_down && stoneDropTimer == -1) {
                 targetPos = (int) (((currentLiftStage * 4) - 2) * LIFT_COUNTS_PER_INCH);
@@ -282,7 +292,7 @@ public class FieldCentricTeleOp extends OpMode {
             grabber.setPosition(0.32);
         }
 
-        /*// stone holder out - not holding
+        // stone holder out - not holding
         if (gamepad2.dpad_left) {
             stoneHolder.setPosition(0.3);
         }
@@ -290,7 +300,7 @@ public class FieldCentricTeleOp extends OpMode {
         // stone holder in - holding the stone in place
         if (gamepad2.dpad_right) {
             stoneHolder.setPosition(0);
-        }*/
+        }
 
         // foundation servo - Up
         if (gamepad1.left_bumper) {
@@ -305,15 +315,15 @@ public class FieldCentricTeleOp extends OpMode {
         }
 
         // If the stone is inside the robot, push it in place using the stoneHolder servo
-        if (isAutomationOn && intakeColor.getDistance(DistanceUnit.CM) > 6 && intakeColor.getDistance(DistanceUnit.CM) < 11) {
+        /*if (isAutomationOn && intakeColor.getDistance(DistanceUnit.CM) > 6 && intakeColor.getDistance(DistanceUnit.CM) < 11) {
             stoneHolder.setPosition(0);
             grabber.setPosition(0.6);
         } else if (isAutomationOn && intakeColor.getDistance(DistanceUnit.CM) < 6) {
             stoneHolder.setPosition(0.3);
             stoneInRobotTimer = System.currentTimeMillis();
-        } else if (isAutomationOn){
+        } else if (isAutomationOn) {
             stoneHolder.setPosition(0.3);
-        }
+        }*/
 
         if (isAutomationOn && intakeColor.getDistance(DistanceUnit.CM) < 6 && System.currentTimeMillis() - stoneInRobotTimer > 700) {
             grabber.setPosition(0.32);
@@ -344,7 +354,7 @@ public class FieldCentricTeleOp extends OpMode {
 
             liftDownExtTimer = System.currentTimeMillis();
             wrist.setPosition(0.18);
-            grabber.setPosition(0.6);
+            // grabber.setPosition(0.6);
 
             while (System.currentTimeMillis() - liftDownExtTimer < 300) { }
 
@@ -409,6 +419,8 @@ public class FieldCentricTeleOp extends OpMode {
         telemetry.addData("targetPos", targetPos);
         telemetry.addData("intakeDistanceSensor Reading", intakeColor.getDistance(DistanceUnit.CM));
         telemetry.addData("liftTouchSensor", liftTouch.isPressed());
+        telemetry.addData("resetAdj", headingAdjAfterReset);
+        telemetry.addData("isAutomationOn", isAutomationOn);
 
         telemetry.update();
     }
@@ -448,9 +460,9 @@ public class FieldCentricTeleOp extends OpMode {
             rightBack /= biggestInput;
         }
 
-        leftFrontWheel.setPower(leftFront);
-        rightFrontWheel.setPower(rightFront);
-        leftBackWheel.setPower(leftBack);
-        rightBackWheel.setPower(rightBack);
+        leftFrontWheel.setPower(leftFront/slowMoReductionFactor);
+        rightFrontWheel.setPower(rightFront/slowMoReductionFactor);
+        leftBackWheel.setPower(leftBack/slowMoReductionFactor);
+        rightBackWheel.setPower(rightBack/slowMoReductionFactor);
     }
 }

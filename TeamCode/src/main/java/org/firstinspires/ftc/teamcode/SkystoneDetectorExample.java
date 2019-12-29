@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.disnodeteam.dogecv.detectors.skystone.SkystoneDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -38,6 +39,7 @@ import java.util.Locale;
  * Derived Work Copyright(c) 2019 DogeDevs
  */
 
+@Disabled
 @Autonomous(name = "Skystone Detector OpMode", group="Autonomous")
 public class SkystoneDetectorExample extends LinearOpMode {
     private OpenCvCamera phoneCam;
@@ -58,7 +60,7 @@ public class SkystoneDetectorExample extends LinearOpMode {
 
     // PIDF stuff
     PIDFCoefficients pidfCoefficients;
-    double lkp = 0;
+    double lkp = 6;
     double lki = 0;
     double lkd = 0;
     double lkf = 0;
