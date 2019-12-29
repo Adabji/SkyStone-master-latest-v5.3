@@ -5,10 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
@@ -21,8 +23,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.revextensions2.ExpansionHubMotor;
 
-@Autonomous(name = "BLUEAllAroundAuto", group = "Autonomous")
-public class BLUEAllAroundAuto extends LinearOpMode {
+@Autonomous(name = "REDAllAroundAuto", group = "Autonomous")
+public class REDAllAroundAuto extends LinearOpMode {
     private OpenCvCamera phoneCam;
     private SkystoneDetector skyStoneDetector;
 
@@ -37,18 +39,19 @@ public class BLUEAllAroundAuto extends LinearOpMode {
     static final double LIFT_COUNTS_PER_INCH = (LIFT_COUNTS_PER_MOTOR_REV * LIFT_DRIVE_GEAR_REDUCTION) /
             (LIFT_WHEEL_DIAMETER_INCHES * 3.1415);  // 136.90275
 
+    int currentLiftStage = 0;
+    int targetPos = 0;
+    double liftPower = 1;
+    long liftUpTimer = -1;
+
     // Camera stuff
     String skystoneLoc = "";
 
 
     // hardware stuff
-    private static Servo liftHoExt, wrist, grip;
+    private static Servo liftHoExt, wrist, grabber, stoneHolder;
     private TouchSensor liftTouch;
-    double                  power = .30, correction, rotation;
-    double                  rotationPower = 0.5;
-    double                  movePower = 0.7;
-    Orientation lastAngles = new Orientation();
-    private DistanceSensor colorSensorDistance;
+    private DistanceSensor intakeColor;
 
     // PIDF stuff
     PIDFCoefficients pidfCoefficients;
@@ -70,20 +73,31 @@ public class BLUEAllAroundAuto extends LinearOpMode {
 
         intakeMotor1 = hardwareMap.get(DcMotorEx.class, "intake motor 1");
         intakeMotor2 = hardwareMap.get(DcMotorEx.class, "intake motor 2");
-
         liftEx1 = hardwareMap.get(DcMotorEx.class, "lift motor 1");
 
         foundationServoLeft = hardwareMap.get(Servo.class, "foundationServoLeft");
         foundationServoRight = hardwareMap.get(Servo.class, "foundationServoRight");
+        liftHoExt = hardwareMap.servo.get("liftHoExt");
+        wrist = hardwareMap.servo.get("liftGrabberRotater");
+        grabber = hardwareMap.servo.get("liftGrabber");
+        stoneHolder = hardwareMap.servo.get("stoneHolder");
 
-        SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap);
+        intakeColor = hardwareMap.get(DistanceSensor.class, "intakeColor");
+        liftTouch = hardwareMap.get(TouchSensor.class, "liftTouch");
+
+        pidfCoefficients = new PIDFCoefficients(lkp, lki, lkd, lkf);
+
+        intakeMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
+        liftEx1.setDirection(DcMotorSimple.Direction.REVERSE);
+        liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        // Servo positions
+        liftHoExt.setPosition(0.45);
+        wrist.setPosition(0.18);
+        grabber.setPosition(0.6);
         foundationServosUp();
 
-        /**
-         * CHANGE DIRECTION
-         * CHANGE DIRECTION
-         * CHANGE DIRECTION
-         */
+        SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap);
 
         while (!opModeIsActive() && !isStopRequested()) {
             if (skyStoneDetector.isDetected()) {
@@ -116,11 +130,69 @@ public class BLUEAllAroundAuto extends LinearOpMode {
             startIntakeMotors();
             moveForward(drive, 8);
             stopIntakeMotors();
+
+            stoneHolder.setPosition(0);
+            sleep(200);
+            stoneHolder.setPosition(0.4);
+            sleep(200);
+            stoneHolder.setPosition(0);
+            grabber.setPosition(0.32);
+
             moveBackward(drive, 8);
             rotate(drive, 45);
             strafeLeft(drive, 25);
             moveBackward(drive, 80);
+
+            rotate(drive, 90);
+            moveBackward(drive, 27);
+            foundationServosDown();
+            moveForward(drive, 25);
+            rotate(drive, -90);
+            moveBackward(drive, 7);
+
+            extendStone();
+            grabber.setPosition(0.6);
+            retractExt();
+
+            foundationServosUp();
+            moveForward(drive, 110);
+            rotate(drive, -90);
+
+            // -------------------------------------------------------------------------------------
+            // LIFT DcMotorEx
+            if (currentLiftStage == 0 && !liftTouch.isPressed()) {
+                liftEx1.setTargetPosition(targetPos);
+                liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                liftEx1.setPower(-0.4);
+            } else if (currentLiftStage == 0 && liftTouch.isPressed()) {
+                liftEx1.setPower(0);
+                liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            } else if (currentLiftStage != 0 && liftEx1.getCurrentPosition() != targetPos) {
+                liftEx1.setTargetPosition(targetPos);
+                liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
+                liftEx1.setPower(liftPower);
+            }
         }
+    }
+
+    private void extendStone() {
+        currentLiftStage = 2;
+        liftUpTimer = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - liftUpTimer > 800) { }
+
+        liftHoExt.setPosition(0.92);
+        sleep(200);
+        wrist.setPosition(0.18);
+        currentLiftStage = 0;
+    }
+
+    private void retractExt() {
+        wrist.setPosition(0.18);
+        grabber.setPosition(0.32);
+        sleep(200);
+        liftHoExt.setPosition(0.45);
     }
 
     private void startIntakeMotors() {
