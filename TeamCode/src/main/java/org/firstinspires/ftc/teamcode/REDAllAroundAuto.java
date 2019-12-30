@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
+import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,8 +13,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
 
@@ -21,7 +23,6 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
-import org.openftc.revextensions2.ExpansionHubMotor;
 
 @Autonomous(name = "REDAllAroundAuto", group = "Autonomous")
 public class REDAllAroundAuto extends LinearOpMode {
@@ -43,6 +44,7 @@ public class REDAllAroundAuto extends LinearOpMode {
     int targetPos = 0;
     double liftPower = 1;
     long liftUpTimer = -1;
+    long intakeInTimer = -1;
 
     // Camera stuff
     String skystoneLoc = "";
@@ -59,6 +61,9 @@ public class REDAllAroundAuto extends LinearOpMode {
     double lki = 0;
     double lkd = 0;
     double lkf = 0;
+
+    DriveConstraints stoneCollectionConstraints = new DriveConstraints(10.0, 10.0, 0.0, Math.toRadians(180.0), Math.toRadians(180.0), 0.0);
+
 
     public void runOpMode() {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -101,9 +106,9 @@ public class REDAllAroundAuto extends LinearOpMode {
 
         while (!opModeIsActive() && !isStopRequested()) {
             if (skyStoneDetector.isDetected()) {
-                if (skyStoneDetector.getScreenPosition().x < 100) {
+                if (skyStoneDetector.getScreenPosition().x < 50) {
                     skystoneLoc = "left";
-                } else if (skyStoneDetector.getScreenPosition().x < 190 && skyStoneDetector.getScreenPosition().x > 100) {
+                } else if (skyStoneDetector.getScreenPosition().x < 190 && skyStoneDetector.getScreenPosition().x > 50) {
                     skystoneLoc = "center";
                 } else {
                     skystoneLoc = "right";
@@ -120,45 +125,60 @@ public class REDAllAroundAuto extends LinearOpMode {
 
             // FIRST SKYSTONE - OUTER ONE
             if (skystoneLoc.equals("right")) {
-                strafeRight(drive, 15);
+                strafeRight(drive, 20);
             } else if (skystoneLoc.equals("center")) {
-                strafeRight(drive, 5);
+                strafeRight(drive, 12);
             }
 
-            moveForward(drive, 40);
-            rotate(drive, 45);
-            startIntakeMotors();
-            moveForward(drive, 8);
+            moveForward(drive, 25);
+            rotate(drive, 35);
+            startIntakeMotors(-1);
+
+            // moveForward(drive, 12);
+
+            intakeInTimer = System.currentTimeMillis();
+            while (System.currentTimeMillis() - intakeInTimer < 1000) { }
             stopIntakeMotors();
 
-            stoneHolder.setPosition(0);
+            /*stoneHolder.setPosition(0);
             sleep(200);
             stoneHolder.setPosition(0.4);
             sleep(200);
             stoneHolder.setPosition(0);
-            grabber.setPosition(0.32);
+            grabber.setPosition(0.32);*/
 
-            moveBackward(drive, 8);
-            rotate(drive, 45);
-            strafeLeft(drive, 25);
-            moveBackward(drive, 80);
+            moveBackward(drive, 12);
+            rotate(drive, 55);
+            strafeLeft(drive, 12);
+            moveBackward(drive, 70);
 
             rotate(drive, 90);
-            moveBackward(drive, 27);
+            startIntakeMotors(1);
+            moveBackward(drive, 17);
+            stopIntakeMotors();
+            sleep(300);
             foundationServosDown();
-            moveForward(drive, 25);
-            rotate(drive, -90);
-            moveBackward(drive, 7);
+            sleep(300);
+            moveForward(drive, 20);
 
-            extendStone();
-            grabber.setPosition(0.6);
-            retractExt();
+            // pulling the foundation part
+            // rotate(drive, -90);
+            while (drive.getExternalHeading() != -90) {
+                drive.setMotorPowers(0.5, 0.5, -0.5, -0.5);
+            }
+
+
+            // moveBackward(drive, 7);
+
+            // extendStone();
+            // grabber.setPosition(0.6);
+            // retractExt();
 
             foundationServosUp();
             moveForward(drive, 110);
             rotate(drive, -90);
 
-            // -------------------------------------------------------------------------------------
+            // ------------------------------------------------------------------------------------
             // LIFT DcMotorEx
             if (currentLiftStage == 0 && !liftTouch.isPressed()) {
                 liftEx1.setTargetPosition(targetPos);
@@ -195,9 +215,9 @@ public class REDAllAroundAuto extends LinearOpMode {
         liftHoExt.setPosition(0.45);
     }
 
-    private void startIntakeMotors() {
-        intakeMotor1.setPower(-1);
-        intakeMotor2.setPower(-1);
+    private void startIntakeMotors(double p) {
+        intakeMotor1.setPower(p);
+        intakeMotor2.setPower(p);
     }
 
     private void stopIntakeMotors() {
