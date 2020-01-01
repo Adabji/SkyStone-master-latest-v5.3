@@ -43,6 +43,8 @@ import java.util.Arrays;
 
 import java.util.*;
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.finalAutoHeading;
+
 
 // @Config
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Field Centric TeleOp", group = "TeleOp")
@@ -147,6 +149,8 @@ public class FieldCentricTeleOp extends OpMode {
         parameters.loggingTag          = "IMU";
         imu = hardwareMap.get(BNO055IMU.class,"imu");
         imu.initialize(parameters);
+
+        headingAdjAfterReset = finalAutoHeading;
     }
 
     @Override
@@ -219,7 +223,7 @@ public class FieldCentricTeleOp extends OpMode {
             slowMoReductionFactor = 1;
         }
 
-        // intake in
+        // intake out
         if (gamepad1.y) {
             intakeMotor1.setPower(-1);
             intakeMotor2.setPower(-1);
@@ -231,7 +235,7 @@ public class FieldCentricTeleOp extends OpMode {
             intakeMotor2.setPower(0);
         }
 
-        // intake out
+        // intake in
         if (gamepad1.a) {
             intakeMotor1.setPower(1);
             intakeMotor2.setPower(1);
@@ -275,7 +279,7 @@ public class FieldCentricTeleOp extends OpMode {
             liftInTimer = -1;
         }
 
-        // grabber direction - out
+        /*// grabber direction - out
         if (gamepad2.dpad_up) {
             wrist.setPosition(0.85);
         }
@@ -283,7 +287,7 @@ public class FieldCentricTeleOp extends OpMode {
         // grabber direction - in
         if (gamepad2.dpad_down) {
             wrist.setPosition(0.18);
-        }
+        }*/
 
         // grabber - not grabbing
         if (gamepad2.y) {

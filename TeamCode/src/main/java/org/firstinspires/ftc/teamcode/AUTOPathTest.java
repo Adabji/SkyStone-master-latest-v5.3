@@ -1,14 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.path.heading.HeadingInterpolator;
+import com.acmerobotics.roadrunner.path.heading.LinearInterpolator;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
-import com.disnodeteam.dogecv.detectors.DogeCVDetector;
-
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -30,15 +28,8 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.dashboard.config.Config;
-
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.finalAutoHeading;
-
-@Config
-@Autonomous(name = "REDAllAroundAuto", group = "Autonomous")
-public class REDAllAroundAuto extends LinearOpMode {
+@Autonomous(name = "AUTOPathTest", group = "Autonomous")
+public class AUTOPathTest extends LinearOpMode {
     private OpenCvCamera phoneCam;
     private SkystoneDetector skyStoneDetector;
 
@@ -62,6 +53,7 @@ public class REDAllAroundAuto extends LinearOpMode {
     // Camera stuff
     String skystoneLoc = "";
 
+
     // hardware stuff
     private static Servo liftHoExt, wrist, grabber, stoneHolder;
     private TouchSensor liftTouch;
@@ -73,22 +65,6 @@ public class REDAllAroundAuto extends LinearOpMode {
     double lki = 0;
     double lkd = 0;
     double lkf = 0;
-
-    // dashboard stuff
-    public static int leftAndCenterBlockMargin = 80;
-    public static double turnAngle = 45;
-    public static double strafeDist = 3;
-    public static double moveToStoneDist = 18;
-    public static double centerStrafe = 5;
-    public static double moveABitToStone = 0;
-    public static double moveToIntakeStone = 9;
-    public static double strafeABitDiagonal = 22;
-    public static double screenYPos = 160;
-    public static double intakeInPower = 1;
-    public static double intakeOutPower = -1;
-    public static double strafeToFoundationDist = 25;
-    public static double moveBackToFoundationDist = 10;
-    public static double moveToLine = 35;
 
     DriveConstraints stoneCollectionConstraints = new DriveConstraints(10.0, 10.0, 0.0, Math.toRadians(180.0), Math.toRadians(180.0), 0.0);
 
@@ -130,21 +106,21 @@ public class REDAllAroundAuto extends LinearOpMode {
         grabber.setPosition(0.6);
         foundationServosUp();
 
+        DriveConstraints constraints = new DriveConstraints(
+                30.0, 30.0, 0.0,
+                Math.toRadians(180.0), Math.toRadians(180.0), 0.0
+        );
+
         SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap);
 
         while (!opModeIsActive() && !isStopRequested()) {
-            if (skyStoneDetector.isDetected() && skyStoneDetector.getScreenPosition().y > screenYPos) {
-                if (skyStoneDetector.getScreenPosition().x < leftAndCenterBlockMargin) {
+            if (skyStoneDetector.isDetected()) {
+                if (skyStoneDetector.getScreenPosition().x < 40) {
                     skystoneLoc = "left";
-                    strafeDist = 12;
-                    strafeToFoundationDist += 15;
-                } else if (skyStoneDetector.getScreenPosition().x < 150 && skyStoneDetector.getScreenPosition().x > leftAndCenterBlockMargin) {
+                } else if (skyStoneDetector.getScreenPosition().x < 190 && skyStoneDetector.getScreenPosition().x > 40) {
                     skystoneLoc = "center";
-                    strafeDist = 0;
-                    strafeToFoundationDist += 10;
                 } else {
                     skystoneLoc = "right";
-                    strafeDist = 6;
                 }
             }
 
@@ -154,119 +130,9 @@ public class REDAllAroundAuto extends LinearOpMode {
         }
 
         if (opModeIsActive()) {
-            intakeMotor1.setPower(1);
-            intakeMotor2.setPower(-1);
-            sleep(50);
-            intakeMotor1.setPower(0);
-            intakeMotor2.setPower(0);
+            Vector2d x = new Vector2d(45.5, 4);
 
-            telemetry.addData("Current heading", Math.toDegrees(drive.getExternalHeading()));
-            telemetry.update();
-
-            moveForward(drive, moveToStoneDist + 5);
-
-            // FIRST SKYSTONE - OUTER ONE
-            if (skystoneLoc.equals("right")) {
-                strafeRight(drive, strafeDist);
-            } else if (skystoneLoc.equals("center")) {
-                strafeLeft(drive, strafeDist);
-            } else if (skystoneLoc.equals("left")) {
-                strafeLeft(drive, strafeDist);
-            }
-
-            // moveForward(drive, moveToStoneDist);
-            rotate(drive, turnAngle);
-            // strafeRight(drive, 15.5);
-            telemetry.update();
-            // moveForward(drive, moveABitToStone);
-            strafeRight(drive, strafeABitDiagonal);
-            startIntakeMotors(intakeInPower);
-
-            moveForward(drive, moveToIntakeStone);
-
-            intakeInTimer = System.currentTimeMillis();
-            while (System.currentTimeMillis() - intakeInTimer < 500) { }
-            stopIntakeMotors();
-
-            rotate(drive, 90 - turnAngle);
-            strafeLeft(drive, strafeABitDiagonal - 6);
-            // moveBackward(drive, 5);
-            telemetry.update();
-            // strafeLeft(drive, strafeBackDist);
-            moveBackward(drive, 50);
-
-            rotate(drive, 90);
-            telemetry.update();
-
-            // Code with lift
-            /*moveBackward(drive, 17);
-            stopIntakeMotors();
-            sleep(300);
-            foundationServosDown();
-            sleep(300);
-            moveForward(drive, 20);
-
-            // pulling the foundation part
-            // rotate(drive, -90);
-
-            telemetry.update();
-            while (drive.getExternalHeading() > 1.571) {
-                drive.setMotorPowers(0.5, 0.5, -0.5, -0.5);
-            }*/
-
-            // moveBackward(drive, 7);
-
-            // extendStone();
-            // grabber.setPosition(0.6);
-            // retractExt();
-
-            // foundationServosUp();
-
-            startIntakeMotors(intakeOutPower);
-            intakeInTimer = System.currentTimeMillis();
-            while (System.currentTimeMillis() - intakeInTimer < 200) { }
-            stopIntakeMotors();
-            // rotate(drive, 90);
-            // moveBackward(drive, 90);
-            // rotate(drive, 90);
-            telemetry.update();
-
-            strafeLeft(drive, strafeToFoundationDist);
-            moveBackward(drive, moveBackToFoundationDist);
-            sleep(300);
-            foundationServosDown();
-            sleep(300);
-            moveForward(drive, 20);
-
-            telemetry.update();
-            while (drive.getExternalHeading() > 1.571) {
-                drive.setMotorPowers(0.5, 0.5, 0, 0);
-            }
-
-            drive.setMotorPowers(0, 0, 0, 0);
-
-            moveBackward(drive, 5);
-            moveForward(drive, moveToLine);
-            rotate(drive, -90);
-
-            finalAutoHeading = drive.getExternalHeading();
-
-
-            // ------------------------------------------------------------------------------------
-            // LIFT DcMotorEx
-            /*if (currentLiftStage == 0 && !liftTouch.isPressed()) {
-                liftEx1.setTargetPosition(targetPos);
-                liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                liftEx1.setPower(-0.4);
-            } else if (currentLiftStage == 0 && liftTouch.isPressed()) {
-                liftEx1.setPower(0);
-                liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            } else if (currentLiftStage != 0 && liftEx1.getCurrentPosition() != targetPos) {
-                liftEx1.setTargetPosition(targetPos);
-                liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
-                liftEx1.setPower(liftPower);
-            }*/
+            // drive.followTrajectorySync(drive.trajectoryBuilder().lineTo(new Pose2d(3, 40, 45)));
         }
     }
 
