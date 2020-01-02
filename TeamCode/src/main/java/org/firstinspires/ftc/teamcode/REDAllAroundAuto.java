@@ -75,6 +75,7 @@ public class REDAllAroundAuto extends LinearOpMode {
     double lkf = 0;
 
     // dashboard stuff
+    public static boolean foundation = true;
     public static int leftAndCenterBlockMargin = 80;
     public static double turnAngle = 45;
     public static double strafeDist = 3;
@@ -82,11 +83,11 @@ public class REDAllAroundAuto extends LinearOpMode {
     public static double centerStrafe = 5;
     public static double moveABitToStone = 0;
     public static double moveToIntakeStone = 9;
-    public static double strafeABitDiagonal = 22;
+    public static double strafeABitDiagonal = 19;
     public static double screenYPos = 160;
     public static double intakeInPower = 1;
     public static double intakeOutPower = -1;
-    public static double strafeToFoundationDist = 25;
+    public static double strafeToFoundationDist = 30;
     public static double moveBackToFoundationDist = 10;
     public static double moveToLine = 35;
 
@@ -136,15 +137,16 @@ public class REDAllAroundAuto extends LinearOpMode {
             if (skyStoneDetector.isDetected() && skyStoneDetector.getScreenPosition().y > screenYPos) {
                 if (skyStoneDetector.getScreenPosition().x < leftAndCenterBlockMargin) {
                     skystoneLoc = "left";
-                    strafeDist = 12;
-                    strafeToFoundationDist += 15;
+                    strafeDist = 10;
+                   // strafeToFoundationDist += 15;
                 } else if (skyStoneDetector.getScreenPosition().x < 150 && skyStoneDetector.getScreenPosition().x > leftAndCenterBlockMargin) {
                     skystoneLoc = "center";
-                    strafeDist = 0;
-                    strafeToFoundationDist += 10;
+                    strafeDist = 2;
+                    //strafeToFoundationDist += 10;
                 } else {
                     skystoneLoc = "right";
                     strafeDist = 6;
+                    //strafeToFoundationDist += 10;
                 }
             }
 
@@ -183,13 +185,13 @@ public class REDAllAroundAuto extends LinearOpMode {
             startIntakeMotors(intakeInPower);
 
             moveForward(drive, moveToIntakeStone);
-
-            intakeInTimer = System.currentTimeMillis();
-            while (System.currentTimeMillis() - intakeInTimer < 500) { }
+            sleep(500);
+            //intakeInTimer = System.currentTimeMillis();
+            //while (System.currentTimeMillis() - intakeInTimer < 500) { }
             stopIntakeMotors();
 
             rotate(drive, 90 - turnAngle);
-            strafeLeft(drive, strafeABitDiagonal - 6);
+            strafeLeft(drive, strafeABitDiagonal+2);
             // moveBackward(drive, 5);
             telemetry.update();
             // strafeLeft(drive, strafeBackDist);
@@ -222,30 +224,40 @@ public class REDAllAroundAuto extends LinearOpMode {
 
             // foundationServosUp();
 
-            startIntakeMotors(intakeOutPower);
-            intakeInTimer = System.currentTimeMillis();
-            while (System.currentTimeMillis() - intakeInTimer < 200) { }
+            intakeMotor1.setPower(-1);
+            intakeMotor2.setPower(-1);
+            sleep(500);
+            intakeMotor1.setPower(0);
+            intakeMotor2.setPower(0);
+            /*intakeInTimer = System.currentTimeMillis();
+            while (System.currentTimeMillis() - intakeInTimer < 500) { }*/
+            /*sleep(500);
             stopIntakeMotors();
             // rotate(drive, 90);
             // moveBackward(drive, 90);
-            // rotate(drive, 90);
+            // rotate(drive, 90);*/
+            telemetry.addData("Data","yes- intake");
             telemetry.update();
-
             strafeLeft(drive, strafeToFoundationDist);
+            telemetry.addData("Data","yes-strafe");
+            telemetry.update();
             moveBackward(drive, moveBackToFoundationDist);
             sleep(300);
             foundationServosDown();
             sleep(300);
-            moveForward(drive, 20);
+            moveForward(drive, 15);
 
             telemetry.update();
-            while (drive.getExternalHeading() > 1.571) {
-                drive.setMotorPowers(0.5, 0.5, 0, 0);
+            while(drive.getExternalHeading() > 1.571) {
+                    drive.setMotorPowers(0.5, 0.5, 0, 0);
             }
-
+           // rotate(drive,-90);
             drive.setMotorPowers(0, 0, 0, 0);
-
-            moveBackward(drive, 5);
+            foundation=false;
+            foundationServosUp();
+            sleep(500);
+            moveBackward(drive, 8);
+            sleep(500);
             moveForward(drive, moveToLine);
             rotate(drive, -90);
 
