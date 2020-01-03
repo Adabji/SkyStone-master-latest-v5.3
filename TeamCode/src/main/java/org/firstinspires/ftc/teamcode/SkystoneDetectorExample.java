@@ -39,7 +39,6 @@ import java.util.Locale;
  * Derived Work Copyright(c) 2019 DogeDevs
  */
 
-@Disabled
 @Autonomous(name = "Skystone Detector OpMode", group="Autonomous")
 public class SkystoneDetectorExample extends LinearOpMode {
     private OpenCvCamera phoneCam;
@@ -108,8 +107,13 @@ public class SkystoneDetectorExample extends LinearOpMode {
          * of a frame from the camera. Note that switching pipelines on-the-fly
          * (while a streaming session is in flight) *IS* supported.
          */
-        skyStoneDetector = new SkystoneDetector();
+
+        // skyStoneDetector = new SkystoneDetector();
+
+        skyStoneDetector = new TESTSkystoneDetector();
         phoneCam.setPipeline(skyStoneDetector);
+
+
 
         /*
          * Tell the camera to start streaming images to us! Note that you must make sure
@@ -132,9 +136,9 @@ public class SkystoneDetectorExample extends LinearOpMode {
          */
         while (!opModeIsActive() && !isStopRequested()) {
             if (skyStoneDetector.isDetected()) {
-                if (skyStoneDetector.getScreenPosition().x < 100) {
+                if (skyStoneDetector.getScreenPosition().x < 80) {
                     skystoneLoc = "left";
-                } else if (skyStoneDetector.getScreenPosition().x < 190 && skyStoneDetector.getScreenPosition().x > 100) {
+                } else if (skyStoneDetector.getScreenPosition().x < 150 && skyStoneDetector.getScreenPosition().x > 80) {
                     skystoneLoc = "center";
                 } else {
                     skystoneLoc = "right";

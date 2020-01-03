@@ -100,10 +100,16 @@ public class REDAllAroundAuto extends LinearOpMode {
 
         phoneCam.openCameraDevice();
 
-        skyStoneDetector = new SkystoneDetector();
+        // skyStoneDetector = new SkystoneDetector();
+        TESTSkystoneDetector.skystoneTel = telemetry;
+
+        skyStoneDetector = new TESTSkystoneDetector();
+
         phoneCam.setPipeline(skyStoneDetector);
 
         phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+
+
 
         intakeMotor1 = hardwareMap.get(DcMotorEx.class, "intake motor 1");
         intakeMotor2 = hardwareMap.get(DcMotorEx.class, "intake motor 2");
@@ -150,9 +156,11 @@ public class REDAllAroundAuto extends LinearOpMode {
                 }
             }
 
-            telemetry.addData("Skystone Location = " + skyStoneDetector.getScreenPosition().x, skystoneLoc);
+            /*telemetry.addData("Skystone Location = " + skyStoneDetector.getScreenPosition().x, skystoneLoc);
             telemetry.addData("Status", "Waiting for start command...");
-            telemetry.update();
+            telemetry.update();*/
+
+
         }
 
         if (opModeIsActive()) {
@@ -249,9 +257,9 @@ public class REDAllAroundAuto extends LinearOpMode {
 
             telemetry.update();
             while(drive.getExternalHeading() > 1.571) {
-                    drive.setMotorPowers(0.5, 0.5, 0, 0);
+                drive.setMotorPowers(0.5, 0.5, 0, 0);
             }
-           // rotate(drive,-90);
+            // rotate(drive,-90);
             drive.setMotorPowers(0, 0, 0, 0);
             foundation=false;
             foundationServosUp();

@@ -7,6 +7,8 @@ import com.qualcomm.hardware.motors.NeveRest20Gearmotor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /*
  * Constants shared between multiple drive types.
  *
@@ -61,6 +63,8 @@ public class DriveConstants {
 
     // Final Auto Heading
     public static double finalAutoHeading = 0;
+
+
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,
