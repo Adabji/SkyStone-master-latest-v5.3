@@ -1,63 +1,57 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
-import com.disnodeteam.dogecv.detectors.DogeCVDetector;
-
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-
+import com.disnodeteam.dogecv.detectors.skystone.SkystoneDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-
-import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
-import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
-
-import com.disnodeteam.dogecv.detectors.skystone.SkystoneDetector;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
+import org.openftc.revextensions2.ExpansionHubMotor;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import org.firstinspires.ftc.teamcode.TextFileAuto;
+
+import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
+import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
+
+import java.util.Locale;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.finalAutoHeading;
 
-@Config
-@Autonomous(name = "REDAllAroundAuto", group = "Autonomous")
-public class REDAllAroundAuto extends LinearOpMode {
+/*
+ * Thanks to EasyOpenCV for the great API (and most of the example)
+ *
+ * Original Work Copright(c) 2019 OpenFTC Team
+ * Derived Work Copyright(c) 2019 DogeDevs
+ */
+
+@Autonomous(name = "Auto BLUE", group="Autonomous")
+public class AutoWithHelpBlue extends LinearOpMode {
     private OpenCvCamera phoneCam;
-    private SkystoneDetector skyStoneDetector;
+    private LastHopeDetector skyStoneDetector;
 
     private DcMotorEx intakeMotor1, intakeMotor2;
     private static DcMotorEx liftEx1;
     private Servo foundationServoLeft, foundationServoRight;
-
-    // lift encoders
-    static final double LIFT_COUNTS_PER_MOTOR_REV = 537.6;
-    static final double LIFT_DRIVE_GEAR_REDUCTION = 1.0;
-    static final double LIFT_WHEEL_DIAMETER_INCHES = 1.25;
-    static final double LIFT_COUNTS_PER_INCH = (LIFT_COUNTS_PER_MOTOR_REV * LIFT_DRIVE_GEAR_REDUCTION) /
-            (LIFT_WHEEL_DIAMETER_INCHES * 3.1415);  // 136.90275
-
-    int currentLiftStage = 0;
-    int targetPos = 0;
-    double liftPower = 1;
-    long liftUpTimer = -1;
-    long intakeInTimer = -1;
 
     // Camera stuff
     String skystoneLoc = "";
@@ -91,26 +85,8 @@ public class REDAllAroundAuto extends LinearOpMode {
     public static double moveBackToFoundationDist = 10;
     public static double moveToLine = 35;
 
-    DriveConstraints stoneCollectionConstraints = new DriveConstraints(10.0, 10.0, 0.0, Math.toRadians(180.0), Math.toRadians(180.0), 0.0);
-
-
-    public void runOpMode() {
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        phoneCam = new OpenCvInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-
-        phoneCam.openCameraDevice();
-
-        // skyStoneDetector = new SkystoneDetector();
-        TESTSkystoneDetector.skystoneTel = telemetry;
-
-        skyStoneDetector = new TESTSkystoneDetector();
-
-        phoneCam.setPipeline(skyStoneDetector);
-
-        phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-
-
-
+    @Override
+    public void runOpMode() throws InterruptedException {
         intakeMotor1 = hardwareMap.get(DcMotorEx.class, "intake motor 1");
         intakeMotor2 = hardwareMap.get(DcMotorEx.class, "intake motor 2");
         liftEx1 = hardwareMap.get(DcMotorEx.class, "lift motor 1");
@@ -139,38 +115,51 @@ public class REDAllAroundAuto extends LinearOpMode {
 
         SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap);
 
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        phoneCam = new OpenCvInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
+        phoneCam.openCameraDevice();
+        skyStoneDetector = new LastHopeDetector();
+        phoneCam.setPipeline(skyStoneDetector);
+        phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+
+        /*
+         * Wait for the user to press start on the Driver Station
+         */
         while (!opModeIsActive() && !isStopRequested()) {
-            if (skyStoneDetector.isDetected() && skyStoneDetector.getScreenPosition().y > screenYPos) {
-                if (skyStoneDetector.getScreenPosition().x < leftAndCenterBlockMargin) {
+            if (skyStoneDetector.isDetected()/* && skyStoneDetector.foundRectangle().y > 180*/) {
+                if (skyStoneDetector.foundRectangle().x < 100) {
                     skystoneLoc = "left";
                     strafeDist = 10;
-                   // strafeToFoundationDist += 15;
-                } else if (skyStoneDetector.getScreenPosition().x < 150 && skyStoneDetector.getScreenPosition().x > leftAndCenterBlockMargin) {
+                    strafeToFoundationDist = 20;
+                } else if (skyStoneDetector.foundRectangle().x < 160 && skyStoneDetector.foundRectangle().x > 100) {
                     skystoneLoc = "center";
-                    strafeDist = 2;
-                    //strafeToFoundationDist += 10;
+                    strafeDist = 3;
+                    strafeToFoundationDist = 30;
                 } else {
                     skystoneLoc = "right";
-                    strafeDist = 6;
-                    //strafeToFoundationDist += 10;
+                    strafeDist = 13;
+                    strafeToFoundationDist = 43;
                 }
             }
 
-            /*telemetry.addData("Skystone Location = " + skyStoneDetector.getScreenPosition().x, skystoneLoc);
+            telemetry.addData("Skystone Location = ", skyStoneDetector.foundRectangle().x);
+            telemetry.addData("Skystone Position", skystoneLoc);
+            telemetry.addData("imu current heading", drive.getExternalHeading());
             telemetry.addData("Status", "Waiting for start command...");
-            telemetry.update();*/
-
-
+            telemetry.update();
         }
 
         if (opModeIsActive()) {
+            phoneCam.stopStreaming();
+
+            // open intake motors
             intakeMotor1.setPower(1);
             intakeMotor2.setPower(-1);
-            sleep(50);
+            Thread.sleep(50);
             intakeMotor1.setPower(0);
             intakeMotor2.setPower(0);
 
-            telemetry.addData("Current heading", Math.toDegrees(drive.getExternalHeading()));
+            // telemetry.addData("Current heading", Math.toDegrees(drive.getExternalHeading()));
             telemetry.update();
 
             moveForward(drive, moveToStoneDist + 5);
@@ -185,128 +174,70 @@ public class REDAllAroundAuto extends LinearOpMode {
             }
 
             // moveForward(drive, moveToStoneDist);
-            rotate(drive, turnAngle);
+            rotate(drive, -turnAngle);
             // strafeRight(drive, 15.5);
             telemetry.update();
             // moveForward(drive, moveABitToStone);
-            strafeRight(drive, strafeABitDiagonal);
+            strafeLeft(drive, strafeABitDiagonal);
             startIntakeMotors(intakeInPower);
 
             moveForward(drive, moveToIntakeStone);
-            sleep(500);
-            //intakeInTimer = System.currentTimeMillis();
-            //while (System.currentTimeMillis() - intakeInTimer < 500) { }
+            Thread.sleep(500);
+            /*intakeInTimer = System.currentTimeMillis();
+            while (System.currentTimeMillis() - intakeInTimer < 500) { }*/
             stopIntakeMotors();
 
-            rotate(drive, 90 - turnAngle);
-            strafeLeft(drive, strafeABitDiagonal+2);
+            rotate(drive, turnAngle - 90);
+            strafeRight(drive, strafeABitDiagonal + 2);
             // moveBackward(drive, 5);
             telemetry.update();
             // strafeLeft(drive, strafeBackDist);
             moveBackward(drive, 50);
 
-            rotate(drive, 90);
+            rotate(drive, -90);
             telemetry.update();
-
-            // Code with lift
-            /*moveBackward(drive, 17);
-            stopIntakeMotors();
-            sleep(300);
-            foundationServosDown();
-            sleep(300);
-            moveForward(drive, 20);
-
-            // pulling the foundation part
-            // rotate(drive, -90);
-
-            telemetry.update();
-            while (drive.getExternalHeading() > 1.571) {
-                drive.setMotorPowers(0.5, 0.5, -0.5, -0.5);
-            }*/
-
-            // moveBackward(drive, 7);
-
-            // extendStone();
-            // grabber.setPosition(0.6);
-            // retractExt();
-
-            // foundationServosUp();
 
             intakeMotor1.setPower(-1);
             intakeMotor2.setPower(-1);
-            sleep(500);
+            Thread.sleep(500);
             intakeMotor1.setPower(0);
             intakeMotor2.setPower(0);
-            /*intakeInTimer = System.currentTimeMillis();
-            while (System.currentTimeMillis() - intakeInTimer < 500) { }*/
-            /*sleep(500);
-            stopIntakeMotors();
-            // rotate(drive, 90);
-            // moveBackward(drive, 90);
-            // rotate(drive, 90);*/
-            telemetry.addData("Data","yes- intake");
-            telemetry.update();
-            strafeLeft(drive, strafeToFoundationDist);
-            telemetry.addData("Data","yes-strafe");
-            telemetry.update();
+
+            // telemetry.addData("Data","yes- intake");
+            // telemetry.update();
+            strafeRight(drive, strafeToFoundationDist);
+            // telemetry.addData("Data","yes-strafe");
+            // telemetry.update();
             moveBackward(drive, moveBackToFoundationDist);
-            sleep(300);
+            Thread.sleep(300);
             foundationServosDown();
-            sleep(300);
-            moveForward(drive, 15);
+            Thread.sleep(300);
+            moveForward(drive, 10);
 
             telemetry.update();
-            while(drive.getExternalHeading() > 1.571) {
-                drive.setMotorPowers(0.5, 0.5, 0, 0);
+            while(drive.getExternalHeading() < 4.712) {
+                /*telemetry.addData("imu current heading", drive.getExternalHeading());
+                telemetry.update();*/
+                drive.setMotorPowers(0, 0, 0.5, 0.5);
             }
-            // rotate(drive,-90);
-            drive.setMotorPowers(0, 0, 0, 0);
-            foundation=false;
-            foundationServosUp();
-            sleep(500);
-            moveBackward(drive, 8);
-            sleep(500);
-            moveForward(drive, moveToLine);
-            rotate(drive, -90);
-
-            finalAutoHeading = drive.getExternalHeading();
-
-
-            // ------------------------------------------------------------------------------------
-            // LIFT DcMotorEx
-            /*if (currentLiftStage == 0 && !liftTouch.isPressed()) {
-                liftEx1.setTargetPosition(targetPos);
-                liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                liftEx1.setPower(-0.4);
-            } else if (currentLiftStage == 0 && liftTouch.isPressed()) {
-                liftEx1.setPower(0);
-                liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            } else if (currentLiftStage != 0 && liftEx1.getCurrentPosition() != targetPos) {
-                liftEx1.setTargetPosition(targetPos);
-                liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
-                liftEx1.setPower(liftPower);
+            /*// rotate(drive,-90);
+            while(drive.getExternalHeading() < -1.571) {
+                drive.setMotorPowers(-0.5, -0.5, 0, 0);
             }*/
+
+            drive.setMotorPowers(0, 0, 0, 0);
+
+            foundation = false;
+            drive.setPoseEstimate(new Pose2d(0, 0, 0));
+            moveBackward(drive, 15);
+            foundationServosUp();
+            // drive.setExternalHeading(0);\
+            strafeLeft(drive, 20);
+            moveForward(drive, moveToLine);
+            rotate(drive, 90);
+
+            // finalAutoHeading = drive.getExternalHeading();
         }
-    }
-
-    private void extendStone() {
-        currentLiftStage = 2;
-        liftUpTimer = System.currentTimeMillis();
-
-        while (System.currentTimeMillis() - liftUpTimer > 800) { }
-
-        liftHoExt.setPosition(0.92);
-        sleep(200);
-        wrist.setPosition(0.18);
-        currentLiftStage = 0;
-    }
-
-    private void retractExt() {
-        wrist.setPosition(0.18);
-        grabber.setPosition(0.32);
-        sleep(200);
-        liftHoExt.setPosition(0.45);
     }
 
     private void startIntakeMotors(double p) {

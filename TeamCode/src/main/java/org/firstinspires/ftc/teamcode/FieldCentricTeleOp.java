@@ -53,7 +53,7 @@ public class FieldCentricTeleOp extends OpMode {
     private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel, intakeMotor1, intakeMotor2, liftMotor1;
     private static ExpansionHubMotor intakeMotorRE2, liftRE2;
     private static DcMotorEx liftEx1;
-    private static Servo liftHoExt, wrist, grabber, foundationServoLeft, foundationServoRight, stoneHolder;
+    private static Servo liftHoExt, wrist, grabber, foundationServoLeft, foundationServoRight, stoneHolder, capstoneServo;
     private static double PosXAngPosY, PosXAngNegY, NegXAng, Theta, r, outputX, outputY, heading;
     double headingAdjAfterReset = 0;
     static double slowMoReductionFactor = 1;
@@ -86,11 +86,16 @@ public class FieldCentricTeleOp extends OpMode {
     boolean previousGP2RBPos = false;
     boolean previousGP2LTPos = false;
     boolean previousGP2RTPos = false;
+    boolean previousGP1DLPos = false;
+    boolean previousGP1DUPos = false;
+
 
     boolean currentGP2LBPos;
     boolean currentGP2RBPos;
     boolean currentGP2LTPos;
     boolean currentGP2RTPos;
+    boolean currentGP1DLPos;
+    boolean currentGP1DUPos;
 
     double liftPower = 1;
 
@@ -101,6 +106,7 @@ public class FieldCentricTeleOp extends OpMode {
     long stoneAfterDropTimer = -1;
     long liftInTimer = -1;
     long stoneInRobotTimer = -1;
+    long capstoneTimer = -1;
 
     boolean servoPositionsAfterStart = true;
     boolean isAutomationOn = true;
@@ -134,6 +140,7 @@ public class FieldCentricTeleOp extends OpMode {
         foundationServoLeft = hardwareMap.servo.get("foundationServoLeft");
         foundationServoRight = hardwareMap.servo.get("foundationServoRight");
         stoneHolder = hardwareMap.servo.get("stoneHolder");
+        capstoneServo = hardwareMap.servo.get("capstoneServo");
 
         leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -162,6 +169,7 @@ public class FieldCentricTeleOp extends OpMode {
             liftHoExt.setPosition(0.45);
             wrist.setPosition(0.18);
             grabber.setPosition(0.6);
+            capstoneServo.setPosition(0);
 
             servoPositionsAfterStart = false;
         }
@@ -194,16 +202,6 @@ public class FieldCentricTeleOp extends OpMode {
 
         outputX = -Math.cos(heading - Theta + headingAdjAfterReset) * r;
         outputY = Math.sin(heading - Theta + headingAdjAfterReset) * r;
-
-        /*telemetry.addData("LeftX", gamepad1.left_stick_x);
-        telemetry.addData("LeftY", -gamepad1.left_stick_y);
-        telemetry.addData("r", r);
-        telemetry.addData("Theta", Math.toDegrees(Theta));
-        telemetry.addData("outputX",outputX);
-        telemetry.addData("outputY",outputY);
-        telemetry.addData("angle:",adjustAngle(getAbsoluteHeading()));
-        telemetry.addData("Angle:",imu.getPosition().z);
-        telemetry.update();*/
 
         heading = Math.toRadians(getAbsoluteHeading());
 
@@ -321,20 +319,29 @@ public class FieldCentricTeleOp extends OpMode {
             foundationServoRight.setPosition(0.95);
         }
 
-        // If the stone is inside the robot, push it in place using the stoneHolder servo
-        /*if (isAutomationOn && intakeColor.getDistance(DistanceUnit.CM) > 6 && intakeColor.getDistance(DistanceUnit.CM) < 11) {
-            stoneHolder.setPosition(0);
-            grabber.setPosition(0.6);
-        } else if (isAutomationOn && intakeColor.getDistance(DistanceUnit.CM) < 6) {
-            stoneHolder.setPosition(0.3);
-            stoneInRobotTimer = System.currentTimeMillis();
-        } else if (isAutomationOn) {
-            stoneHolder.setPosition(0.3);
-        }*/
+        currentGP1DLPos = gamepad1.dpad_left;
+        currentGP1DUPos = gamepad1.dpad_up;
 
-        /*if (isAutomationOn && intakeColor.getDistance(DistanceUnit.CM) < 6 && System.currentTimeMillis() - stoneInRobotTimer > 700) {
-            grabber.setPosition(0.32);
-        }*/
+        // capstone servo down
+        if (currentGP1DLPos && !previousGP1DLPos) {
+            capstoneServo.setPosition(0.75);
+            /*capstoneTimer = System.currentTimeMillis();
+            while (capstoneTimer > 0 && System.currentTimeMillis() - capstoneTimer < 1000) { }
+            capstoneServo.setPosition(0);
+            capstoneTimer = -1;*/
+
+            previousGP1DLPos = currentGP1DLPos;
+        } else {
+            previousGP1DLPos = currentGP1DLPos;
+        }
+
+        // capstone servo up
+        if (currentGP1DUPos && !previousGP1DUPos) {
+            capstoneServo.setPosition(0);
+            previousGP1DUPos = currentGP1DUPos;
+        } else {
+            previousGP1DUPos = currentGP1DUPos;
+        }
 
         currentGP2LBPos = gamepad2.left_bumper;
         currentGP2RBPos = gamepad2.right_bumper;

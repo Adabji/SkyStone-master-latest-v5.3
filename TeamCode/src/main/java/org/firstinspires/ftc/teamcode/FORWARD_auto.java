@@ -3,13 +3,12 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
 
-@Autonomous(name="Move Left Auto", group="Autonomous")
-public class StrafeLEFTAuto extends LinearOpMode {
-    public void runOpMode() {
+@Autonomous(name="FORWARD Auto", group="Autonomous")
+public class FORWARD_auto extends LinearOpMode {
+    public void runOpMode() throws InterruptedException {
         SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap);
 
         while (!opModeIsActive() && !isStopRequested()) {
@@ -18,9 +17,8 @@ public class StrafeLEFTAuto extends LinearOpMode {
         }
 
         if (opModeIsActive()) {
-            drive.followTrajectorySync(drive.trajectoryBuilder().forward(2).build());
-            drive.followTrajectorySync(drive.trajectoryBuilder().strafeLeft(10).build());
-            drive.followTrajectorySync(drive.trajectoryBuilder().back(2).build());
+            Thread.sleep(25000);
+            drive.followTrajectorySync(drive.trajectoryBuilder().forward(25).build());
         }
     }
 }

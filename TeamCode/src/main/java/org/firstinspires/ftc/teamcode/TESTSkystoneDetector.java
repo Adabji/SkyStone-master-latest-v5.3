@@ -44,10 +44,13 @@ public class TESTSkystoneDetector extends SkystoneDetector {
 
     private double foundBestDifference = Double.MAX_VALUE;
 
-
-    // SKystone
+    // Skystone
 
     public static Telemetry skystoneTel = null;
+
+    public Point getScreenPosition() {
+        return screenPosition;
+    }
 
     @Override
     public Mat process(Mat input) {
@@ -78,7 +81,7 @@ public class TESTSkystoneDetector extends SkystoneDetector {
 
 
         // Loop through the contours and score them, searching for the best result
-        for(MatOfPoint cont : contoursYellow){
+        /*for(MatOfPoint cont : contoursYellow){
             double score = calculateScore(cont); // Get the difference score using the scoring API
 
             // Get bounding rect of contour
@@ -103,7 +106,7 @@ public class TESTSkystoneDetector extends SkystoneDetector {
         }
 
 
-        Imgproc.rectangle(blackMask, bestRect.tl(), bestRect.br(), new Scalar(255,0,255), 1, Imgproc.LINE_4, 0);
+        Imgproc.rectangle(blackMask, bestRect.tl(), bestRect.br(), new Scalar(255,0,255), 1, Imgproc.LINE_4, 0);*/
         blackFilter.process(workingMat.clone(), blackMask);
 
 
@@ -129,7 +132,7 @@ public class TESTSkystoneDetector extends SkystoneDetector {
             }
         }
 
-        skystoneTel.addData("foundbestDiff", foundBestDifference);
+        /*skystoneTel.addData("foundbestDiff", foundBestDifference);
         skystoneTel.addData("currentBestDiff", bestDifference);
         skystoneTel.addData("fullWidthRectX", fullWidthRect.x);
         skystoneTel.addData("fullWidthRectY", fullWidthRect.y);
@@ -144,10 +147,9 @@ public class TESTSkystoneDetector extends SkystoneDetector {
             Thread.sleep(2000);
         } catch (InterruptedException i) {
 
-        }
+        }*/
 
         if(bestRect != null && foundBestDifference > bestDifference) {
-            screenPosition = new Point(bestRect.x, bestRect.y);
             foundRect = bestRect.clone();
             foundBestDifference = bestDifference;
             found = true;
@@ -162,9 +164,10 @@ public class TESTSkystoneDetector extends SkystoneDetector {
             // Show chosen result
             Imgproc.rectangle(displayMat, foundRect.tl(), foundRect.br(), new Scalar(255,0,0),4);
             Imgproc.putText(displayMat, "Chosen", foundRect.tl(),0,1,new Scalar(255,255,255));
-            Imgproc.rectangle(displayMat, fullWidthRect.tl(), fullWidthRect.br(), new Scalar(0,255,0), 4);
-        }
-        else {
+            // Imgproc.rectangle(displayMat, fullWidthRect.tl(), fullWidthRect.br(), new Scalar(0,255,0), 4);
+
+            screenPosition = foundRect.tl();
+        } else {
             found = false;
         }
 
@@ -190,7 +193,7 @@ public class TESTSkystoneDetector extends SkystoneDetector {
 
         // Get bounding rect of contour
         Rect rect = Imgproc.boundingRect(contour);
-        if (rect.y > 160) { score = Math.abs(rect.height - 44);}
+        if (rect.y > 160 && rect.width > 10) { score = Math.abs(rect.height - 44); }
 
         return score;
     }
