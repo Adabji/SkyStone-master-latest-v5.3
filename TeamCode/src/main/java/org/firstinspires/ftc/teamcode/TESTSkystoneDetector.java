@@ -48,6 +48,8 @@ public class TESTSkystoneDetector extends SkystoneDetector {
 
     public static Telemetry skystoneTel = null;
 
+
+
     public Point getScreenPosition() {
         return screenPosition;
     }
@@ -196,5 +198,10 @@ public class TESTSkystoneDetector extends SkystoneDetector {
         if (rect.y > 160 && rect.width > 10) { score = Math.abs(rect.height - 44); }
 
         return score;
+    }
+
+    public void setFoundToFalse() {
+        found = false;
+        foundBestDifference = Double.MAX_VALUE;
     }
 }
