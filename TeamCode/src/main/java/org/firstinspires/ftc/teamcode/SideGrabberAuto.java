@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.disnodeteam.dogecv.detectors.skystone.SkystoneDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -22,6 +23,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
@@ -44,20 +46,18 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.finalAutoHeadi
  * Derived Work Copyright(c) 2019 DogeDevs
  */
 
-@Autonomous(name = "Auto RED", group="Autonomous")
+@Config
+@Autonomous(name = "SideGrabbers RED", group="Autonomous")
 public class SideGrabberAuto extends LinearOpMode {
     private OpenCvCamera phoneCam;
-    private LastHopeDetector skyStoneDetector;
+    private TESTSkystoneDetector skyStoneDetector;
 
     private DcMotorEx intakeMotor1, intakeMotor2;
     private static DcMotorEx liftEx1;
     private Servo foundationServoLeft, foundationServoRight, sideGrabberServo1, sideGrabberServo2;
 
-    int currentLiftStage = 0;
-    int targetPos = 0;
-    double liftPower = 1;
-    long liftUpTimer = -1;
     long sideGrabTimer = -1;
+    long detectionTimer = -1;
 
     // Camera stuff
     String skystoneLoc = "";
@@ -75,17 +75,20 @@ public class SideGrabberAuto extends LinearOpMode {
     double lkf = 0;
 
     // dashboard stuff
-    public static int leftAndCenterBlockMargin = 80;
     public static double strafeDist = 2;
-    public static double moveToStoneDist = 40;
-    public static double centerStrafe = 5;
-    public static double moveABitToStone = 0;
-    public static double moveToIntakeStone = 9;
+    public static double moveToStoneDist = 25;
     public static double strafeSideGrabStone = 7;
-    public static double screenYPos = 160;
     public static double strafeToFoundationDist = 33;
     public static double moveBackToFoundationDist = 15;
-    public static double moveToLine = 35;
+
+    public static double strafeToLeft = 8;
+    public static double strafeToCenter = 0;
+    public static double strafeToRight = 8;
+
+    public static double leftBackDistance = 100;
+    public static double centerBackDistance = 90;
+    public static double rightBackDistance = 80;
+    public static double backDistance = 0;
 
     DriveConstraints stoneCollectionConstraints = new DriveConstraints(10.0, 10.0, 0.0, Math.toRadians(180.0), Math.toRadians(180.0), 0.0);
     @Override
@@ -96,8 +99,8 @@ public class SideGrabberAuto extends LinearOpMode {
 
         foundationServoLeft = hardwareMap.get(Servo.class, "foundationServoLeft");
         foundationServoRight = hardwareMap.get(Servo.class, "foundationServoRight");
-        sideGrabberServo1 = hardwareMap.get(Servo.class, "sideGrabberServo1");
-        sideGrabberServo2 = hardwareMap.get(Servo.class, "sideGrabberServo2");
+        sideGrabberServo1 = hardwareMap.get(Servo.class, "rightSideGrabber1");
+        sideGrabberServo2 = hardwareMap.get(Servo.class, "rightSideGrabber2");
         liftHoExt = hardwareMap.servo.get("liftHoExt");
         wrist = hardwareMap.servo.get("liftGrabberRotater");
         grabber = hardwareMap.servo.get("liftGrabber");
@@ -125,65 +128,67 @@ public class SideGrabberAuto extends LinearOpMode {
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = new OpenCvInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-        phoneCam.openCameraDevice();
-        skyStoneDetector = new LastHopeDetector();
-        phoneCam.setPipeline(skyStoneDetector);
-        phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+        skyStoneDetector = new TESTSkystoneDetector();
 
         /*
          * Wait for the user to press start on the Driver Station
          */
         while (!opModeIsActive() && !isStopRequested()) {
-            if (skyStoneDetector.isDetected()/* && skyStoneDetector.foundRectangle().y > 180*/) {
-                if (skyStoneDetector.foundRectangle().x < 80) {
-                    skystoneLoc = "left";
-                    strafeDist = 15;
-                    moveBackToFoundationDist = 43;
-                } else if (skyStoneDetector.foundRectangle().x < 150 && skyStoneDetector.foundRectangle().x > 80) {
-                    skystoneLoc = "center";
-                    strafeDist = 2;
-                    moveBackToFoundationDist = 33;
-                } else {
-                    skystoneLoc = "right";
-                    strafeDist = 6;
-                    moveBackToFoundationDist = 30;
-                }
-            }
-
-            telemetry.addData("Skystone Location = " + skyStoneDetector.foundRectangle().x, skystoneLoc);
-            telemetry.addData("Status", "Waiting for start command...");
+            telemetry.addLine("Robot is ready. Waiting for start command...");
             telemetry.update();
         }
 
         if (opModeIsActive()) {
-            phoneCam.stopStreaming();
+            phoneCam.openCameraDevice();
+            phoneCam.setPipeline(skyStoneDetector);
+            phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
 
-            // open intake motors
-            intakeMotor1.setPower(1);
-            intakeMotor2.setPower(-1);
-            sleep(50);
-            intakeMotor1.setPower(0);
-            intakeMotor2.setPower(0);
+            skyStoneDetector.setFoundToFalse();
 
-            // telemetry.addData("Current heading", Math.toDegrees(drive.getExternalHeading()));
-            // telemetry.update();
+            detectionTimer = System.currentTimeMillis();
+
+            while (System.currentTimeMillis() - detectionTimer < 500) { }
+
+            telemetry.addData("Skystone ScreenPos", skyStoneDetector.getScreenPosition());
+            telemetry.update();
+
+            // if (!skyStoneDetector.isDetected()) {
+            if (skyStoneDetector.getScreenPosition().x < 50) {
+                skystoneLoc = "left";
+                strafeDist = strafeToLeft;
+                moveBackToFoundationDist = 40;
+                backDistance = leftBackDistance;
+            } else if (skyStoneDetector.getScreenPosition().x < 150 && skyStoneDetector.getScreenPosition().x > 50) {
+                skystoneLoc = "center";
+                strafeDist = strafeToCenter;
+                moveBackToFoundationDist = 30;
+                backDistance = centerBackDistance;
+            } else {
+                skystoneLoc = "right";
+                strafeDist = strafeToRight;
+                moveBackToFoundationDist = 27;
+                backDistance = rightBackDistance;
+            }
+            // }
+
+            telemetry.update();
 
             moveForward(drive, moveToStoneDist);
 
             // FIRST SKYSTONE - OUTER ONE
             if (skystoneLoc.equals("right")) {
-                strafeRight(drive, strafeDist);
+                strafeRight(drive, strafeToRight);
             } else if (skystoneLoc.equals("center")) {
-                strafeLeft(drive, strafeDist);
+                strafeLeft(drive, strafeToCenter);
             } else if (skystoneLoc.equals("left")) {
-                strafeLeft(drive, strafeDist);
+                strafeLeft(drive, strafeToLeft);
             } else {
-                strafeLeft(drive, strafeDist);
+                strafeLeft(drive, strafeToCenter);
             }
 
             // moveForward(drive, moveToStoneDist);
-            rotate(drive, 90);
-            strafeRight(drive, strafeSideGrabStone);
+            rotate(drive, -90);
+            strafeLeft(drive, strafeSideGrabStone);
             sleep(300);
 
             // grab skystone using the side grabber
@@ -193,51 +198,37 @@ public class SideGrabberAuto extends LinearOpMode {
 
             sideGrabberServo1.setPosition(0.61);
 
-            strafeLeft(drive, strafeSideGrabStone);
-            moveBackward(drive, 50 + moveBackToFoundationDist);
-            strafeRight(drive, 7);
+            strafeRight(drive, strafeSideGrabStone - 2);
+            moveForward(drive, 50 + moveBackToFoundationDist);
+            strafeLeft(drive, 7);
 
             // side grabber elbow down 1
             // side grabber elbow up 0.61
-            // side grabber down 0.81
-            // side grabber up 0.47
+            // side grabber not grabbing 0.81
+            // side grabber grabbing 0.47
 
             // deposit skystone
             sideGrabberServo1.setPosition(1);
             sideGrabberServo2.setPosition(0.47);
+            sleep(500);
 
-            strafeLeft(drive, 10);
+            strafeRight(drive, 10);
+
+            moveBackward(drive, backDistance);
+            strafeLeft(drive, strafeSideGrabStone);
         }
     }
     
     private void sideGrabberServosUp() {
         sideGrabberServo1.setPosition(0.61);
-        sideGrabberServo2.setPosition(0.47);
+        sideGrabberServo2.setPosition(0.81);
     }
 
     private void grabSkyStone() {
         sideGrabberServo1.setPosition(1);
-        sleep(300);
-        sideGrabberServo2.setPosition(0.81);
-    }
-
-    private void extendStone() {
-        currentLiftStage = 2;
-        liftUpTimer = System.currentTimeMillis();
-
-        while (System.currentTimeMillis() - liftUpTimer > 800) { }
-
-        liftHoExt.setPosition(0.92);
-        sleep(200);
-        wrist.setPosition(0.18);
-        currentLiftStage = 0;
-    }
-
-    private void retractExt() {
-        wrist.setPosition(0.18);
-        grabber.setPosition(0.32);
-        sleep(200);
-        liftHoExt.setPosition(0.45);
+        sleep(500);
+        sideGrabberServo2.setPosition(0.47);
+        sleep(500);
     }
 
     private void startIntakeMotors(double p) {
