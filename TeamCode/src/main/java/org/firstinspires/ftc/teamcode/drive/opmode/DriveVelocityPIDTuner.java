@@ -38,7 +38,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
  * PID coefficients. Once you've found a satisfactory set of gains, add them to your drive class
  * ctor.
  */
-@Disabled
+
 @Config
 @Autonomous(name = "DriveVelocityPIDTuner", group = "Autonomous")
 public class DriveVelocityPIDTuner extends LinearOpMode {

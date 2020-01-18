@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
  * Op mode for tuning follower PID coefficients (located in the drive base classes). The robot
  * drives in a DISTANCE-by-DISTANCE square indefinitely.
  */
-@Disabled
+
 @Config
 @Autonomous(group = "drive")
 public class FollowerPIDTuner extends LinearOpMode {

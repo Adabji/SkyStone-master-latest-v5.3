@@ -1,3 +1,9 @@
+/**
+ * RED Auto
+ *
+ * Uses the left side grabber
+ */
+
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -75,20 +81,22 @@ public class SideGrabberAuto extends LinearOpMode {
     double lkf = 0;
 
     // dashboard stuff
-    public static double strafeDist = 2;
+    public static double strafeDist = 15;
     public static double moveToStoneDist = 25;
     public static double strafeSideGrabStone = 7;
     public static double strafeToFoundationDist = 33;
     public static double moveBackToFoundationDist = 15;
 
-    public static double strafeToLeft = 8;
+    public static double strafeToLeft = 15;
     public static double strafeToCenter = 0;
-    public static double strafeToRight = 8;
+    public static double strafeToRight = 15;
 
-    public static double leftBackDistance = 100;
-    public static double centerBackDistance = 90;
-    public static double rightBackDistance = 80;
+    public static double leftBackDistance = 117;
+    public static double centerBackDistance = 112;
+    public static double rightBackDistance = 104;
     public static double backDistance = 0;
+
+    public static double secondTimeLeftDist = 3;
 
     DriveConstraints stoneCollectionConstraints = new DriveConstraints(10.0, 10.0, 0.0, Math.toRadians(180.0), Math.toRadians(180.0), 0.0);
     @Override
@@ -194,13 +202,11 @@ public class SideGrabberAuto extends LinearOpMode {
             // grab skystone using the side grabber
             grabSkyStone();
 
-            sleep(200);
-
             sideGrabberServo1.setPosition(0.61);
 
-            strafeRight(drive, strafeSideGrabStone - 2);
+            strafeRight(drive, strafeSideGrabStone - 3);
             moveForward(drive, 50 + moveBackToFoundationDist);
-            strafeLeft(drive, 7);
+            strafeLeft(drive, 15);
 
             // side grabber elbow down 1
             // side grabber elbow up 0.61
@@ -212,10 +218,26 @@ public class SideGrabberAuto extends LinearOpMode {
             sideGrabberServo2.setPosition(0.47);
             sleep(500);
 
-            strafeRight(drive, 10);
+            strafeRight(drive, 15);
 
             moveBackward(drive, backDistance);
-            strafeLeft(drive, strafeSideGrabStone);
+            strafeLeft(drive, strafeSideGrabStone + secondTimeLeftDist);
+
+            // grab the second skystone
+            grabSkyStone();
+
+            sideGrabberServo1.setPosition(0.61);
+
+            strafeRight(drive, strafeSideGrabStone);
+            moveForward(drive, backDistance);
+            strafeLeft(drive, 7);
+
+            // deposit skystone
+            sideGrabberServo1.setPosition(1);
+            sideGrabberServo2.setPosition(0.47);
+            sleep(500);
+
+
         }
     }
     

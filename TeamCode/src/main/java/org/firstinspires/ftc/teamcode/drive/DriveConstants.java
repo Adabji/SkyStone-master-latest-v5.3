@@ -37,7 +37,7 @@ public class DriveConstants {
      * MOTOR_VELO_PID with the tuned coefficients from DriveVelocityPIDTuner.
      */
     public static final boolean RUN_USING_ENCODER = true;
-    public static final PIDCoefficients MOTOR_VELO_PID = new PIDCoefficients(11, 0, 0.3);
+    public static final PIDCoefficients MOTOR_VELO_PID = new PIDCoefficients(0.8, 0.05, 1);
 
     /*
      * These are physical constants that can be determined from your robot (including the track
@@ -48,7 +48,7 @@ public class DriveConstants {
      * convenience. Make sure to exclude any gear ratio included in MOTOR_CONFIG from GEAR_RATIO.
      */
     public static double WHEEL_RADIUS = 1.9685;
-    public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
+    public static double GEAR_RATIO = 1.2; // output (wheel) speed / input (motor) speed
     public static double TRACK_WIDTH = 15.59;
 
     /*
@@ -64,8 +64,6 @@ public class DriveConstants {
     // Final Auto Heading
     public static double finalAutoHeading = 0;
 
-
-
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,
      * the constraints should never exceed ~80% of the robot's actual capabilities. While Road
@@ -75,7 +73,7 @@ public class DriveConstants {
      * forces acceleration-limited profiling).
      */
     public static DriveConstraints BASE_CONSTRAINTS = new DriveConstraints(
-            30.0, 30.0, 0.0,
+            60.0, 50.0, 0.0,
             Math.toRadians(180.0), Math.toRadians(180.0), 0.0
     );
 
