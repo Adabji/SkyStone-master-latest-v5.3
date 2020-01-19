@@ -237,7 +237,20 @@ public class SideGrabberAuto extends LinearOpMode {
             sideGrabberServo2.setPosition(0.47);
             sleep(500);
 
+            rotate(drive, -90);
+            moveBackward(drive, 5);
+            while(drive.getExternalHeading() > 1.571) {
+                drive.setMotorPowers(0.5, 0.5, 0, 0);
+            }
 
+            drive.setMotorPowers(0, 0, 0, 0);
+            drive.setPoseEstimate(new Pose2d(0, 0, 0));
+            
+            moveBackward(drive, 15);
+            foundationServosUp();
+            strafeRight(drive, 16);
+            moveForward(drive, 35);
+            rotate(drive, -90);
         }
     }
     
