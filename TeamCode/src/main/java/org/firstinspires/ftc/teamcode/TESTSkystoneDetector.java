@@ -73,7 +73,7 @@ public class TESTSkystoneDetector extends SkystoneDetector {
         List<MatOfPoint> contoursYellow = new ArrayList<>();
 
         Imgproc.findContours(yellowMask, contoursYellow, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-        Imgproc.drawContours(displayMat,contoursYellow,-1,new Scalar(255,30,30),2);
+        Imgproc.drawContours(displayMat, contoursYellow, -1, new Scalar(255,30,30), 2);
 
 
         // Current result
@@ -118,17 +118,17 @@ public class TESTSkystoneDetector extends SkystoneDetector {
         List<MatOfPoint> contoursBlack = new ArrayList<>();
 
         Imgproc.findContours(blackMask, contoursBlack, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-        Imgproc.drawContours(displayMat,contoursBlack,-1,new Scalar(40,40,40),2);
+        Imgproc.drawContours(displayMat,contoursBlack, -1, new Scalar(40,40,40), 2);
 
-        for(MatOfPoint cont : contoursBlack){
+        for(MatOfPoint cont : contoursBlack) {
             double score = calculateScore(cont); // Get the difference score using the scoring API
 
             // Get bounding rect of contour
             Rect rect = Imgproc.boundingRect(cont);
-            Imgproc.rectangle(displayMat, rect.tl(), rect.br(), new Scalar(0,0,255),2); // Draw rect
+            Imgproc.rectangle(displayMat, rect.tl(), rect.br(), new Scalar(0,0,255), 2); // Draw rect
 
             // If the result is better then the previously tracked one, set this rect as the new best
-            if(score < bestDifference){
+            if(score < bestDifference) {
                 bestDifference = score;
                 bestRect = rect;
             }
@@ -188,7 +188,7 @@ public class TESTSkystoneDetector extends SkystoneDetector {
         }
     }
 
-    public double calculateScore(Mat input){
+    public double calculateScore(Mat input) {
         if(!(input instanceof MatOfPoint)) return Double.MAX_VALUE;
         MatOfPoint contour = (MatOfPoint) input;
         double score = Double.MAX_VALUE;
