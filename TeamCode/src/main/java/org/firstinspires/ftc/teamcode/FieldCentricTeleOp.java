@@ -139,7 +139,8 @@ public class FieldCentricTeleOp extends OpMode {
         grabber = hardwareMap.servo.get("liftGrabber");
         foundationServoLeft = hardwareMap.servo.get("foundationServoLeft");
         foundationServoRight = hardwareMap.servo.get("foundationServoRight");
-        stoneHolder = hardwareMap.servo.get("stoneHolder");
+        //
+        // stoneHolder = hardwareMap.servo.get("stoneHolder");
         capstoneServo = hardwareMap.servo.get("capstoneServo");
 
         leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -164,8 +165,8 @@ public class FieldCentricTeleOp extends OpMode {
     public void loop() {
         // servo position settings initialization at start
         if (servoPositionsAfterStart) {
-            foundationServoLeft.setPosition(0.77);
-            foundationServoRight.setPosition(0.37);
+           // foundationServoLeft.setPosition(0.77);
+          //  foundationServoRight.setPosition(0.37);
             liftHoExt.setPosition(0.45);
             wrist.setPosition(0.18);
             grabber.setPosition(0.6);
@@ -256,7 +257,7 @@ public class FieldCentricTeleOp extends OpMode {
 
         // lift extension out position
         if (currentLiftStage > 0 && gamepad2.b && gamePad2BTimer == -1) {
-            liftHoExt.setPosition(0.92);
+            liftHoExt.setPosition(1);
             gamePad2BTimer = System.currentTimeMillis();
         } else if (gamePad2BTimer > 0 && System.currentTimeMillis() - gamePad2BTimer > 500) {
             wrist.setPosition(0.85);
@@ -266,7 +267,7 @@ public class FieldCentricTeleOp extends OpMode {
         // lift extension in
         if (gamepad2.a && gamePad2ATimer == -1) {
             wrist.setPosition(0.18);
-            grabber.setPosition(0.32);
+            //grabber.setPosition(0.32);
             gamePad2ATimer = System.currentTimeMillis();
         } else if (gamePad2ATimer > 0 && System.currentTimeMillis() - gamePad2ATimer > 300 && liftInTimer == -1) {
             liftHoExt.setPosition(0.45);
@@ -287,17 +288,17 @@ public class FieldCentricTeleOp extends OpMode {
             wrist.setPosition(0.18);
         }*/
 
-        // grabber - not grabbing
-        if (gamepad2.y) {
-            grabber.setPosition(0.6);
-        }
-
         // grabber - grabbing
         if (gamepad2.x) {
-            grabber.setPosition(0.32);
+            grabber.setPosition(0.4);
         }
 
-        // stone holder out - not holding
+        // grabber - not grabbing
+        if (gamepad2.y) {
+            grabber.setPosition(0.7);
+        }
+
+       /* // stone holder out - not holding
         if (gamepad2.dpad_left) {
             stoneHolder.setPosition(0.4);
         }
@@ -305,7 +306,7 @@ public class FieldCentricTeleOp extends OpMode {
         // stone holder in - holding the stone in place
         if (gamepad2.dpad_right) {
             stoneHolder.setPosition(0);
-        }
+        }*/
 
         // foundation servo - Up
         if (gamepad1.left_bumper) {
