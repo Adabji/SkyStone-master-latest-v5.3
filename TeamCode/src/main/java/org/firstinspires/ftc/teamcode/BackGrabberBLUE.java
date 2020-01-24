@@ -25,17 +25,18 @@ public class BackGrabberBLUE extends LinearOpMode {
     public static double movementg7 = 85;
     public static double movementh8 = -90;
     public static double movementi9 = 12;
+    public static double movementl12 = 87;
+    public static double movementn14 = 6;
+    public static double movementk11 = 20;
+    public static double movementm13 = 98;
+    public static double movementu21 = 12;
+    public static double movementt20 = 15;
+    public static double movemento15 = 85;
   /*  public static double movementj10 = -92;
-    public static double movementk11 = 16;
-    public static double movementl12 = 90;
-    public static double movementm13 = 12;
-    public static double movementn14 = 11;
-    public static double movemento15 = -90;
     public static double movementp16 = 15;*/
     public static double movementq17 = 4;
     public static double movementr18 = 10;
    // public static double movements19 = 30;
-    //public static double movementt20 = 12;
 
 
     private Servo foundationServo, foundationServoRight, rightStoneGrabber, grabberLeft;
@@ -58,6 +59,7 @@ public class BackGrabberBLUE extends LinearOpMode {
         }
 
         if (opModeIsActive()) {
+            sleep(500);
             strafeRight(drive, movementa1);
             moveBackward(drive, movementb2);
             rotate(drive, movementc3);
@@ -74,14 +76,32 @@ public class BackGrabberBLUE extends LinearOpMode {
             sleep(300);
             foundationUpGrabberDown();
             strafeLeft(drive,movementq17);
-            moveForward(drive,3);
+           // moveForward(drive,5);
             grabFoundation();
+            moveBackward(drive,4);
             sleep(500);
-            while(drive.getExternalHeading() < 3.1415) { drive.setMotorPowers(0, 0, 0.5, 0.5); }
+            while(drive.getExternalHeading() < 3.1415) { drive.setMotorPowers(0, 0, 0.7, 0.7); }
             drive.setMotorPowers(0, 0, 0, 0);
-            drive.setPoseEstimate(0,0,0);
+            drive.setPoseEstimate(new Pose2d (0, 0, 0));
             releaseFoundation();
-            //strafeRight(drive,movementr18);
+            moveForward(drive,movementl12);
+            foundationDownGrabberUp();
+            strafeRight(drive,movementt20);
+            rotate(drive,movementh8);
+            strafeLeft(drive,movementu21);
+            moveBackward(drive,movementn14);
+            foundationDownGrabberDown();
+            moveForward(drive,movementn14);
+            foundationUpGrabberDown();
+            rotate(drive,movemento15);
+            //moveBackward(drive,movementm13);
+            drive.setMotorPowers(-1, -1, -1, -1);
+            sleep(1700);
+            drive.setMotorPowers(0, 0, 0, 0);
+            foundationDownGrabberUp();
+            sleep(300);
+            foundationUpGrabberDown();
+            moveForward(drive,movementk11);
             /*moveForward(drive,movementi9);
             rotate(drive,movementj10);
             moveBackward(drive,movementg7+movementb2+movementk11);
