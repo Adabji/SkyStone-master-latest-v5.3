@@ -35,27 +35,28 @@ public class BackGrabberBLUE extends LinearOpMode {
 
     public static double movementa1 = 20;
     public static double movementb2 = 4;
-    public static double movementc3 = 90;
+    public static double movementc3 = 87.5;
     public static double movementd4 = 25;
     public static double movemente5 = 10;
-    public static double movementf6 = 87;
-    public static double movementg7 = 85;
-    public static double movementh8 = -90;
+    public static double movementf6 = 85.5;
+    public static double movementg7 = 90;
+    public static double movementh8 = -92;
     public static double movementi9 = 12;
     public static double movementl12 = 87;
-    public static double movementn14 = 18;
+    public static double movementn14 = 12;
     public static double movementk11 = 12;
-    public static double movementm13 = 9;
-    public static double movementu21 = 23;
+    public static double movementm13 = 12.5;
+    public static double movementu21 = 27.5;
     public static double movementt20 = 12;
-    public static double movemento15 = 85;
+    public static double movemento15 = 83;
     public static double movementp16 = 3.07;    // turn
-    public static double movementq17 = 4;
+    public static double movementq17 = 6.5;
 
     // Timers
     double detectionTimer = -1;
     double bufferTimer = -1;
-    public static long timer1 = 1900;
+    public static long timer1 = 200;
+    public static long timer2 = 1700;
     // public static double movements19 = 30;
 
     // Hardware stuff
@@ -77,7 +78,7 @@ public class BackGrabberBLUE extends LinearOpMode {
         skyStoneDetector = new TESTSkystoneDetector();
 
         while (!opModeIsActive() && !isStopRequested()) {
-            /*bufferTimer = System.currentTimeMillis();
+            bufferTimer = System.currentTimeMillis();
             while (System.currentTimeMillis() - bufferTimer < 1000 && !opModeIsActive()) {
                 skyStoneDetector = new TESTSkystoneDetector();
                 phoneCam.openCameraDevice();
@@ -96,7 +97,7 @@ public class BackGrabberBLUE extends LinearOpMode {
                     skystoneLoc = "center";
                     // movementb2 = movementToCenter;
                 }
-            }*/
+            }
 
             telemetry.addData("Status", "Waiting for start command...");
             // telemetry.addData("Heading", drive.getExternalHeading());
@@ -106,7 +107,7 @@ public class BackGrabberBLUE extends LinearOpMode {
         }
 
         if (opModeIsActive()) {
-            phoneCam.openCameraDevice();
+           /* phoneCam.openCameraDevice();
             phoneCam.setPipeline(skyStoneDetector);
             phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
 
@@ -128,7 +129,7 @@ public class BackGrabberBLUE extends LinearOpMode {
 
             telemetry.addData("Skystone Location", skystoneLoc);
             telemetry.addData("Skystone coordinates", skyStoneDetector.getScreenPosition());
-            telemetry.update();
+            telemetry.update();*/
 
             strafeRight(drive, movementa1);
             moveBackward(drive, movementb2);
@@ -150,7 +151,7 @@ public class BackGrabberBLUE extends LinearOpMode {
             grabFoundation();
             moveBackward(drive,4);
             sleep(500);
-            while(drive.getExternalHeading() < movementp16) { drive.setMotorPowers(0, 0, 0.7, 0.7); }
+            while(drive.getExternalHeading() < movementp16) { drive.setMotorPowers(-0.05, -0.05, 0.7, 0.7); }
             drive.setMotorPowers(0, 0, 0, 0);
             drive.setPoseEstimate(new Pose2d (0, 0, 0));
             releaseFoundation();
@@ -165,8 +166,11 @@ public class BackGrabberBLUE extends LinearOpMode {
             foundationUpGrabberDown();
             rotate(drive,movemento15);
             // moveBackward(drive,movementm13);
-            drive.setMotorPowers(-1, -1, -1, -1);
+            drive.setMotorPowers(-1, -1, -.85, -.85);
             sleep(timer1);
+            drive.setMotorPowers(0, 0, 0, 0);
+            drive.setMotorPowers(-1, -1, -1, -1);
+            sleep(timer2);
             drive.setMotorPowers(0, 0, 0, 0);
             foundationDownGrabberUp();
             sleep(300);
@@ -179,11 +183,11 @@ public class BackGrabberBLUE extends LinearOpMode {
             foundationDownGrabberUp();
             moveBackward(drive,movementm13);
             foundationDownGrabberDown();
-            moveForward(drive,movementn14);
+            moveForward(drive,move
+            moveBackward(drive,movementg7+movementb2+movementk11+movementt20);
+            rotate(drive,movemento15);mentn14);
             foundationUpGrabberDown();
             rotate(drive,movementf6);
-            moveBackward(drive,movementg7+movementb2+movementk11+movementt20);
-            rotate(drive,movemento15);
             moveBackward(drive,movementp16);
             foundationDownGrabberUp();
             //sleep(200);
@@ -194,6 +198,7 @@ public class BackGrabberBLUE extends LinearOpMode {
             releaseFoundation();
             strafeRight(drive,movementr18);
             moveForward(drive,movements19);*/
+
         }
     }
 

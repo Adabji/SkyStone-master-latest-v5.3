@@ -34,7 +34,7 @@ public class BackGrabberWithCVBLUE extends LinearOpMode {
     public static double movementc3 = 90;
     public static double movementd4 = 25;
     public static double movemente5 = 10;
-    public static double movementf6 = 88;
+    public static double movementf6 = 87.5;
     public static double movementg7 = 85;
     public static double movementh8 = -90;
     public static double movementi9 = 12;
