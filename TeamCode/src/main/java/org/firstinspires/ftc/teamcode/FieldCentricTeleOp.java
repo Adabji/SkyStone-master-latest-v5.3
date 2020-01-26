@@ -260,14 +260,11 @@ public class FieldCentricTeleOp extends OpMode {
             liftHoExt.setPosition(1);
             gamePad2BTimer = System.currentTimeMillis();
         } else if (gamePad2BTimer > 0 && System.currentTimeMillis() - gamePad2BTimer > 500) {
-            wrist.setPosition(0.85);
             gamePad2BTimer = -1;
         }
 
         // lift extension in
         if (gamepad2.a && gamePad2ATimer == -1) {
-            wrist.setPosition(0.18);
-            //grabber.setPosition(0.32);
             gamePad2ATimer = System.currentTimeMillis();
         } else if (gamePad2ATimer > 0 && System.currentTimeMillis() - gamePad2ATimer > 300 && liftInTimer == -1) {
             liftHoExt.setPosition(0.45);
@@ -290,12 +287,14 @@ public class FieldCentricTeleOp extends OpMode {
 
         // grabber - grabbing
         if (gamepad2.x) {
-            grabber.setPosition(0.4);
+            grabber.setPosition(0.49);
+            wrist.setPosition(0.49);
         }
 
         // grabber - not grabbing
         if (gamepad2.y) {
-            grabber.setPosition(0.7);
+            grabber.setPosition(0.8);
+            wrist.setPosition(0.16);
         }
 
        /* // stone holder out - not holding

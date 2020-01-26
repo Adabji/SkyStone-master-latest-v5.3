@@ -14,9 +14,10 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
 @Config
 @Autonomous(name = "rotationauto", group = "Autonomous")
 public class rotationauto extends LinearOpMode {
-    double target;
-    double error;
-    double Kp = .008;
+    //double target;
+    double errorNoWrap;
+    double errorWrap;
+    double Kp = .002;
     double leftPow;
     double rightPow;
     double landingHeading = 0;
@@ -50,6 +51,7 @@ public class rotationauto extends LinearOpMode {
 
         if (opModeIsActive()) {
             rotate(90);
+            moveForward(drive,10);
         }
     }
 
@@ -74,22 +76,28 @@ public class rotationauto extends LinearOpMode {
     }
 
     private void rotate(double target) {
-        while(reachedHeading=false){
         SampleMecanumDriveBase drive = new SampleMecanumDriveREV(hardwareMap);
-        error = drive.getExternalHeading() - Math.toRadians(target);
-        while ((Math.abs(error) > Math.toRadians(2)) && opModeIsActive()) {
-            leftPow = Math.toDegrees(error) * Kp;
-            rightPow = -Math.toDegrees(error) * Kp;
-            drive.setMotorPowers(rightPow, rightPow, leftPow, leftPow);
-            telemetry.addData("Error",error);
-            telemetry.addData("LeftPow",leftPow);
-            telemetry.addData("rightPow",rightPow);
-            telemetry.update();
-            reachedHeading=true;
+        while (opModeIsActive()) {
+            errorNoWrap = drive.getExternalHeading() - Math.toRadians(target);
+           /* if(errorNoWrap>0){
+                errorWrap=errorNoWrap;
+            }
+            else{
+                errorWrap=errorNoWrap;
+            }*/
+            if (Math.abs(errorWrap) > Math.toRadians(10) && opModeIsActive()) {
+                leftPow = errorWrap * Kp;
+                rightPow = -errorWrap * Kp;
+                drive.setMotorPowers(rightPow, rightPow, leftPow, leftPow);
+                telemetry.addData("ErrorWrapped", errorWrap);
+                telemetry.addData("LeftPow", leftPow);
+                telemetry.addData("rightPow", rightPow);
+                telemetry.addData("Heading",drive.getExternalHeading());
+                telemetry.update();
+            }
         }
-        }
-        reachedHeading=false;
     }
+
     private void foundationDownGrabberUp(){
         foundationServoRight.setPosition(0.95);
         grabberLeft.setPosition(.3);

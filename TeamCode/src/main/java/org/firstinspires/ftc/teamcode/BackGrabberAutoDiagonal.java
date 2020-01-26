@@ -53,7 +53,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.finalAutoHeadi
  */
 
 @Config
-@Autonomous(name = "BackGrabber RED", group="Autonomous")
+@Autonomous(name = "SideGrabber RED", group="Autonomous")
 public class BackGrabberAutoDiagonal extends LinearOpMode {
     private OpenCvCamera phoneCam;
     private TESTSkystoneDetector skyStoneDetector;
