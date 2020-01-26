@@ -31,6 +31,7 @@ import java.util.Locale;
  * Derived Work Copyright(c) 2019 DogeDevs
  */
 
+@Disabled
 @Autonomous(name = "PostQualifierCV", group = "Autonomous")
 public class PostQualifierCV extends LinearOpMode {
     private OpenCvCamera phoneCam;

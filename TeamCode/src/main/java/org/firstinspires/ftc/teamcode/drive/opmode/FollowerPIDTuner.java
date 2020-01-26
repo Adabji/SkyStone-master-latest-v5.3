@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
  * drives in a DISTANCE-by-DISTANCE square indefinitely.
  */
 
+@Disabled
 @Config
 @Autonomous(group = "drive")
 public class FollowerPIDTuner extends LinearOpMode {

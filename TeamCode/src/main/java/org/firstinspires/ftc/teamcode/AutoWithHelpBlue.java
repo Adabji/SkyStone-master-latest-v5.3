@@ -44,6 +44,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.finalAutoHeadi
  * Derived Work Copyright(c) 2019 DogeDevs
  */
 
+@Disabled
 @Autonomous(name = "Auto BLUE", group="Autonomous")
 public class AutoWithHelpBlue extends LinearOpMode {
     private OpenCvCamera phoneCam;

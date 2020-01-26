@@ -26,6 +26,10 @@ public class BackGrabberRED extends LinearOpMode {
     public static int skystoneMargin = 145;
     public static int cameraRightMargin = 210;
 
+    public static int redLeftMargin = 70;
+    public static int redCenterMargin = 160;
+    public static int redRightMargin = 8;
+
     double landingHeading = 0;
 
     // movement stuff
@@ -119,6 +123,14 @@ public class BackGrabberRED extends LinearOpMode {
                 movementb2 = -13;
                 movementl12 = 83;
             }*/
+
+            if (skyStoneDetector.getScreenPosition().x > redRightMargin && skyStoneDetector.getScreenPosition().x < redLeftMargin) {
+                skystoneLoc = "right";
+            } else if (skyStoneDetector.getScreenPosition().x > redLeftMargin && skyStoneDetector.getScreenPosition().x < redCenterMargin) {
+                skystoneLoc = "left";
+            } else if (skyStoneDetector.getScreenPosition().x > redCenterMargin || skyStoneDetector.getScreenPosition().x < 2) {
+                skystoneLoc = "center";
+            }
 
             telemetry.addData("Skystone Location", skystoneLoc);
             telemetry.addData("Skystone coordinates", skyStoneDetector.getScreenPosition());

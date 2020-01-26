@@ -10,6 +10,7 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
@@ -23,6 +24,7 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.Servo;
 
+@Disabled
 @Config
 @Autonomous(name = "AUTOPathTest", group = "Autonomous")
 public class AUTOPathTest extends LinearOpMode {

@@ -6,15 +6,19 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.path.heading.LinearInterpolator;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
+import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREVOptimized;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
+
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.finalAutoHeading;
 
 @Config
 @Autonomous(name = "BackGrabberBLUE", group = "Autonomous")
@@ -23,7 +27,7 @@ public class BackGrabberBLUE extends LinearOpMode {
     private OpenCvCamera phoneCam;
     private TESTSkystoneDetector skyStoneDetector;
     String skystoneLoc = "";
-    public static int skystoneMargin = 145;
+    public static int skystoneMargin = 120;
     public static int cameraRightMargin = 210;
 
     double landingHeading = 0;
@@ -82,21 +86,19 @@ public class BackGrabberBLUE extends LinearOpMode {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = new OpenCvInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
         skyStoneDetector = new TESTSkystoneDetector();
-        skyStoneDetector = new TESTSkystoneDetector();
         phoneCam.openCameraDevice();
         phoneCam.setPipeline(skyStoneDetector);
         phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
 
         while (!opModeIsActive() && !isStopRequested()) {
-
             telemetry.addData("Status", "Waiting for start command...");
             // telemetry.addData("Heading", drive.getExternalHeading());
             // telemetry.addData("Skystone Location", skystoneLoc);
             // telemetry.addData("Skystone coordinates", skyStoneDetector.getScreenPosition());
             telemetry.update();
         }
-        if (opModeIsActive() && !isStopRequested()) {
 
+        if (opModeIsActive() && !isStopRequested()) {
             skyStoneDetector.setFoundToFalse();
             detectionTimer = System.currentTimeMillis();
 
@@ -104,26 +106,24 @@ public class BackGrabberBLUE extends LinearOpMode {
 
             if (skyStoneDetector.getScreenPosition().x > cameraRightMargin) {
                 skystoneLoc = "right";
-                  movementb2 = 4;
-                  movementl12 = 105;
-                  movementg7 = 90;
-
+                movementb2 = 4;
+                movementl12 = 105;
+                movementg7 = 90;
             } else if (skyStoneDetector.getScreenPosition().x < skystoneMargin) {
                 skystoneLoc = "left";
-                  movementb2 = 27;
-                  movementl12 = 80;
-                  movementg7 = 75;
+                movementb2 = 27;
+                movementl12 = 80;
+                movementg7 = 75;
             } else {
                 skystoneLoc = "center";
-                  movementg7 = 83;
+                movementg7 = 83;
                 movementb2 = 13;
-                movementl12 = 83;
+                movementl12 = 95;
             }
 
             telemetry.addData("Skystone Location", skystoneLoc);
             telemetry.addData("Skystone coordinates", skyStoneDetector.getScreenPosition());
             telemetry.update();
-
 
             foundationDownGrabberUp();
             TrajectoryBuilder trajectoryBuilder = new TrajectoryBuilder(new Pose2d(initX, initY, initHeading), constraints);
@@ -164,10 +164,10 @@ public class BackGrabberBLUE extends LinearOpMode {
             rotate(drive,movemento15);
             sleep(100);
             // moveBackward(drive,movementm13);
-            drive.setMotorPowers(-1, -1, -0.975, -0.975);
+            drive.setMotorPowers(-1, -1, -1, -1);
             sleep(timer1);
             drive.setMotorPowers(0, 0, 0, 0);
-            drive.setMotorPowers(-0.95, -0.95, -1, -1);
+            drive.setMotorPowers(-1, -1, -1, -1);
             sleep(timer2);
             drive.setMotorPowers(0, 0, 0, 0);
             foundationDownGrabberUp();
@@ -199,6 +199,11 @@ public class BackGrabberBLUE extends LinearOpMode {
             strafeRight(drive,movementr18);
             moveForward(drive,movements19);*/
 
+            if (drive.getExternalHeading() > 0 && drive.getExternalHeading() < Math.PI) {
+                finalAutoHeading = -drive.getExternalHeading();
+            } else {
+                finalAutoHeading = (2*Math.PI) - drive.getExternalHeading();
+            }
         }
     }
 

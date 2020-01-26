@@ -39,6 +39,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
  * ctor.
  */
 
+@Disabled
 @Config
 @Autonomous(name = "DriveVelocityPIDTuner", group = "Autonomous")
 public class DriveVelocityPIDTuner extends LinearOpMode {

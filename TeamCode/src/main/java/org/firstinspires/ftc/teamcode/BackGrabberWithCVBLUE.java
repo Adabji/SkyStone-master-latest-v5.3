@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.path.heading.LinearInterpolator;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -16,48 +17,25 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 
+@Disabled
 @Config
-@Autonomous(name = "Back Grabber With CV BLUE", group = "Autonomous")
+@Autonomous(name = "CV Test", group = "Autonomous")
 public class BackGrabberWithCVBLUE extends LinearOpMode {
     private OpenCvCamera phoneCam;
     private TESTSkystoneDetector skyStoneDetector;
 
     double landingHeading = 0;
 
-    public static double movementa1 = 20;
-    public static double movementb2 = 4;
-
-    public static double movementToCenter = 4;
-    public static double movementToLeft = 0;
-    public static double movementToRight = 12;
-
-    public static double movementc3 = 90;
-    public static double movementd4 = 25;
-    public static double movemente5 = 10;
-    public static double movementf6 = 87.5;
-    public static double movementg7 = 85;
-    public static double movementh8 = -90;
-    public static double movementi9 = 12;
-    public static double movementl12 = 87;
-    public static double movementn14 = 6;
-    public static double movementk11 = 20;
-    public static double movementm13 = 98;
-    public static double movementu21 = 12;
-    public static double movementt20 = 15;
-    public static double movemento15 = 85;
-    /*  public static double movementj10 = -92;
-      public static double movementp16 = 15;*/
-    public static double movementq17 = 4;
-    public static double movementr18 = 10;
-    // public static double movements19 = 30;
-
     String skystoneLoc = "";
     public static int skystoneMargin = 145;
     public static int cameraRightMargin = 210;
 
+    public static int redLeftMargin = 70;
+    public static int redCenterMargin = 160;
+    public static int redRightMargin = 8;
+
     // Timers
     double detectionTimer = -1;
-
 
     private Servo foundationServo, foundationServoRight, rightStoneGrabber, grabberLeft;
 
@@ -93,7 +71,9 @@ public class BackGrabberWithCVBLUE extends LinearOpMode {
             // telemetry.update();
             // sleep(500);
 
-            if (skyStoneDetector.getScreenPosition().x > cameraRightMargin) {
+            // -------------------------------------------------------------------------------------
+
+            /*if (skyStoneDetector.getScreenPosition().x < cameraRightMargin) {
                 skystoneLoc = "right";
                 movementb2 = movementToRight;
             } else if (skyStoneDetector.getScreenPosition().x < skystoneMargin) {
@@ -102,6 +82,14 @@ public class BackGrabberWithCVBLUE extends LinearOpMode {
             } else {
                 skystoneLoc = "center";
                 movementb2 = movementToCenter;
+            }*/
+
+            if (skyStoneDetector.getScreenPosition().x > redRightMargin && skyStoneDetector.getScreenPosition().x < redLeftMargin) {
+                skystoneLoc = "right";
+            } else if (skyStoneDetector.getScreenPosition().x > redLeftMargin && skyStoneDetector.getScreenPosition().x < redCenterMargin) {
+                skystoneLoc = "left";
+            } else if (skyStoneDetector.getScreenPosition().x > redCenterMargin || skyStoneDetector.getScreenPosition().x < 2) {
+                skystoneLoc = "center";
             }
 
             telemetry.addData("Skystone Location", skystoneLoc);

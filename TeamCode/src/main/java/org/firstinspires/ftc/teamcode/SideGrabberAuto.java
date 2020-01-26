@@ -52,6 +52,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.finalAutoHeadi
  * Derived Work Copyright(c) 2019 DogeDevs
  */
 
+@Disabled
 @Config
 @Autonomous(name = "SideGrabbers RED", group="Autonomous")
 public class SideGrabberAuto extends LinearOpMode {
