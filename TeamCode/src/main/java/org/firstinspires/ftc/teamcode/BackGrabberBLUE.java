@@ -104,7 +104,7 @@ public class BackGrabberBLUE extends LinearOpMode {
 
             while (System.currentTimeMillis() - detectionTimer < 1000) { }
 
-            if (skyStoneDetector.getScreenPosition().x > cameraRightMargin) {
+            if (skyStoneDetector.getScreenPosition().x > cameraRightMargin || skyStoneDetector.getScreenPosition().x < 10) {
                 skystoneLoc = "right";
                 movementb2 = 4;
                 movementl12 = 105;
@@ -199,11 +199,11 @@ public class BackGrabberBLUE extends LinearOpMode {
             strafeRight(drive,movementr18);
             moveForward(drive,movements19);*/
 
-            if (drive.getExternalHeading() > 0 && drive.getExternalHeading() < Math.PI) {
+            /*if (drive.getExternalHeading() > 0 && drive.getExternalHeading() < Math.PI) {
                 finalAutoHeading = -drive.getExternalHeading();
             } else {
                 finalAutoHeading = (2*Math.PI) - drive.getExternalHeading();
-            }
+            }*/
         }
     }
 

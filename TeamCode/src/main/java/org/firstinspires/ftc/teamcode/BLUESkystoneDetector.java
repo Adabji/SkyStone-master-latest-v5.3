@@ -28,7 +28,7 @@ import com.disnodeteam.dogecv.detectors.skystone.SkystoneDetector;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 
-public class TESTSkystoneDetector extends SkystoneDetector {
+public class BLUESkystoneDetector extends SkystoneDetector {
     // Results of the detector
     private Point screenPosition = new Point(); // Screen position of the mineral
     private Rect foundRect = new Rect(); // Found rect
@@ -121,7 +121,7 @@ public class TESTSkystoneDetector extends SkystoneDetector {
         Imgproc.drawContours(displayMat,contoursBlack, -1, new Scalar(40,40,40), 2);
 
         for(MatOfPoint cont : contoursBlack) {
-            // cont.adjustROI()
+            cont.adjustROI(0, 0, 70, 0);
             double score = calculateScore(cont); // Get the difference score using the scoring API
 
             // Get bounding rect of contour

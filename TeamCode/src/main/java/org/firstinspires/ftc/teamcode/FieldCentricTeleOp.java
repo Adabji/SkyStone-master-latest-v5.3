@@ -46,7 +46,7 @@ import java.util.*;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.finalAutoHeading;
 
 
-// @Config
+@Config
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Field Centric TeleOp", group = "TeleOp")
 public class FieldCentricTeleOp extends OpMode {
     private static double JoyStickAngleRad, JoyStickAngleDeg;
@@ -112,6 +112,13 @@ public class FieldCentricTeleOp extends OpMode {
     boolean servoPositionsAfterStart = true;
     boolean isAutomationOn = true;
     boolean isRBPressed = false;
+
+    public static double foundationRightDown = 1;
+    public static double foundationLeftDown = .24;
+    public static double foundationRightUp = .5;
+    public static double foundationLeftUp = .78;
+    public static double liftExtOut = .92;
+    public static double liftExtIn = .5;
 
     @Override
     public void init() {
@@ -210,11 +217,11 @@ public class FieldCentricTeleOp extends OpMode {
 
         // reset heading
         if (gamepad1.dpad_right) {
-            if (getAbsoluteHeading() < 0) {
-                headingAdjAfterReset = Math.toRadians(getAbsoluteHeading());
-            } else {
+            // if (getAbsoluteHeading() < 0) {
+            //     headingAdjAfterReset = Math.toRadians(getAbsoluteHeading());
+            // } else {
                 headingAdjAfterReset = -Math.toRadians(getAbsoluteHeading());
-            }
+            // }
         }
 
         // slow-mo
@@ -259,7 +266,7 @@ public class FieldCentricTeleOp extends OpMode {
 
         // lift extension out position
         if (currentLiftStage > 0 && gamepad2.b && gamePad2BTimer == -1) {
-            liftHoExt.setPosition(1);
+            liftHoExt.setPosition(liftExtOut);
             gamePad2BTimer = System.currentTimeMillis();
         } else if (gamePad2BTimer > 0 && System.currentTimeMillis() - gamePad2BTimer > 500) {
             gamePad2BTimer = -1;
@@ -269,7 +276,7 @@ public class FieldCentricTeleOp extends OpMode {
         if (gamepad2.a && gamePad2ATimer == -1) {
             gamePad2ATimer = System.currentTimeMillis();
         } else if (gamePad2ATimer > 0 && System.currentTimeMillis() - gamePad2ATimer > 300 && liftInTimer == -1) {
-            liftHoExt.setPosition(0.45);
+            liftHoExt.setPosition(liftExtIn);
             gamePad2ATimer = -1;
             liftInTimer = System.currentTimeMillis();
         } else if (liftInTimer > 0 && System.currentTimeMillis() - liftInTimer > 700) {
@@ -311,14 +318,14 @@ public class FieldCentricTeleOp extends OpMode {
 
         // foundation servo - Up
         if (gamepad1.left_bumper) {
-            foundationServoRight.setPosition(.5);
-            foundationServoLeft.setPosition(.75);
+            foundationServoRight.setPosition(foundationRightUp);
+            foundationServoLeft.setPosition(foundationLeftUp);
         }
 
         // foundation servo - Down
         if (gamepad1.right_bumper) {
-            foundationServoRight.setPosition(1);
-            foundationServoLeft.setPosition(.25);
+            foundationServoRight.setPosition(foundationRightDown);
+            foundationServoLeft.setPosition(foundationLeftDown);
         }
 
         currentGP1DLPos = gamepad1.dpad_left;
@@ -496,13 +503,13 @@ public class FieldCentricTeleOp extends OpMode {
         // telemetry.addData("lift1 encoder count", liftMotor1.getCurrentPosition());
         telemetry.addData("resetAdj", headingAdjAfterReset);
         telemetry.addData("lift1 current", liftRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
-        telemetry.addData("lift1 power", liftEx1.getPower());
-        telemetry.addData("Liftstage", currentLiftStage);
+        // telemetry.addData("lift1 power", liftEx1.getPower());
+        telemetry.addData("currentLiftStage", currentLiftStage);
         telemetry.addData("desiredLiftStage", desiredLiftStage);
         // telemetry.addData("NextLiftstage", nextLiftStage);
         // telemetry.addData("targetPos", targetPos);
         // telemetry.addData("intakeDistanceSensor Reading", intakeColor.getDistance(DistanceUnit.CM));
-        telemetry.addData("liftTouchSensor", liftTouch.isPressed());
+        // telemetry.addData("liftTouchSensor", liftTouch.isPressed());
         // telemetry.addData("isAutomationOn", isAutomationOn);
 
         telemetry.update();
