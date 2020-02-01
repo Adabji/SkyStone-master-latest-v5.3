@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
@@ -31,6 +32,9 @@ public class BackGrabberBLUE extends LinearOpMode {
     public static int cameraRightMargin = 210;
 
     double landingHeading = 0;
+
+    // hardware stuff
+    private static CRServo tapeMeasure;
 
     // movement stuff
     public static double movementToCenter = 0;
@@ -82,6 +86,7 @@ public class BackGrabberBLUE extends LinearOpMode {
         foundationServoRight = hardwareMap.servo.get("foundationServoRight");
         rightStoneGrabber = hardwareMap.servo.get("rightStoneGrabber");
         grabberLeft = hardwareMap.servo.get("grabberLeft");
+        tapeMeasure = hardwareMap.crservo.get("tapeMeasure");
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = new OpenCvInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
@@ -176,6 +181,11 @@ public class BackGrabberBLUE extends LinearOpMode {
             drive.setMotorPowers(1,1,1,1);
             sleep(900);
             drive.setMotorPowers(0,0,0,0);
+
+            // tapeMeasure.setPower(power);
+            // +power = tape measure retracts
+            // -power = tape measure extends
+
             /*moveForward(drive,movementi9);
             rotate(drive,movementj10);
             moveBackward(drive,movementg7+movementb2+movementk11);
@@ -235,7 +245,7 @@ public class BackGrabberBLUE extends LinearOpMode {
         grabberLeft.setPosition(.3);
     }
     private void foundationUpGrabberDown(){
-        foundationServoRight.setPosition(.6);
+        foundationServoRight.setPosition(.63);  // originally .6
         grabberLeft.setPosition(.7);
     }
     private void foundationDownGrabberDown(){

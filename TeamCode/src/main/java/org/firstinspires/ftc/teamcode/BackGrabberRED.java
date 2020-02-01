@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
@@ -32,6 +33,9 @@ public class BackGrabberRED extends LinearOpMode {
 
     double landingHeading = 0;
 
+    // hardware stuff
+    private static CRServo tapeMeasure;
+
     // movement stuff
     public static double movementToCenter = 0;
     public static double movementToLeft = 12;
@@ -39,7 +43,7 @@ public class BackGrabberRED extends LinearOpMode {
 
     public static double initX = 0;
     public static double initY = 0;
-    public static double movementb2 = -8;
+    public static double movementb2;
     public static double stoneX = movementb2;
     public static double stoneY = -40;
     public static double initHeading = 0;
@@ -48,19 +52,19 @@ public class BackGrabberRED extends LinearOpMode {
     public static double movementc3 = 87.5;
     public static double movementd4 = 25;
     public static double movemente5 = 10;
-    public static double movementf6 = -88;
+    public static double movementf6;
     public static double movementg7 = 83;
     public static double movementh8 = 89;
     public static double movementi9 = 12;
     public static double movementl12 = 84;
-    public static double movementn14 = 17;
+    public static double movementn14 = 16.5;
     public static double movementk11 = 12;
-    public static double movementm13 = 12.5;
-    public static double movementu21 = 14;
+    public static double movementm13 = 9;
     public static double movementt20 = 7;
-    public static double movemento15 = -94;
+    public static double movemento15 = -92;
     public static double movementp16 = 0.11115;    // turn
-    public static double movementq17 = -6.5;
+    public static double movementq17 = -10;
+    public static double movementv22;
 
     // Timers
     double detectionTimer = -1;
@@ -82,6 +86,7 @@ public class BackGrabberRED extends LinearOpMode {
         foundationServoRight = hardwareMap.servo.get("foundationServoRight");
         rightStoneGrabber = hardwareMap.servo.get("rightStoneGrabber");
         grabberLeft = hardwareMap.servo.get("grabberLeft");
+        tapeMeasure = hardwareMap.crservo.get("tapeMeasure");
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = new OpenCvInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
@@ -104,39 +109,35 @@ public class BackGrabberRED extends LinearOpMode {
             skyStoneDetector.setFoundToFalse();
             detectionTimer = System.currentTimeMillis();
 
-            /*while (System.currentTimeMillis() - detectionTimer < 1000) { }
-
-            if (skyStoneDetector.getScreenPosition().x > cameraRightMargin) {
-                skystoneLoc = "right";
-                movementb2 = -4;
-                movementl12 = 105;
-                movementg7 = 90;
-
-            } else if (skyStoneDetector.getScreenPosition().x < skystoneMargin) {
-                skystoneLoc = "left";
-                movementb2 = -27;
-                movementl12 = 80;
-                movementg7 = 75;
-            } else {
-                skystoneLoc = "center";
-                movementg7 = 83;
-                movementb2 = -13;
-                movementl12 = 83;
-            }*/
+            while (System.currentTimeMillis() - detectionTimer < 1000) { }
 
             if (skyStoneDetector.getScreenPosition().x > redRightMargin && skyStoneDetector.getScreenPosition().x < redLeftMargin) {
                 skystoneLoc = "right";
+                movementb2 = -23;
+                movementg7 = 70;
+                movementl12 = 74;
+                movementf6 = -88;
+                movementv22 = 108;
             } else if (skyStoneDetector.getScreenPosition().x > redLeftMargin && skyStoneDetector.getScreenPosition().x < redCenterMargin) {
                 skystoneLoc = "left";
+                movementb2 = 3.5;
+                movementg7 = 92.5;
+                movementl12 = 96;
+                movementf6 = -89.5;
+                movementv22 = 125;
             } else if (skyStoneDetector.getScreenPosition().x > redCenterMargin || skyStoneDetector.getScreenPosition().x < 2) {
                 skystoneLoc = "center";
+                movementb2 = -8;
+                movementg7 = 83;
+                movementl12 = 83;
+                movementf6 = -88;
+                movementv22 = 115;
             }
 
             telemetry.addData("Skystone Location", skystoneLoc);
             telemetry.addData("Skystone coordinates", skyStoneDetector.getScreenPosition());
             telemetry.update();
 
-            sleep(1500);
             foundationDownGrabberUp();
             TrajectoryBuilder trajectoryBuilder = new TrajectoryBuilder(new Pose2d(initX, initY, initHeading), constraints);
 
@@ -168,26 +169,18 @@ public class BackGrabberRED extends LinearOpMode {
             foundationDownGrabberUp();
             strafeLeft(drive,movementt20);
             rotate(drive,movementh8);
-            strafeRight(drive,movementu21);
             moveBackward(drive,movementn14);
             foundationDownGrabberDown();
             moveForward(drive,movementm13);
             foundationUpGrabberDown();
             rotate(drive,movemento15);
             sleep(100);
-            // moveBackward(drive,movementm13);
-            drive.setMotorPowers(-1, -1, -1, -1);
-            sleep(timer1);
-            drive.setMotorPowers(0, 0, 0, 0);
-            drive.setMotorPowers(-0.95, -0.95, -1, -1);
-            sleep(timer2);
-            drive.setMotorPowers(0, 0, 0, 0);
-            foundationDownGrabberUp();
-            sleep(300);
-            foundationUpGrabberDown();
-            drive.setMotorPowers(1,1,1,1);
-            sleep(200);
-            drive.setMotorPowers(0,0,0,0);
+            moveBackward(drive,movementv22);
+
+            // tapeMeasure.setPower(power);
+            // +power = tape measure retracts
+            // -power = tape measure extends
+
             /*moveForward(drive,movementi9);
             rotate(drive,movementj10);
             moveBackward(drive,movementg7+movementb2+movementk11);
@@ -242,7 +235,7 @@ public class BackGrabberRED extends LinearOpMode {
         rightStoneGrabber.setPosition(.7);
     }
     private void foundationUpGrabberDown(){
-        foundationServo.setPosition(.75);
+        foundationServo.setPosition(.72);   // originally .75
         rightStoneGrabber.setPosition(.4);
     }
     private void foundationDownGrabberDown(){

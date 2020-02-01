@@ -15,6 +15,7 @@ import android.app.WallpaperInfo;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorControllerEx;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -54,6 +55,7 @@ public class FieldCentricTeleOp extends OpMode {
     private static ExpansionHubMotor intakeMotorRE2, liftRE2;
     private static DcMotorEx liftEx1;
     private static Servo liftHoExt, wrist, grabber, foundationServoLeft, foundationServoRight, stoneHolder, capstoneServo;
+    private static Servo tapeMeasure;
     private static double PosXAngPosY, PosXAngNegY, NegXAng, Theta, r, outputX, outputY, heading;
     double headingAdjAfterReset = 0;
     static double slowMoReductionFactor = 1;
@@ -77,6 +79,7 @@ public class FieldCentricTeleOp extends OpMode {
     int targetPos = 0;
     PIDFCoefficients pidfCoefficients;
     boolean fasterDown = false;
+    boolean isLiftTouchPressed = true;
 
     double lkp = 6;
     double lki = 0;
@@ -148,9 +151,9 @@ public class FieldCentricTeleOp extends OpMode {
         grabber = hardwareMap.servo.get("liftGrabber");
         foundationServoLeft = hardwareMap.servo.get("foundationServoLeft");
         foundationServoRight = hardwareMap.servo.get("foundationServoRight");
-        //
         // stoneHolder = hardwareMap.servo.get("stoneHolder");
         capstoneServo = hardwareMap.servo.get("capstoneServo");
+        tapeMeasure = hardwareMap.servo.get("tapeMeasure");
 
         leftFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -306,7 +309,16 @@ public class FieldCentricTeleOp extends OpMode {
             wrist.setPosition(0.16);
         }
 
-       /* // stone holder out - not holding
+        // tape measure
+        if (gamepad2.dpad_down) {
+            tapeMeasure.setPosition(0.75);
+        } else if (gamepad2.dpad_up) {
+            tapeMeasure.setPosition(0.25);
+        } else {
+            tapeMeasure.setPosition(0.5);
+        }
+
+        /* // stone holder out - not holding
         if (gamepad2.dpad_left) {
             stoneHolder.setPosition(0.4);
         }
@@ -362,7 +374,7 @@ public class FieldCentricTeleOp extends OpMode {
             currentLiftStage += desiredLiftStage;
             if (currentLiftStage > 7) { currentLiftStage = 7; }
             desiredLiftStage = 1;
-            // isRBPressed = true;
+            isLiftTouchPressed = false;
 
             previousGP2RBPos = currentGP2RBPos;
         } else {
@@ -478,18 +490,29 @@ public class FieldCentricTeleOp extends OpMode {
         }*/
 
         // LIFT DcMotorEx
-        if (currentLiftStage == 0 && !liftTouch.isPressed()) {
+        if (!isLiftTouchPressed && currentLiftStage == 0 && !liftTouch.isPressed()) {
             liftEx1.setTargetPosition((int) (((currentLiftStage * 3.9) - 1) * LIFT_COUNTS_PER_INCH));
             liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             liftEx1.setPower(-0.7);
         } else if (currentLiftStage == 0 && liftTouch.isPressed()) {
+            isLiftTouchPressed = true;
             liftEx1.setPower(0);
             liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        } else if (currentLiftStage != 0 && liftEx1.getCurrentPosition() != (int) (((currentLiftStage * 4) - 1) * LIFT_COUNTS_PER_INCH)) {
-            liftEx1.setTargetPosition((int) (((currentLiftStage * 3.9) - 1) * LIFT_COUNTS_PER_INCH));
+        } else if (!isLiftTouchPressed && currentLiftStage != 0 && liftEx1.getCurrentPosition() != (int) (((currentLiftStage * 4) - 1) * LIFT_COUNTS_PER_INCH)) {
+            if (currentLiftStage == 7) {
+                liftEx1.setTargetPosition((int) ((currentLiftStage * 3.9) * LIFT_COUNTS_PER_INCH));
+            } else {
+                liftEx1.setTargetPosition((int) (((currentLiftStage * 3.9) - 1) * LIFT_COUNTS_PER_INCH));
+            }
+
             liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
             liftEx1.setPower(liftPower);
+        }
+
+        if (isLiftTouchPressed) {
+            liftEx1.setPower(0);
+            liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
 
         // linkage extends after it goes up
@@ -506,6 +529,7 @@ public class FieldCentricTeleOp extends OpMode {
         // telemetry.addData("lift1 power", liftEx1.getPower());
         telemetry.addData("currentLiftStage", currentLiftStage);
         telemetry.addData("desiredLiftStage", desiredLiftStage);
+        telemetry.addData("isLiftTouchPressed", isLiftTouchPressed);
         // telemetry.addData("NextLiftstage", nextLiftStage);
         // telemetry.addData("targetPos", targetPos);
         // telemetry.addData("intakeDistanceSensor Reading", intakeColor.getDistance(DistanceUnit.CM));
