@@ -120,7 +120,7 @@ public class FieldCentricTeleOp extends OpMode {
     public static double foundationLeftDown = .24;
     public static double foundationRightUp = .5;
     public static double foundationLeftUp = .78;
-    public static double liftExtOut = .92;
+    public static double liftExtOut = .928;
     public static double liftExtIn = .5;
 
     @Override
