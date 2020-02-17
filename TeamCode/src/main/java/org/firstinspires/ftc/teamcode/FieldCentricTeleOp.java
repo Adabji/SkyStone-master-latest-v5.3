@@ -67,7 +67,7 @@ public class FieldCentricTeleOp extends OpMode {
 
     // LIFT encoders
     static final double LIFT_COUNTS_PER_MOTOR_REV = 537.6;
-    static final double LIFT_DRIVE_GEAR_REDUCTION = 1.0;
+    static final double LIFT_DRIVE_GEAR_REDUCTION = .5;
     static final double LIFT_WHEEL_DIAMETER_INCHES = 1.25;
     static final double LIFT_COUNTS_PER_INCH = (LIFT_COUNTS_PER_MOTOR_REV * LIFT_DRIVE_GEAR_REDUCTION) /
             (LIFT_WHEEL_DIAMETER_INCHES * 3.1415);  // 136.90275
@@ -372,7 +372,7 @@ public class FieldCentricTeleOp extends OpMode {
         // right bumper: goes up "desiredLiftStage" number of stages, sets desiredLiftStage to 1, extends linkage after going up
         if (currentGP2RBPos && !previousGP2RBPos) {
             currentLiftStage += desiredLiftStage;
-            if (currentLiftStage > 7) { currentLiftStage = 7; }
+            if (currentLiftStage > 9) { currentLiftStage = 9; }
             desiredLiftStage = 1;
             isLiftTouchPressed = false;
 
@@ -499,7 +499,7 @@ public class FieldCentricTeleOp extends OpMode {
             liftEx1.setPower(0);
             liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         } else if (!isLiftTouchPressed && currentLiftStage != 0 && liftEx1.getCurrentPosition() != (int) (((currentLiftStage * 4) - 1) * LIFT_COUNTS_PER_INCH)) {
-            if (currentLiftStage == 7) {
+            if (currentLiftStage == 9) {
                 liftEx1.setTargetPosition((int) ((currentLiftStage * 3.9) * LIFT_COUNTS_PER_INCH));
             } else {
                 liftEx1.setTargetPosition((int) (((currentLiftStage * 3.9) - 1) * LIFT_COUNTS_PER_INCH));
