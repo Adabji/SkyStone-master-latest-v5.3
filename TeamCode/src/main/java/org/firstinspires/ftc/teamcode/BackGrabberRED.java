@@ -78,7 +78,7 @@ public class BackGrabberRED extends LinearOpMode {
     // public static double movements19 = 30;
 
     // Hardware stuff
-    private Servo foundationServo, foundationServoRight, rightStoneGrabber, grabberLeft, tapeMeasure;
+    private Servo foundationServo, foundationServoRight, rightStoneGrabber, grabberLeft, tapeMeasure, liftHoExt, wrist, grabber;
     private DcMotor intakeMotor1, intakeMotor2, intakeMotor3;
     public DriveConstraints constraints = new DriveConstraints(
             60.0, 40.0, 0.0,
@@ -91,6 +91,9 @@ public class BackGrabberRED extends LinearOpMode {
         foundationServoRight = hardwareMap.servo.get("foundationServoRight");
         rightStoneGrabber = hardwareMap.servo.get("rightStoneGrabber");
         grabberLeft = hardwareMap.servo.get("grabberLeft");
+        liftHoExt = hardwareMap.servo.get("liftHoExt");
+        wrist = hardwareMap.servo.get("liftGrabberRotater");
+        grabber = hardwareMap.servo.get("liftGrabber");
         tapeMeasure = hardwareMap.servo.get("tapeMeasure");
         intakeMotor1 = hardwareMap.dcMotor.get("intake motor 1");
         intakeMotor2 = hardwareMap.dcMotor.get("intake motor 2");
@@ -131,13 +134,13 @@ public class BackGrabberRED extends LinearOpMode {
                 movementm13 = 11;
                 turnRadiusDeterminer = -0.16;
                 movemento15 = -92;
-                movementn14 = 55;
+                movementn14 = 51;
                 movementa1 = 0;
-                movementc3 = 25;
+                movementc3 = 30;
                 movementd4 = 0;
-                movementt20 = 55;
+                movementt20 = 63;
                 movementk11 = 45;
-                movementw23 = 18;
+                movementw23 = 23;
             } else if (skyStoneDetector.getScreenPosition().x > redLeftMargin && skyStoneDetector.getScreenPosition().x < redCenterMargin) {
                 skystoneLoc = "left";
                 movementb2 = 3; // was 3.5
@@ -149,7 +152,7 @@ public class BackGrabberRED extends LinearOpMode {
                 turnRadiusDeterminer = -0.16;  // was -0.12
                 movemento15 = -89;
                 movementn14 = 103;
-                movementa1 = 36;
+                movementa1 = 40.5;
                 movementc3 = 14;
                 movementd4 = 42;
                 movementt20 = 120;
@@ -165,8 +168,8 @@ public class BackGrabberRED extends LinearOpMode {
                 movementm13 = 11.5;
                 turnRadiusDeterminer = -0.16;
                 movemento15 = -90;
-                movementn14 = 90;
-                movementa1 = 36;
+                movementn14 = 93.5;
+                movementa1 = 40.5;
                 movementc3 = 14;
                 movementd4 = 42;
                 movementt20 = 110;
@@ -179,6 +182,9 @@ public class BackGrabberRED extends LinearOpMode {
             telemetry.update();
 
             foundationDownGrabberUp();
+            readyToGrab();
+            extensionIn();
+
             TrajectoryBuilder trajectoryBuilder = new TrajectoryBuilder(new Pose2d(initX, initY, initHeading), constraints);
 
             // trajectoryBuilder.splineTo(new Pose2d(finalX, finalY, finalHeading));
@@ -202,7 +208,8 @@ public class BackGrabberRED extends LinearOpMode {
             drive.setMotorPowers(0, 0, 0, 0);
             drive.setPoseEstimate(new Pose2d (0, 0, 0));
             releaseFoundation();
-            moveBackward(drive,30);
+            moveBackward(drive,20);
+            strafeRight(drive,10);
             intakeMotor1.setPower(1);
             sleep(400);
             intakeMotor1.setPower(0);
@@ -215,10 +222,14 @@ public class BackGrabberRED extends LinearOpMode {
             rotate(drive,movementk11);
             strafeLeft(drive,movementd4);
             intakeReverse();
+            grabStoneInRobot();
             sleep(300);
             intakeOff();
-            tapeMeasure.setPosition(.31);
+            tapeMeasure.setPosition(.325);
             moveBackward(drive,movementt20);
+            extensionOut();
+            sleep(1000);
+            releaseStone();
             /*foundationDownGrabberUp2();
             sleep(400);
             foundationUpGrabberDown2();
@@ -344,6 +355,24 @@ public class BackGrabberRED extends LinearOpMode {
         intakeMotor1.setPower(-1);
         intakeMotor2.setPower(-1);
         intakeMotor3.setPower(1);
+    }
+    private void readyToGrab(){
+        grabber.setPosition(0.44);
+        wrist.setPosition(0.1);
+    }
+    private void grabStoneInRobot(){
+        grabber.setPosition(0.4);
+        wrist.setPosition(0.5);
+    }
+    private void extensionIn(){
+        liftHoExt.setPosition(0.575);
+    }
+    private void extensionOut(){
+        liftHoExt.setPosition(1);
+    }
+    private void releaseStone(){
+        grabber.setPosition(0.8);
+        wrist.setPosition(0.1);
     }
 }
 
