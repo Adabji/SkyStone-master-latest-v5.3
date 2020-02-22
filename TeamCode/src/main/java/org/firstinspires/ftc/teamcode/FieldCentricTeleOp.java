@@ -314,7 +314,7 @@ public class FieldCentricTeleOp extends OpMode {
             grabber.setPosition(0.44);
             wrist.setPosition(0.1);
         }
-        else if (intakeDistance > 3.5 && intakeDistance < 5.5 && isLiftTouchPressed && !hoExt){
+        /*else if (intakeDistance > 3.5 && intakeDistance < 5.5 && isLiftTouchPressed && !hoExt){
 
                 grabber.setPosition(0.4);
                 wrist.setPosition(0.5);
@@ -322,7 +322,7 @@ public class FieldCentricTeleOp extends OpMode {
                 intakeMotor2.setPower(0);
                 intakeMotor3.setPower(0);
 
-        }
+        }*/
         /*// grabber direction - out
         if (gamepad2.dpad_up) {
             wrist.setPosition(0.85);
