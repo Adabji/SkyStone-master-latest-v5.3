@@ -7,8 +7,10 @@ import com.acmerobotics.roadrunner.path.heading.LinearInterpolator;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -17,6 +19,7 @@ import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
+import org.openftc.revextensions2.ExpansionHubMotor;
 
 import java.lang.invoke.VolatileCallSite;
 
@@ -30,7 +33,7 @@ public class BackGrabberBLUESpline extends LinearOpMode {
     String skystoneLoc = "";
     public static int skystoneMargin = 120;
     public static int cameraRightMargin = 210;
-
+    PIDFCoefficients pidfCoefficients;
     double landingHeading = 0;
 
     // hardware stuff
@@ -39,7 +42,7 @@ public class BackGrabberBLUESpline extends LinearOpMode {
     public static double movementToCenter = 0;
     public static double movementToLeft = 12;
     public static double movementToRight = 4;
-
+    double liftPower = 1;
     public static double initX = 0;
     public static double initY = 0;
     public static double movementb2;
@@ -66,6 +69,16 @@ public class BackGrabberBLUESpline extends LinearOpMode {
     public static double movementq17 = 8;
     public static double movementv22;
     public static double movementw23;
+    static final double LIFT_COUNTS_PER_MOTOR_REV = 537.6;
+    static final double LIFT_DRIVE_GEAR_REDUCTION = .5;
+    static final double LIFT_WHEEL_DIAMETER_INCHES = 1.25;
+    static final double LIFT_COUNTS_PER_INCH = (LIFT_COUNTS_PER_MOTOR_REV * LIFT_DRIVE_GEAR_REDUCTION) /
+            (LIFT_WHEEL_DIAMETER_INCHES * 3.1415);
+    private static DcMotorEx liftEx1;
+    double lkp = 6;
+    double lki = 0;
+    double lkd = 0;
+    double lkf = 0;
 
     // Timers
     double detectionTimer = -1;
@@ -95,9 +108,11 @@ public class BackGrabberBLUESpline extends LinearOpMode {
         intakeMotor1 = hardwareMap.dcMotor.get("intake motor 1");
         intakeMotor2 = hardwareMap.dcMotor.get("intake motor 2");
         intakeMotor3 = hardwareMap.dcMotor.get("intake motor 3");
+        liftEx1 = hardwareMap.get(DcMotorEx.class, "lift motor 1");
         intakeMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
+        liftEx1.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeMotor3.setDirection(DcMotorSimple.Direction.REVERSE);
-
+        pidfCoefficients = new PIDFCoefficients(lkp, lki, lkd, lkf);
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = new OpenCvInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
         skyStoneDetector = new TESTSkystoneDetector();
@@ -124,8 +139,8 @@ public class BackGrabberBLUESpline extends LinearOpMode {
                 movementb2 = 3;
                 movementl12 = 100;
                 movementg7 = 5;
-                movementv22 = 114 ;
-                movemente5 = -2;
+                movementv22 = 113.5 ;
+                movemente5 = 4;
                 movementf6 = 85.5;
                 movementn14 = 103;
                 movementi9 = 90;
@@ -268,14 +283,16 @@ public class BackGrabberBLUESpline extends LinearOpMode {
                             })
                             .splineTo(new Pose2d(20,movemente5/*-2*/,0))
                             .addMarker(() -> {
+                                liftHeight(2);
                                 extensionOut();
                                 return Unit.INSTANCE;
                             })
                             .splineTo(new Pose2d(-13,movementg7/*5*/,0))
                             .build());
             releaseStone();
+            extensionIn();
            // tapeMeasure.setPosition(0.25);
-            moveForward(drive, 10);
+            moveForward(drive, 20);
             // tapeMeasure.setPower(power);
             // +power = tape measure retracts
             // -power = tape measure extends
@@ -421,6 +438,12 @@ public class BackGrabberBLUESpline extends LinearOpMode {
     }
     private void releaseStone(){
         grabber.setPosition(0.8);
-        wrist.setPosition(0.1);
+        wrist.setPosition(0.15);
+    }
+    private void liftHeight (double stage){
+        liftEx1.setTargetPosition((int) (((stage * 3.95) - 1) * LIFT_COUNTS_PER_INCH));
+        liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);;
+        liftEx1.setPower(liftPower);
     }
 }
