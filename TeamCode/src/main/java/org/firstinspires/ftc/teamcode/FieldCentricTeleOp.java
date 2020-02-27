@@ -451,7 +451,7 @@ public class FieldCentricTeleOp extends OpMode {
             isLiftTouchPressed = true;
             liftEx1.setPower(0);
             liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        } else if (!isLiftTouchPressed && currentLiftStage != 0 && liftEx1.getCurrentPosition() != (int) (((currentLiftStage * 3.95) - 1) * LIFT_COUNTS_PER_INCH)/* && !targetBufferEarly && !targetBufferLate*/) {
+        } else if (!isLiftTouchPressed && currentLiftStage != 0 && liftError>10/*liftEx1.getCurrentPosition() != (int) (((currentLiftStage * 3.95) - 1) * LIFT_COUNTS_PER_INCH) && !targetBufferEarly && !targetBufferLate*/) {
             if (currentLiftStage == 9) {
                 liftEx1.setTargetPosition((int) (((currentLiftStage * 3.95) - 2.75) * LIFT_COUNTS_PER_INCH));
             } else {
@@ -462,6 +462,10 @@ public class FieldCentricTeleOp extends OpMode {
             liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);;
             liftEx1.setPower(liftPower);
 
+        }
+        else{
+            liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            liftEx1.setPower(.13);
         }
          /*
         // lift - 1 stage above the previous stage

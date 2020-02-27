@@ -161,16 +161,16 @@ public class BackGrabberREDSpline extends LinearOpMode {
                 movementb2 = 7.5;
                 movementl12 = 100;
                 movementg7 = 90;
-                movementv22 = 111.7;
+                movementv22 = 111.3;
                 movemente5 = 9;
                 movementf6 = 85.5;
                 movementn14 = 103;
                 movementi9 = 90;
-                movementk11 = 58;
+                movementk11 = 65;
                 movementa1 = 75;
-                movementc3 = 44;
+                movementc3 = 38;
                 movementw23 = 26;
-                movementd4 = -85;
+                movementd4 = -100;
                 movementt20 = 120;
             } else {
                 skystoneLoc = "center";
@@ -283,13 +283,14 @@ public class BackGrabberREDSpline extends LinearOpMode {
                             .setReversed(true)
                             .splineTo(new Pose2d(movementk11,-6,0))
                             .addMarker(() -> {
-                                intakeOff();
+                                intakeReverse();
                                 grabStoneInRobot();
                                 //tapeMeasure.setPosition(0.25);
                                 return Unit.INSTANCE;
                             })
                             .splineTo(new Pose2d(20,-4,0))
                             .addMarker(() -> {
+                                intakeOff();
                                 liftHeight(2);
                                 extensionOut();
                                 return Unit.INSTANCE;
