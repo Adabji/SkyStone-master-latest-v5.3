@@ -75,8 +75,8 @@ public class FieldCentricTeleOp extends OpMode {
 
     // lift things
     int nextLiftStage = 1;
-    int currentLiftStage = 0;
-    int desiredLiftStage = 0;
+    private double currentLiftStage = 0;
+    private double desiredLiftStage = 0;
     int targetPos = 0;
     boolean targetBufferEarly = false;
     boolean targetBufferLate = false;
@@ -90,10 +90,10 @@ public class FieldCentricTeleOp extends OpMode {
     boolean fasterDown = false;
     boolean isLiftTouchPressed = true;
 
-    double lkp = 6;
-    double lki = 0;
-    double lkd = 0;
-    double lkf = 0;
+    public static double lkp = 9;
+    public static double lki = 0;
+    public static double lkd = 0;
+    public static double lkf = 0;
 
     boolean previousGP2LBPos = false;
     boolean previousGP2RBPos = false;
@@ -125,6 +125,7 @@ public class FieldCentricTeleOp extends OpMode {
     boolean servoPositionsAfterStart = true;
     boolean isAutomationOn = true;
     boolean isRBPressed = false;
+    boolean liftUp = false;
 
     public static double foundationRightDown = 1;
     public static double foundationLeftDown = .24;
@@ -132,6 +133,8 @@ public class FieldCentricTeleOp extends OpMode {
     public static double foundationLeftUp = .78;
     public static double liftExtOut = .935;
     public static double liftExtIn = .575;
+
+    double r0, autoReset;
 
     @Override
     public void init() {
@@ -187,7 +190,18 @@ public class FieldCentricTeleOp extends OpMode {
         imu.initialize(parameters);
 
         headingAdjAfterReset = finalAutoHeading;
+    }
 
+    @Override
+    public void init_loop() {
+        r0 = Math.sqrt(gamepad2.left_stick_x * gamepad2.left_stick_x + gamepad2.left_stick_y * gamepad2.left_stick_y);
+        if (gamepad2.left_stick_y < 0) {
+            autoReset = -Math.atan2(gamepad2.left_stick_y, gamepad2.left_stick_x);
+        }
+
+        if (gamepad2.left_stick_y >= 0) {
+            autoReset = 2 * Math.PI - Math.atan2(gamepad2.left_stick_y, gamepad2.left_stick_x);
+        }
     }
 
     @Override
@@ -223,8 +237,8 @@ public class FieldCentricTeleOp extends OpMode {
             Theta = 2 * Math.PI - Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x);
         }
 
-        outputX = -Math.cos(heading - Theta + headingAdjAfterReset) * r;
-        outputY = Math.sin(heading - Theta + headingAdjAfterReset) * r;
+        outputX = -Math.cos(heading - Theta + headingAdjAfterReset - autoReset) * r;
+        outputY = Math.sin(heading - Theta + headingAdjAfterReset - autoReset) * r;
 
         heading = Math.toRadians(getAbsoluteHeading());
 
@@ -400,12 +414,13 @@ public class FieldCentricTeleOp extends OpMode {
         currentGP2LTPos = gamepad2.left_trigger > 0.5;
         currentGP2RTPos = gamepad2.right_trigger > 0.5;
 
-        // right bumper: goes up "desiredLiftStage" number of stages, sets desiredLiftStage to 1, extends linkage after going up
+        // right bumper: goes up "desiredLiftStage" number of stages, sets desiredLiftStage to 1
         if (currentGP2RBPos && !previousGP2RBPos) {
             currentLiftStage += desiredLiftStage;
-            if (currentLiftStage > 9) { currentLiftStage = 9; }
+            if (currentLiftStage > 11) { currentLiftStage = 11; }
             desiredLiftStage = 1;
             isLiftTouchPressed = false;
+            liftUp = false;
 
             previousGP2RBPos = currentGP2RBPos;
         } else {
@@ -414,7 +429,7 @@ public class FieldCentricTeleOp extends OpMode {
 
         // left bumper: lift completely down and desiredLiftStage = 0
         if (currentGP2LBPos && !previousGP2LBPos && currentLiftStage != 0) {
-            desiredLiftStage = currentLiftStage + 2;
+            desiredLiftStage = currentLiftStage + 1.9;
             currentLiftStage = 0;
 
             previousGP2LBPos = currentGP2LBPos;
@@ -435,7 +450,8 @@ public class FieldCentricTeleOp extends OpMode {
 
         // left trigger: lift down one stage but desiredLiftStage doesn't change
         if (currentGP2LTPos && !previousGP2LTPos) {
-            if (currentLiftStage > 0) currentLiftStage--;
+            if (currentLiftStage > 0) currentLiftStage = currentLiftStage-0.9;
+            liftUp = false;
 
             previousGP2LTPos = currentGP2LTPos;
         } else {
@@ -446,27 +462,26 @@ public class FieldCentricTeleOp extends OpMode {
         if (!isLiftTouchPressed && currentLiftStage == 0 && !liftTouch.isPressed()) {
             liftEx1.setTargetPosition((int) (((currentLiftStage * 3.95) - 1) * LIFT_COUNTS_PER_INCH));
             liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            liftEx1.setPower(-0.5);
+            liftEx1.setPower(-0.2);
         } else if (currentLiftStage == 0 && liftTouch.isPressed()) {
             isLiftTouchPressed = true;
             liftEx1.setPower(0);
             liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        } else if (!isLiftTouchPressed && currentLiftStage != 0 && liftError>10/*liftEx1.getCurrentPosition() != (int) (((currentLiftStage * 3.95) - 1) * LIFT_COUNTS_PER_INCH) && !targetBufferEarly && !targetBufferLate*/) {
-            if (currentLiftStage == 9) {
-                liftEx1.setTargetPosition((int) (((currentLiftStage * 3.95) - 2.75) * LIFT_COUNTS_PER_INCH));
+        } else if (!liftUp && !isLiftTouchPressed && currentLiftStage != 0 /*&& liftError>10*//*liftEx1.getCurrentPosition() != (int) (((currentLiftStage * 3.95) - 1) * LIFT_COUNTS_PER_INCH) && !targetBufferEarly && !targetBufferLate*/) {
+            if (currentLiftStage == 11) {
+                liftEx1.setTargetPosition((int) (((currentLiftStage * 3.95) - 3.75) * LIFT_COUNTS_PER_INCH));
             } else {
                 liftEx1.setTargetPosition((int) (((currentLiftStage * 3.95) - 1) * LIFT_COUNTS_PER_INCH));
             }
 
             liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);;
+            liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
             liftEx1.setPower(liftPower);
-
-        }
-        else{
+            liftUp = true;
+        }/* else {
             liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             liftEx1.setPower(.13);
-        }
+        }*/
          /*
         // lift - 1 stage above the previous stage
         if (currentGP2RBPos && !previousGP2RBPos) {
@@ -571,6 +586,7 @@ public class FieldCentricTeleOp extends OpMode {
         // telemetry.addData("lift1 encoder count", liftMotor1.getCurrentPosition());
         telemetry.addData("resetAdj", headingAdjAfterReset);
         telemetry.addData("lift1 current", liftRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
+        telemetry.addData("lift1 power", liftEx1.getPower());
         // telemetry.addData("lift1 power", liftEx1.getPower());
         telemetry.addData("currentLiftStage", currentLiftStage);
         telemetry.addData("desiredLiftStage", desiredLiftStage);

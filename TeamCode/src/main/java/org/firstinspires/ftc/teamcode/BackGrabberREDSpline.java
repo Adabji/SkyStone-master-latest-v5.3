@@ -141,12 +141,12 @@ public class BackGrabberREDSpline extends LinearOpMode {
 
             if (skyStoneDetector.getScreenPosition().x > cameraRightMargin || skyStoneDetector.getScreenPosition().x < 10) {
                 skystoneLoc = "right";
-                movementb2 = 30;
+                movementb2 = 4;
                 movementl12 = 72;
                 movementg7 = 100;
                 movementv22 = 102;
                 movemente5= 11.5;
-                movementf6 = 85;
+                movementf6 = -5.5;
                 movementn14 = 51;
                 movementi9 = 90;
                 movementk11 = 58;
@@ -161,9 +161,9 @@ public class BackGrabberREDSpline extends LinearOpMode {
                 movementb2 = 7.5;
                 movementl12 = 100;
                 movementg7 = 90;
-                movementv22 = 111.3;
+                movementv22 = 112.3;
                 movemente5 = 9;
-                movementf6 = 85.5;
+                movementf6 = -5.5;
                 movementn14 = 103;
                 movementi9 = 90;
                 movementk11 = 65;
@@ -177,9 +177,9 @@ public class BackGrabberREDSpline extends LinearOpMode {
                 movementg7 = 83;
                 movementb2 = -4;
                 movementl12 = 90;
-                movementv22 = 104.7;
+                movementv22 = 106.3;
                 movemente5 = 7;
-                movementf6 = 85;
+                movementf6 = -5.5;
                 movementn14 = 93.5;
                 movementi9 = 90;
                 movementk11 = 58;
@@ -220,8 +220,8 @@ public class BackGrabberREDSpline extends LinearOpMode {
             drive.followTrajectorySync(
             drive.trajectoryBuilder()
                     .setReversed(true)
-                    .splineTo(new Pose2d(-26,-31,Math.toRadians(0)))
-                    .splineTo(new Pose2d(-76,-31,Math.toRadians(0)))
+                    .splineTo(new Pose2d(-26,-31.7,Math.toRadians(0)))
+                    .splineTo(new Pose2d(-76,-31.7,Math.toRadians(0)))
                     .splineTo(new Pose2d(-95,-46.5,Math.toRadians(91.5)))
                     .build());
             grabFoundation();
@@ -231,15 +231,15 @@ public class BackGrabberREDSpline extends LinearOpMode {
             drive.setMotorPowers(0, 0, 0, 0);
             drive.setPoseEstimate(new Pose2d (0, 0, 0));
             releaseFoundation();
-            moveBackward(drive,20);
+            moveBackward(drive,26);
             drive.followTrajectorySync(
             drive.trajectoryBuilder()
-                    .splineTo(new Pose2d(37,-9))
+                    .splineTo(new Pose2d(37,-9, 0))
                     .addMarker(() -> {
                         intakeMotor1.setPower(1);
                         return Unit.INSTANCE;
                     })
-                    .splineTo(new Pose2d(movementa1,-10,Math.toRadians(0)))
+                    .splineTo(new Pose2d(movementa1,movementf6,Math.toRadians(0)))
                     .addMarker(() -> {
                         intakeOn();
                         //grabStoneInRobot();
@@ -251,26 +251,28 @@ public class BackGrabberREDSpline extends LinearOpMode {
             drive.followTrajectorySync(
                     drive.trajectoryBuilder()
                             .setReversed(true)
-                    .splineTo(new Pose2d(movementi9,-6,0))
+                    .splineTo(new Pose2d(movementi9,movementf6,0))
                     .addMarker(() -> {
                         intakeOff();
                         grabStoneInRobot();
                         return Unit.INSTANCE;
                     })
-                    .splineTo(new Pose2d(-9,-6))
+                    .splineTo(new Pose2d(-9,movementf6))
             .build());
+            liftHeight(2);
             extensionOut();
             sleep(600);
             releaseStone();
             drive.followTrajectorySync(
                     drive.trajectoryBuilder()
-                            .splineTo(new Pose2d(20,-10))
+                            .splineTo(new Pose2d(11,-9.5))
                             .addMarker(() -> {
                                 extensionIn();
                                 readyToGrab();
+                                liftHeight(0);
                                 return Unit.INSTANCE;
                             })
-                            .splineTo(new Pose2d(movementk11,-10,Math.toRadians(-25)))
+                            .splineTo(new Pose2d(movementk11,-9.5,Math.toRadians(-25)))
                             .addMarker(() -> {
                                 intakeOn();
                                 return Unit.INSTANCE;
@@ -281,21 +283,21 @@ public class BackGrabberREDSpline extends LinearOpMode {
             drive.followTrajectorySync(
                     drive.trajectoryBuilder()
                             .setReversed(true)
-                            .splineTo(new Pose2d(movementk11,-6,0))
+                            .splineTo(new Pose2d(movementk11,-9,0))
                             .addMarker(() -> {
                                 intakeReverse();
                                 grabStoneInRobot();
                                 //tapeMeasure.setPosition(0.25);
                                 return Unit.INSTANCE;
                             })
-                            .splineTo(new Pose2d(20,-4,0))
+                            .splineTo(new Pose2d(20,-9,0))
                             .addMarker(() -> {
                                 intakeOff();
                                 liftHeight(2);
                                 extensionOut();
                                 return Unit.INSTANCE;
                             })
-                            .splineTo(new Pose2d(-13,-4,0))
+                            .splineTo(new Pose2d(-13,-9,0))
                             .build());
             releaseStone();
             extensionIn();
@@ -449,7 +451,7 @@ public class BackGrabberREDSpline extends LinearOpMode {
     private void liftHeight (double stage){
         liftEx1.setTargetPosition((int) (((stage * 3.95) - 1) * LIFT_COUNTS_PER_INCH));
         liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);;
+        liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
         liftEx1.setPower(liftPower);
     }
 }
