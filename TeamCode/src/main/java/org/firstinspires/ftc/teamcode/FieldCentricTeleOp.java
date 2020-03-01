@@ -85,15 +85,21 @@ public class FieldCentricTeleOp extends OpMode {
     double buffer1 = 40;
     double buffer2 = 10;
     double liftError;
-    PIDFCoefficients pidfCoefficients;
-    //double currentPos = liftEx1.getCurrentPosition();
+    PIDFCoefficients pidfCoefficientsUp, pidfCoefficientsDown;
+    // double currentPos = liftEx1.getCurrentPosition();
     boolean fasterDown = false;
     boolean isLiftTouchPressed = true;
 
-    public static double lkp = 9;
-    public static double lki = 0;
-    public static double lkd = 0;
-    public static double lkf = 0;
+    // lift PIDF
+    public static double lkpUp = 16;
+    public static double lkiUp = 0;
+    public static double lkdUp = 0;
+    public static double lkfUp = 0;
+
+    public static double lkpDown = 2;
+    public static double lkiDown = 0;
+    public static double lkdDown = 0;
+    public static double lkfDown = 0;
 
     boolean previousGP2LBPos = false;
     boolean previousGP2RBPos = false;
@@ -159,7 +165,8 @@ public class FieldCentricTeleOp extends OpMode {
         // FtcDashboard dashboard = FtcDashboard.getInstance();
         // telemetry = dashboard.getTelemetry();
 
-        pidfCoefficients = new PIDFCoefficients(lkp, lki, lkd, lkf);
+        pidfCoefficientsUp = new PIDFCoefficients(lkpUp, lkiUp, lkdUp, lkfUp);
+        pidfCoefficientsDown = new PIDFCoefficients(lkpDown, lkiDown, lkdDown, lkfDown);
 
         intakeColor = hardwareMap.get(DistanceSensor.class, "intakeColor");
         liftTouch = hardwareMap.get(TouchSensor.class, "liftTouch");
@@ -189,10 +196,10 @@ public class FieldCentricTeleOp extends OpMode {
         imu = hardwareMap.get(BNO055IMU.class,"imu");
         imu.initialize(parameters);
 
-        headingAdjAfterReset = finalAutoHeading;
+        // headingAdjAfterReset = finalAutoHeading;
     }
 
-    @Override
+    /*@Override
     public void init_loop() {
         r0 = Math.sqrt(gamepad2.left_stick_x * gamepad2.left_stick_x + gamepad2.left_stick_y * gamepad2.left_stick_y);
         if (gamepad2.left_stick_y < 0) {
@@ -202,7 +209,7 @@ public class FieldCentricTeleOp extends OpMode {
         if (gamepad2.left_stick_y >= 0) {
             autoReset = 2 * Math.PI - Math.atan2(gamepad2.left_stick_y, gamepad2.left_stick_x);
         }
-    }
+    }*/
 
     @Override
     public void loop() {
@@ -237,8 +244,8 @@ public class FieldCentricTeleOp extends OpMode {
             Theta = 2 * Math.PI - Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x);
         }
 
-        outputX = -Math.cos(heading - Theta + headingAdjAfterReset - autoReset) * r;
-        outputY = Math.sin(heading - Theta + headingAdjAfterReset - autoReset) * r;
+        outputX = -Math.cos(heading - Theta + headingAdjAfterReset) * r;
+        outputY = Math.sin(heading - Theta + headingAdjAfterReset) * r;
 
         heading = Math.toRadians(getAbsoluteHeading());
 
@@ -422,6 +429,8 @@ public class FieldCentricTeleOp extends OpMode {
             isLiftTouchPressed = false;
             liftUp = false;
 
+            liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficientsUp);
+
             previousGP2RBPos = currentGP2RBPos;
         } else {
             previousGP2RBPos = currentGP2RBPos;
@@ -429,7 +438,7 @@ public class FieldCentricTeleOp extends OpMode {
 
         // left bumper: lift completely down and desiredLiftStage = 0
         if (currentGP2LBPos && !previousGP2LBPos && currentLiftStage != 0) {
-            desiredLiftStage = currentLiftStage + 1.9;
+            desiredLiftStage = currentLiftStage + 2;
             currentLiftStage = 0;
 
             previousGP2LBPos = currentGP2LBPos;
@@ -443,6 +452,7 @@ public class FieldCentricTeleOp extends OpMode {
         // right trigger: nextLiftStage + 1
         if (currentGP2RTPos && !previousGP2RTPos) {
             desiredLiftStage++;
+
             previousGP2RTPos = currentGP2RTPos;
         } else {
             previousGP2RTPos = currentGP2RTPos;
@@ -450,8 +460,10 @@ public class FieldCentricTeleOp extends OpMode {
 
         // left trigger: lift down one stage but desiredLiftStage doesn't change
         if (currentGP2LTPos && !previousGP2LTPos) {
-            if (currentLiftStage > 0) currentLiftStage = currentLiftStage-0.9;
+            if (currentLiftStage > 0) currentLiftStage--;
             liftUp = false;
+
+            liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficientsDown);
 
             previousGP2LTPos = currentGP2LTPos;
         } else {
@@ -460,7 +472,7 @@ public class FieldCentricTeleOp extends OpMode {
 
         // LIFT DcMotorEx
         if (!isLiftTouchPressed && currentLiftStage == 0 && !liftTouch.isPressed()) {
-            liftEx1.setTargetPosition((int) (((currentLiftStage * 3.95) - 1) * LIFT_COUNTS_PER_INCH));
+            liftEx1.setTargetPosition(0);
             liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             liftEx1.setPower(-0.2);
         } else if (currentLiftStage == 0 && liftTouch.isPressed()) {
@@ -475,14 +487,14 @@ public class FieldCentricTeleOp extends OpMode {
             }
 
             liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
             liftEx1.setPower(liftPower);
             liftUp = true;
         }/* else {
             liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             liftEx1.setPower(.13);
         }*/
-         /*
+
+        /*
         // lift - 1 stage above the previous stage
         if (currentGP2RBPos && !previousGP2RBPos) {
             if (nextLiftStage <= 7) {
@@ -587,7 +599,6 @@ public class FieldCentricTeleOp extends OpMode {
         telemetry.addData("resetAdj", headingAdjAfterReset);
         telemetry.addData("lift1 current", liftRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
         telemetry.addData("lift1 power", liftEx1.getPower());
-        // telemetry.addData("lift1 power", liftEx1.getPower());
         telemetry.addData("currentLiftStage", currentLiftStage);
         telemetry.addData("desiredLiftStage", desiredLiftStage);
         telemetry.addData("isLiftTouchPressed", isLiftTouchPressed);
