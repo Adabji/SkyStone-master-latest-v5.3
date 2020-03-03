@@ -88,7 +88,7 @@ public class BackGrabberBLUESpline extends LinearOpMode {
     // public static double movements19 = 30;
 
     // Hardware stuff
-    private Servo foundationServo, foundationServoRight, rightStoneGrabber, grabberLeft, tapeMeasure, liftHoExt, wrist, grabber;
+    private Servo foundationServo, foundationServoRight, rightStoneGrabber, grabberLeft, tapeMeasure, liftHoExt, wrist, grabber, capstoneServo;
     private DcMotor intakeMotor1, intakeMotor2, intakeMotor3;
     public DriveConstraints constraints = new DriveConstraints(
             60.0, 40.0, 0.0,
@@ -105,6 +105,7 @@ public class BackGrabberBLUESpline extends LinearOpMode {
         liftHoExt = hardwareMap.servo.get("liftHoExt");
         wrist = hardwareMap.servo.get("liftGrabberRotater");
         grabber = hardwareMap.servo.get("liftGrabber");
+        capstoneServo = hardwareMap.servo.get("capstoneServo");
         intakeMotor1 = hardwareMap.dcMotor.get("intake motor 1");
         intakeMotor2 = hardwareMap.dcMotor.get("intake motor 2");
         intakeMotor3 = hardwareMap.dcMotor.get("intake motor 3");
@@ -188,6 +189,7 @@ public class BackGrabberBLUESpline extends LinearOpMode {
             telemetry.addData("Skystone coordinates", skyStoneDetector.getScreenPosition());
             telemetry.update();
 
+            capstoneServo.setPosition(0.5);
             foundationDownGrabberUp2();
             readyToGrab();
             extensionIn();
@@ -210,6 +212,7 @@ public class BackGrabberBLUESpline extends LinearOpMode {
             foundationDownGrabberDown2();
             sleep(450);
             foundationUpGrabberDown2();
+
             // grabFoundation();  *you can add commands in between too*
             sleep(500);
             drive.followTrajectorySync(
@@ -247,12 +250,13 @@ public class BackGrabberBLUESpline extends LinearOpMode {
                             .setReversed(true)
                     .splineTo(new Pose2d(movementi9,6,0))
                     .addMarker(() -> {
-                        intakeOff();
+                        intakeReverse();
                         grabStoneInRobot();
                         return Unit.INSTANCE;
                     })
                     .splineTo(new Pose2d(-9,6))
             .build());
+            intakeOff();
             extensionOut();
             sleep(600);
             releaseStone();
@@ -276,13 +280,14 @@ public class BackGrabberBLUESpline extends LinearOpMode {
                             .setReversed(true)
                             .splineTo(new Pose2d(58,movemente5/*-2*/,0))
                             .addMarker(() -> {
-                                intakeOff();
+                                intakeReverse();
                                 grabStoneInRobot();
                                 //tapeMeasure.setPosition(0.25);
                                 return Unit.INSTANCE;
                             })
                             .splineTo(new Pose2d(20,movemente5/*-2*/,0))
                             .addMarker(() -> {
+                                intakeOff();
                                 liftHeight(2);
                                 extensionOut();
                                 return Unit.INSTANCE;

@@ -96,7 +96,7 @@ public class FieldCentricTeleOp extends OpMode {
     public static double lkdUp = 0;
     public static double lkfUp = 0;
 
-    public static double lkpDown = 2;
+    public static double lkpDown = 4;
     public static double lkiDown = 0;
     public static double lkdDown = 0;
     public static double lkfDown = 0;
@@ -299,6 +299,13 @@ public class FieldCentricTeleOp extends OpMode {
                 targetPos = (int) ((currentLiftStage * 4) * LIFT_COUNTS_PER_INCH);
                 stoneAfterDropTimer = -1;
             }
+        }
+
+        // To let go of the capstone
+        if(gamepad1.left_trigger > 0.5) {
+            capstoneServo.setPosition(0.25);
+        } else {
+            capstoneServo.setPosition(0.5);
         }
 
         // lift extension out position
