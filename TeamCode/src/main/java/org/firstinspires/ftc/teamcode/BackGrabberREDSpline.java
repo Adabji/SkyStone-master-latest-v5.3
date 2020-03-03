@@ -63,7 +63,7 @@ public class BackGrabberREDSpline extends LinearOpMode {
     public static double movementl12;
     public static double movementn14;
     public static double movementk11;
-    public static double movementm13 = 10;
+    public static double movementm13;
     public static double movementu21 = 23;
     public static double movementt20;
     public static double movemento15 = 83;
@@ -156,23 +156,25 @@ public class BackGrabberREDSpline extends LinearOpMode {
                 movementw23 = 23;
                 movementd4 = -109.5;
                 movementt20 = 60;
+                movementm13 = -4;
 
             } else if (skyStoneDetector.getScreenPosition().x < skystoneMargin) {
                 skystoneLoc = "left";
                 movementb2 = 7.5;
                 movementl12 = 100;
                 movementg7 = 90;
-                movementv22 = 112.3;
+                movementv22 = 112.9;
                 movemente5 = 9;
-                movementf6 = -4.5;
+                movementf6 = -3;
                 movementn14 = 103;
                 movementi9 = 90;
                 movementk11 = 65;
                 movementa1 = 60;
-                movementc3 = 38;
+                movementc3 = 39;
                 movementw23 = 26;
-                movementd4 = -100;
+                movementd4 = -98;
                 movementt20 = 120;
+                movementm13 = -1;
             } else {
                 skystoneLoc = "center";
                 movementg7 = 83;
@@ -185,9 +187,10 @@ public class BackGrabberREDSpline extends LinearOpMode {
                 movementi9 = 90;
                 movementk11 = 58;
                 movementa1 = 60;
-                movementc3 = 29;
+                movementc3 = 34.5;
                 movementw23 = 0;
                 movementd4 = -86.5;
+                movementm13 = -4;
             }
 
             telemetry.addData("Skystone Location", skystoneLoc);
@@ -242,7 +245,7 @@ public class BackGrabberREDSpline extends LinearOpMode {
                         intakeMotor1.setPower(1);
                         return Unit.INSTANCE;
                     })
-                    .splineTo(new Pose2d(movementa1,-4,Math.toRadians(0)))
+                    .splineTo(new Pose2d(movementa1,movementm13,Math.toRadians(0)))
                     //passing middle bridge
                     .addMarker(() -> {
                         intakeOn();
@@ -263,7 +266,7 @@ public class BackGrabberREDSpline extends LinearOpMode {
                         grabStoneInRobot();
                         return Unit.INSTANCE;
                     })
-                    .splineTo(new Pose2d(-9,movementf6))
+                    .splineTo(new Pose2d(-10,movementf6))
             .build());
             intakeOff();
             liftHeight(2);
@@ -272,7 +275,7 @@ public class BackGrabberREDSpline extends LinearOpMode {
             releaseStone();
             drive.followTrajectorySync(
                     drive.trajectoryBuilder()
-                            .splineTo(new Pose2d(11,-9.2))
+                            .splineTo(new Pose2d(7,-9.2))
                             .addMarker(() -> {
                                 extensionIn();
                                 readyToGrab();
@@ -290,21 +293,21 @@ public class BackGrabberREDSpline extends LinearOpMode {
             drive.followTrajectorySync(
                     drive.trajectoryBuilder()
                             .setReversed(true)
-                            .splineTo(new Pose2d(movementk11,-7.2,0))
+                            .splineTo(new Pose2d(movementk11,-4.7,0))
                             .addMarker(() -> {
                                 intakeReverse();
                                 grabStoneInRobot();
                                 //tapeMeasure.setPosition(0.25);
                                 return Unit.INSTANCE;
                             })
-                            .splineTo(new Pose2d(20,-7.2,0))
+                            .splineTo(new Pose2d(20,-4.7,0))
                             .addMarker(() -> {
                                 intakeOff();
                                 liftHeight(2);
                                 extensionOut();
                                 return Unit.INSTANCE;
                             })
-                            .splineTo(new Pose2d(-13,-7.2,0))
+                            .splineTo(new Pose2d(-13,-4.7,0))
                             .build());
             releaseStone();
             extensionIn();
