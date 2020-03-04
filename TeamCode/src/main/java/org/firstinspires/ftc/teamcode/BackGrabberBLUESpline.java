@@ -141,15 +141,15 @@ public class BackGrabberBLUESpline extends LinearOpMode {
                 movementl12 = 100;
                 movementg7 = 5;
                 movementv22 = 113.5 ;
-                movemente5 = 4;
+                movemente5 = 5;
                 movementf6 = 85.5;
                 movementn14 = 103;
                 movementi9 = 90;
                 movementk11 = 0;
                 movementa1 = 75;
-                movementc3 = 30;
+                movementc3 = 37;
                 movementw23 = 26;
-                movementd4 = 65;
+                movementd4 = 90;
                 movementt20 = 120;
 
             } else if (skyStoneDetector.getScreenPosition().x < skystoneMargin) {
@@ -158,7 +158,7 @@ public class BackGrabberBLUESpline extends LinearOpMode {
                 movementl12 = 72;
                 movementg7 = 10;
                 movementv22 = 102;
-                movemente5= 6;
+                movemente5= 9;
                 movementf6 = 85;
                 movementn14 = 51;
                 movementi9 = 90;
@@ -174,7 +174,7 @@ public class BackGrabberBLUESpline extends LinearOpMode {
                 movementb2 = 12;
                 movementl12 = 90;
                 movementv22 = 110.8;
-                movemente5 = -2;
+                movemente5 = 4;
                 movementf6 = 85;
                 movementn14 = 93.5;
                 movementi9 = 90;
@@ -229,10 +229,10 @@ public class BackGrabberBLUESpline extends LinearOpMode {
             drive.setMotorPowers(0, 0, 0, 0);
             drive.setPoseEstimate(new Pose2d (0, 0, 0));
             releaseFoundation();
-            moveBackward(drive,20);
+            moveBackward(drive,20); //pushing foundation back
             drive.followTrajectorySync(
             drive.trajectoryBuilder()
-                    .splineTo(new Pose2d(37,7))
+                    .splineTo(new Pose2d(37,7)) //going to first stone
                     .addMarker(() -> {
                         intakeMotor1.setPower(1);
                         return Unit.INSTANCE;
@@ -246,29 +246,31 @@ public class BackGrabberBLUESpline extends LinearOpMode {
                     .splineTo(new Pose2d(movementv22,32,Math.toRadians(45)))
                     .build());
             drive.followTrajectorySync(
-                    drive.trajectoryBuilder()
+                    drive.trajectoryBuilder() //going to second stone
                             .setReversed(true)
-                    .splineTo(new Pose2d(movementi9,6,0))
+                    .splineTo(new Pose2d(movementi9,4,0))
                     .addMarker(() -> {
                         intakeReverse();
                         grabStoneInRobot();
                         return Unit.INSTANCE;
                     })
-                    .splineTo(new Pose2d(-9,6))
+                    .splineTo(new Pose2d(-9,4))
             .build());
+            liftHeight(2);
             intakeOff();
             extensionOut();
             sleep(600);
             releaseStone();
             drive.followTrajectorySync(
                     drive.trajectoryBuilder()
-                            .splineTo(new Pose2d(20,9))
+                            .splineTo(new Pose2d(8,10))
                             .addMarker(() -> {
+                                liftHeight(0);
                                 extensionIn();
                                 readyToGrab();
                                 return Unit.INSTANCE;
                             })
-                            .splineTo(new Pose2d(58,9,Math.toRadians(25)))
+                            .splineTo(new Pose2d(58,10,Math.toRadians(25)))
                             .addMarker(() -> {
                                 intakeOn();
                                 return Unit.INSTANCE;
@@ -376,7 +378,7 @@ public class BackGrabberBLUESpline extends LinearOpMode {
         foundationServoRight.setPosition(1);
         foundationServo.setPosition(0.25);
         rightStoneGrabber.setPosition(.8);
-        grabberLeft.setPosition(.28);
+        grabberLeft.setPosition(.12);
     }
     private void releaseFoundation() {
         foundationServoRight.setPosition(.5);
