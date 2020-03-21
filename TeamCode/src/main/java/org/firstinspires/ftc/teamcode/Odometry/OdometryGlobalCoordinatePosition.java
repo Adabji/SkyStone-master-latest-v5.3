@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Odometry;
 
+import static org.firstinspires.ftc.teamcode.Odometry.OdometryVariables.trackwidth;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
@@ -50,7 +52,7 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
         this.horizontalEncoder = horizontalEncoder;
         sleepTime = threadSleepDelay;
 
-        robotEncoderWheelDistance = Double.parseDouble(ReadWriteFile.readFile(wheelBaseSeparationFile).trim()) * COUNTS_PER_INCH;
+        robotEncoderWheelDistance = trackwidth * COUNTS_PER_INCH;
         this.horizontalEncoderTickPerDegreeOffset = Double.parseDouble(ReadWriteFile.readFile(horizontalTickOffsetFile).trim());
 
     }
@@ -79,8 +81,8 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
         double n = horizontalChange;
 
         //Calculate and update the position values
-        robotGlobalXCoordinatePosition = robotGlobalXCoordinatePosition + (p*Math.sin(robotOrientationRadians) + n*Math.cos(robotOrientationRadians));
-        robotGlobalYCoordinatePosition = robotGlobalYCoordinatePosition + (p*Math.cos(robotOrientationRadians) - n*Math.sin(robotOrientationRadians));
+        robotGlobalXCoordinatePosition = robotGlobalXCoordinatePosition /*+ (p*Math.sin(robotOrientationRadians)*/ + n*Math.cos(robotOrientationRadians)/*)*/;
+        robotGlobalYCoordinatePosition = robotGlobalYCoordinatePosition + (p*Math.cos(robotOrientationRadians) /*- n*Math.sin(robotOrientationRadians)*/);
 
         previousVerticalLeftEncoderWheelPosition = verticalLeftEncoderWheelPosition;
         previousVerticalRightEncoderWheelPosition = verticalRightEncoderWheelPosition;
