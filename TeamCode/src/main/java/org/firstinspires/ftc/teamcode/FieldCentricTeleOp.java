@@ -75,8 +75,8 @@ public class FieldCentricTeleOp extends OpMode {
 
     // lift things
     int nextLiftStage = 1;
-    private double currentLiftStage = 0;
-    private double desiredLiftStage = 0;
+    private static double currentLiftStage = 0;
+    private static double desiredLiftStage = 0;
     int targetPos = 0;
     boolean targetBufferEarly = false;
     boolean targetBufferLate = false;
@@ -118,7 +118,6 @@ public class FieldCentricTeleOp extends OpMode {
     boolean currentGP1DUPos;
 
     double liftPower = 1;
-
     long gamePad2ATimer = -1;
     long gamePad2BTimer = -1;
     long liftDownExtTimer = -1;
@@ -127,6 +126,7 @@ public class FieldCentricTeleOp extends OpMode {
     long liftInTimer = -1;
     long stoneInRobotTimer = -1;
     long capstoneTimer = -1;
+    long capstoneTimer2 = -1;
     long intakeTimer = -1;
     boolean servoPositionsAfterStart = true;
     boolean isAutomationOn = true;
@@ -137,7 +137,7 @@ public class FieldCentricTeleOp extends OpMode {
     public static double foundationLeftDown = .24;
     public static double foundationRightUp = .5;
     public static double foundationLeftUp = .78;
-    public static double liftExtOut = .935;
+    public static double liftExtOut;
     public static double liftExtIn = .575;
 
     double r0, autoReset;
@@ -213,6 +213,12 @@ public class FieldCentricTeleOp extends OpMode {
 
     @Override
     public void loop() {
+        if (currentLiftStage== 11){
+            liftExtOut = .96;
+        }
+        else  {
+            liftExtOut = .93 + currentLiftStage*0.014;
+        }
         intakeDistance = intakeColor.getDistance(DistanceUnit.CM);
         liftError = Math.abs((((currentLiftStage * 3.9) - 1) * LIFT_COUNTS_PER_INCH)-liftEx1.getCurrentPosition());
         // servo position settings initialization at start
@@ -286,24 +292,23 @@ public class FieldCentricTeleOp extends OpMode {
             intakeMotor3.setPower(1);
         }
 
-        // grabber - DEPOSIT STONE - then not grabbing - doesn't happen when the current lift stage is equal to 0
-        if (currentLiftStage > 0) {
-            if (gamepad1.dpad_down && stoneDropTimer == -1) {
-                targetPos = (int) (((currentLiftStage * 4) - 2) * LIFT_COUNTS_PER_INCH);
-                stoneDropTimer = System.currentTimeMillis();
-            } else if (stoneDropTimer > 0 && System.currentTimeMillis() - stoneDropTimer > 1500 && stoneAfterDropTimer == -1) {
-                grabber.setPosition(0.6);
-                stoneDropTimer = -1;
-                stoneAfterDropTimer = System.currentTimeMillis();
-            } else if (stoneAfterDropTimer > 0 && System.currentTimeMillis() - stoneAfterDropTimer > 500) {
-                targetPos = (int) ((currentLiftStage * 4) * LIFT_COUNTS_PER_INCH);
-                stoneAfterDropTimer = -1;
-            }
+        // lift - down 1/2 stage
+        if (gamepad1.dpad_down && System.currentTimeMillis()-capstoneTimer > 500) {
+            if (currentLiftStage > 0) currentLiftStage = currentLiftStage - 0.5;
+            liftUp = false;
+            liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficientsDown);
+            capstoneTimer = System.currentTimeMillis();
+        }
+        if (gamepad1.dpad_up && System.currentTimeMillis() - capstoneTimer2 > 500) {
+            if (currentLiftStage > 0) currentLiftStage = currentLiftStage + 0.5;
+            liftUp = false;
+            liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficientsDown);
+            capstoneTimer2 = System.currentTimeMillis();
         }
 
         // To let go of the capstone
         if(gamepad1.left_trigger > 0.5) {
-            capstoneServo.setPosition(0.25);
+            capstoneServo.setPosition(0.2);
         } else {
             capstoneServo.setPosition(0.5);
         }
@@ -329,28 +334,7 @@ public class FieldCentricTeleOp extends OpMode {
             // grabber.setPosition(0.6);
             liftInTimer = -1;
         }
-        /* if (intakeDistance > 6.5 && intakeDistance < 7.5 && isLiftTouchPressed && !hoExt){
-            grabber.setPosition(0.44);
-            wrist.setPosition(0.1);
-        }
-        /*else if (intakeDistance > 3.5 && intakeDistance < 5.5 && isLiftTouchPressed && !hoExt){
 
-                grabber.setPosition(0.4);
-                wrist.setPosition(0.5);
-                intakeMotor1.setPower(0);
-                intakeMotor2.setPower(0);
-                intakeMotor3.setPower(0);
-
-        }*/
-        /*// grabber direction - out
-        if (gamepad2.dpad_up) {
-            wrist.setPosition(0.85);
-        }
-
-        // grabber direction - in
-        if (gamepad2.dpad_down) {
-            wrist.setPosition(0.18);
-        }*/
 
         // grabber - grabbing
         if (gamepad2.x) {
@@ -377,15 +361,7 @@ public class FieldCentricTeleOp extends OpMode {
             wrist.setPosition(0.1);
         }
 
-        /* // stone holder out - not holding
-        if (gamepad2.dpad_left) {
-            stoneHolder.setPosition(0.4);
-        }
 
-        // stone holder in - holding the stone in place
-        if (gamepad2.dpad_right) {
-            stoneHolder.setPosition(0);
-        }*/
 
         // foundation servo - Up
         if (gamepad1.left_bumper) {
@@ -402,26 +378,7 @@ public class FieldCentricTeleOp extends OpMode {
         currentGP1DLPos = gamepad1.dpad_left;
         currentGP1DUPos = gamepad1.dpad_up;
 
-        // capstone servo down
-       /* if (currentGP1DLPos && !previousGP1DLPos) {
-            capstoneServo.setPosition(0.75);
-            /*capstoneTimer = System.currentTimeMillis();
-            while (capstoneTimer > 0 && System.currentTimeMillis() - capstoneTimer < 1000) { }
-            capstoneServo.setPosition(0);
-            capstoneTimer = -1;*/
 
-          //  previousGP1DLPos = currentGP1DLPos;
-        //} else {
-         //   previousGP1DLPos = currentGP1DLPos;
-        //}
-
-        // capstone servo up
-        /*if (currentGP1DUPos && !previousGP1DUPos) {
-            capstoneServo.setPosition(0);
-            previousGP1DUPos = currentGP1DUPos;
-        } else {
-            previousGP1DUPos = currentGP1DUPos;
-        }*/
 
         currentGP2LBPos = gamepad2.left_bumper;
         currentGP2RBPos = gamepad2.right_bumper;
@@ -481,7 +438,7 @@ public class FieldCentricTeleOp extends OpMode {
         if (!isLiftTouchPressed && currentLiftStage == 0 && !liftTouch.isPressed()) {
             liftEx1.setTargetPosition(0);
             liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            liftEx1.setPower(-0.2);
+            liftEx1.setPower(-0.4);
         } else if (currentLiftStage == 0 && liftTouch.isPressed()) {
             isLiftTouchPressed = true;
             liftEx1.setPower(0);
@@ -496,126 +453,15 @@ public class FieldCentricTeleOp extends OpMode {
             liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             liftEx1.setPower(liftPower);
             liftUp = true;
-        }/* else {
-            liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            liftEx1.setPower(.13);
-        }*/
-
-        /*
-        // lift - 1 stage above the previous stage
-        if (currentGP2RBPos && !previousGP2RBPos) {
-            if (nextLiftStage <= 7) {
-                currentLiftStage = nextLiftStage;
-                targetPos = (int) ((currentLiftStage * 4) * LIFT_COUNTS_PER_INCH);
-            }
-
-            previousGP2RBPos = currentGP2RBPos;
-        } else {
-            previousGP2RBPos = currentGP2RBPos;
         }
-
-        // lift - completely down
-        if (currentGP2LBPos && !previousGP2LBPos) {
-            if (currentLiftStage == 0) {
-                return;
-            }
-
-            liftDownExtTimer = System.currentTimeMillis();
-            wrist.setPosition(0.18);
-            // grabber.setPosition(0.6);
-
-            while (System.currentTimeMillis() - liftDownExtTimer < 300) { }
-
-            liftHoExt.setPosition(0.45);
-            liftDownExtTimer = -1;
-
-            currentLiftStage = 0;
-            targetPos = 0;
-            if (nextLiftStage != 7) {
-                nextLiftStage++;
-            }
-
-            previousGP2LBPos = currentGP2LBPos;
-        } else {
-            previousGP2LBPos = currentGP2LBPos;
-        }
-
-        // lift - up 1 stage
-        if (currentGP2RTPos && !previousGP2RTPos) {
-            if (nextLiftStage >= 0 && nextLiftStage < 7 && currentLiftStage != 7) {
-                currentLiftStage++;
-            }
-
-            previousGP2RTPos = currentGP2RTPos;
-            nextLiftStage = currentLiftStage;
-            targetPos = (int) ((currentLiftStage * 4) * LIFT_COUNTS_PER_INCH);
-        } else {
-            previousGP2RTPos = currentGP2RTPos;
-        }
-
-        // lift - down 1 stage
-        if (currentGP2LTPos && !previousGP2LTPos) {
-            if (nextLiftStage > 0 && nextLiftStage <= 7 && currentLiftStage != 0) {
-                currentLiftStage--;
-            }
-
-            previousGP2LTPos = currentGP2LTPos;
-            nextLiftStage = currentLiftStage;
-            targetPos = (int) ((currentLiftStage * 4) * LIFT_COUNTS_PER_INCH);
-        } else {
-            previousGP2LTPos = currentGP2LTPos;
-        }
-
-        // LIFT DcMotorEx
-        if (currentLiftStage == 0 && !liftTouch.isPressed()) {
-            liftEx1.setTargetPosition(targetPos);
-            liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            liftEx1.setPower(-0.7);
-        } else if (currentLiftStage == 0 && liftTouch.isPressed()) {
-            liftEx1.setPower(0);
-            liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        } else if (currentLiftStage != 0 && liftEx1.getCurrentPosition() != targetPos) {
-            liftEx1.setTargetPosition(targetPos);
-            liftEx1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            liftEx1.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
-            liftEx1.setPower(liftPower);
-        }*/
-            /*else if (!isLiftTouchPressed && currentLiftStage != 0 && liftEx1.getCurrentPosition() != (int) (((currentLiftStage * 4) - 1) * LIFT_COUNTS_PER_INCH) && targetBufferEarly && targetBufferLate){
-            liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            liftEx1.setPower(gffConstant);
-        }*/
-       /* else if (!isLiftTouchPressed && currentLiftStage != 0 && liftEx1.getCurrentPosition() != (int) (((currentLiftStage * 4) - 1) * LIFT_COUNTS_PER_INCH) && targetBufferEarly && targetBufferLate){
-            liftEx1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            liftEx1.setPower(gffConstant2);
-        }*/
-
         if (isLiftTouchPressed) {
             liftEx1.setPower(0);
             liftEx1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
 
-        // linkage extends after it goes up
-        /*if (isRBPressed) {
-            if (currentLiftStage != 0 && Math.abs(liftEx1.getCurrentPosition() - targetPos) < 5) {
-                liftHoExt.setPosition(1);
-                isRBPressed = false;
-            }
-        }*/
 
-        // telemetry.addData("lift1 encoder count", liftMotor1.getCurrentPosition());
-        telemetry.addData("resetAdj", headingAdjAfterReset);
-        telemetry.addData("lift1 current", liftRE2.getCurrentDraw(ExpansionHubEx.CurrentDrawUnits.AMPS));
-        telemetry.addData("lift1 power", liftEx1.getPower());
         telemetry.addData("currentLiftStage", currentLiftStage);
         telemetry.addData("desiredLiftStage", desiredLiftStage);
-        telemetry.addData("isLiftTouchPressed", isLiftTouchPressed);
-        telemetry.addData("HoExt", hoExt);
-
-        // telemetry.addData("NextLiftstage", nextLiftStage);
-        // telemetry.addData("targetPos", targetPos);
-        // telemetry.addData("intakeDistanceSensor Reading", intakeColor.getDistance(DistanceUnit.CM));
-        // telemetry.addData("liftTouchSensor", liftTouch.isPressed());
-        // telemetry.addData("isAutomationOn", isAutomationOn);
 
         telemetry.update();
     }

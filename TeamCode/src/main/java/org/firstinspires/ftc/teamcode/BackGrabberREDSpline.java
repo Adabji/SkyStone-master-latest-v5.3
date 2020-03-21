@@ -143,27 +143,27 @@ public class BackGrabberREDSpline extends LinearOpMode {
             if (skyStoneDetector.getScreenPosition().x > cameraRightMargin || skyStoneDetector.getScreenPosition().x < 10) {
                 skystoneLoc = "right";
                 movementb2 = 4;
-                movementl12 = 72;
-                movementg7 = 100;
-                movementv22 = 95.6;
+                movementl12 = -29;
+                movementg7 = -9.2;
+                movementv22 = 95.3;
                 movemente5= 11.5;
-                movementf6 = -4.5;
+                movementf6 = -2.75;
                 movementn14 = 51;
                 movementi9 = 90;
                 movementk11 = 58;
                 movementa1 = 60;
-                movementc3 = 30;
+                movementc3 = 32.3;
                 movementw23 = 23;
                 movementd4 = -109.5;
                 movementt20 = 60;
-                movementm13 = -4;
+                movementm13 = -4.8;
 
             } else if (skyStoneDetector.getScreenPosition().x < skystoneMargin) {
                 skystoneLoc = "left";
                 movementb2 = 7.5;
-                movementl12 = 100;
-                movementg7 = 90;
-                movementv22 = 112.9;
+                movementl12 = -26.7;
+                movementg7 = -11;
+                movementv22 = 118.6;
                 movemente5 = 9;
                 movementf6 = -3;
                 movementn14 = 103;
@@ -174,13 +174,13 @@ public class BackGrabberREDSpline extends LinearOpMode {
                 movementw23 = 26;
                 movementd4 = -98;
                 movementt20 = 120;
-                movementm13 = -1;
+                movementm13 = -5;
             } else {
                 skystoneLoc = "center";
-                movementg7 = 83;
+                movementg7 = -9.2;
                 movementb2 = -4;
-                movementl12 = 90;
-                movementv22 = 105.2;
+                movementl12 = -29;
+                movementv22 = 102.2;
                 movemente5 = 7;
                 movementf6 = -4.5;
                 movementn14 = 93.5;
@@ -190,7 +190,7 @@ public class BackGrabberREDSpline extends LinearOpMode {
                 movementc3 = 34.5;
                 movementw23 = 0;
                 movementd4 = -86.5;
-                movementm13 = -4;
+                movementm13 = -5.5;
             }
 
             telemetry.addData("Skystone Location", skystoneLoc);
@@ -253,7 +253,7 @@ public class BackGrabberREDSpline extends LinearOpMode {
                         return Unit.INSTANCE;
                     })
                     // going for 2nd stone
-                    .splineTo(new Pose2d(movementv22,-29,Math.toRadians(-45)))
+                    .splineTo(new Pose2d(movementv22,movementl12,Math.toRadians(-45)))
                     .build());
             sleep(10);
             drive.followTrajectorySync(
@@ -275,14 +275,14 @@ public class BackGrabberREDSpline extends LinearOpMode {
             releaseStone();
             drive.followTrajectorySync(
                     drive.trajectoryBuilder()
-                            .splineTo(new Pose2d(7,-9.2))
+                            .splineTo(new Pose2d(7,movementg7))
                             .addMarker(() -> {
                                 extensionIn();
                                 readyToGrab();
                                 liftHeight(0);
                                 return Unit.INSTANCE;
                             })
-                            .splineTo(new Pose2d(movementk11,-9.2,Math.toRadians(-25)))
+                            .splineTo(new Pose2d(movementk11,movementg7,Math.toRadians(-25)))
                             .addMarker(() -> {
                                 intakeOn();
                                 return Unit.INSTANCE;
@@ -297,7 +297,7 @@ public class BackGrabberREDSpline extends LinearOpMode {
                             .addMarker(() -> {
                                 intakeReverse();
                                 grabStoneInRobot();
-                                //tapeMeasure.setPosition(0.25);
+                                tapeMeasure.setPosition(0.25);
                                 return Unit.INSTANCE;
                             })
                             .splineTo(new Pose2d(20,-4.7,0))
@@ -311,8 +311,8 @@ public class BackGrabberREDSpline extends LinearOpMode {
                             .build());
             releaseStone();
             extensionIn();
-           // tapeMeasure.setPosition(0.25);
-            moveForward(drive, 10);
+            tapeMeasure.setPosition(0.25);
+            moveForward(drive, 20);
             // tapeMeasure.setPower(power);
             // +power = tape measure retracts
             // -power = tape measure extends

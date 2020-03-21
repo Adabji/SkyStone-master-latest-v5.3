@@ -134,7 +134,7 @@ public class BackGrabberRED extends LinearOpMode {
                 movementm13 = 11;
                 turnRadiusDeterminer = -0.16;
                 movemento15 = -92;
-                movementn14 = 51;
+                movementn14 = 53;
                 movementa1 = 0;
                 movementc3 = 30;
                 movementd4 = 0;
@@ -152,7 +152,7 @@ public class BackGrabberRED extends LinearOpMode {
                 turnRadiusDeterminer = -0.16;  // was -0.12
                 movemento15 = -89;
                 movementn14 = 103;
-                movementa1 = 40.5;
+                movementa1 = 36;
                 movementc3 = 14;
                 movementd4 = 42;
                 movementt20 = 120;
@@ -169,7 +169,7 @@ public class BackGrabberRED extends LinearOpMode {
                 turnRadiusDeterminer = -0.16;
                 movemento15 = -90;
                 movementn14 = 93.5;
-                movementa1 = 40.5;
+                movementa1 = 36;
                 movementc3 = 14;
                 movementd4 = 42;
                 movementt20 = 110;
@@ -209,7 +209,7 @@ public class BackGrabberRED extends LinearOpMode {
             drive.setPoseEstimate(new Pose2d (0, 0, 0));
             releaseFoundation();
             moveBackward(drive,20);
-            strafeRight(drive,10);
+            strafeRight(drive,14.5);
             intakeMotor1.setPower(1);
             sleep(400);
             intakeMotor1.setPower(0);
@@ -225,11 +225,13 @@ public class BackGrabberRED extends LinearOpMode {
             grabStoneInRobot();
             sleep(300);
             intakeOff();
-            tapeMeasure.setPosition(.325);
+            tapeMeasure.setPosition(0.32);
             moveBackward(drive,movementt20);
             extensionOut();
+            tapeMeasure.setPosition(0.25);
             sleep(1000);
             releaseStone();
+            moveForward(drive,15);
             /*foundationDownGrabberUp2();
             sleep(400);
             foundationUpGrabberDown2();
@@ -288,7 +290,7 @@ public class BackGrabberRED extends LinearOpMode {
         thisDrive.turnSync(Math.toRadians(angleInDeg));
     }
     private void foundationDownGrabberUp(){
-        foundationServo.setPosition(0.275);
+        foundationServo.setPosition(0.3);
         rightStoneGrabber.setPosition(.8);
     }
     private void foundationUpGrabberDown(){
@@ -296,7 +298,7 @@ public class BackGrabberRED extends LinearOpMode {
         rightStoneGrabber.setPosition(.35);
     }
     private void foundationDownGrabberDown(){
-        foundationServo.setPosition(0.275);
+        foundationServo.setPosition(0.3);
         rightStoneGrabber.setPosition(.35);
     }
     private void foundationAndStoneAllIn(){

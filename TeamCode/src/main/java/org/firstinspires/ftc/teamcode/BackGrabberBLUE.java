@@ -128,7 +128,7 @@ public class BackGrabberBLUE extends LinearOpMode {
                 movementg7 = 90;
                 movementv22 = 120;
                 movemente5 = 9;
-                movementf6 = 85.5;
+                movementf6 = 87;
                 movementn14 = 103;
                 movementi9 = 14.5;
                 movementk11 = 0;
@@ -144,8 +144,8 @@ public class BackGrabberBLUE extends LinearOpMode {
                 movementg7 = 100;
                 movementv22 = 96;
                 movemente5= 11.5;
-                movementf6 = 85;
-                movementn14 = 51;
+                movementf6 = 87;
+                movementn14 = 53.4;
                 movementi9 = 14.5;
                 movementk11 = 45;
                 movementa1 = 0;
@@ -160,7 +160,7 @@ public class BackGrabberBLUE extends LinearOpMode {
                 movementl12 = 90;
                 movementv22 = 115;
                 movemente5 = 7;
-                movementf6 = 85;
+                movementf6 = 87;
                 movementn14 = 93.5;
                 movementi9 = 14.5;
                 movementk11 = 0;
@@ -181,7 +181,7 @@ public class BackGrabberBLUE extends LinearOpMode {
             TrajectoryBuilder trajectoryBuilder = new TrajectoryBuilder(new Pose2d(initX, initY, initHeading), constraints);
 
             // trajectoryBuilder.splineTo(new Pose2d(finalX, finalY, finalHeading));
-
+            phoneCam.stopStreaming();
             trajectoryBuilder.lineTo(new Vector2d(movementb2, stoneY), new LinearInterpolator(initHeading, turnAngle));
 
             drive.followTrajectorySync(trajectoryBuilder.build());
@@ -196,12 +196,12 @@ public class BackGrabberBLUE extends LinearOpMode {
             sleep(350);
             moveForward(drive,15);
             sleep(300);
-            while(drive.getExternalHeading() < movementp16) { drive.setMotorPowers(-0.16, -0.16, 0.7, 0.7); }
+            while(drive.getExternalHeading() < movementp16) { drive.setMotorPowers(-0.10, -0.10, 0.7, 0.7); }
             drive.setMotorPowers(0, 0, 0, 0);
             drive.setPoseEstimate(new Pose2d (0, 0, 0));
             releaseFoundation();
             moveBackward(drive,20);
-            strafeLeft(drive,14);
+            strafeLeft(drive,16);
             intakeMotor1.setPower(1);
             sleep(400);
             intakeMotor1.setPower(0);
@@ -217,11 +217,13 @@ public class BackGrabberBLUE extends LinearOpMode {
             grabStoneInRobot();
             sleep(300);
             intakeOff();
-            tapeMeasure.setPosition(.325);
+            tapeMeasure.setPosition(.32);
             moveBackward(drive,movementt20);
             extensionOut();
+            tapeMeasure.setPosition(0.25);
             sleep(1000);
             releaseStone();
+            moveForward(drive,15);
 
 
 
