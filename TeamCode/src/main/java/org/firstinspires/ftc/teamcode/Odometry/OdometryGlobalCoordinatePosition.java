@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Odometry;
 
 import static org.firstinspires.ftc.teamcode.Odometry.OdometryVariables.trackwidth;
+import static org.firstinspires.ftc.teamcode.Odometry.OdometryVariables.horizontalOffset;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ReadWriteFile;
@@ -74,15 +75,18 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
 
         //Get the components of the motion
         normalEncoderWheelPosition = (horizontalEncoder.getCurrentPosition()*normalEncoderPositionMultiplier);
-        double rawHorizontalChange = normalEncoderWheelPosition - prevNormalEncoderWheelPosition;
-        double horizontalChange = rawHorizontalChange - (changeInRobotOrientation*horizontalEncoderTickPerDegreeOffset);
+        //double rawHorizontalChange = normalEncoderWheelPosition - prevNormalEncoderWheelPosition;
+        //double horizontalChange = rawHorizontalChange - (changeInRobotOrientation*horizontalEncoderTickPerDegreeOffset);
+
+        double rawHorizontalChange = (normalEncoderWheelPosition - prevNormalEncoderWheelPosition);
+        double horizontalChange = rawHorizontalChange - changeInRobotOrientation*horizontalOffset;
 
         double p = ((rightChange + leftChange) / 2);
         double n = horizontalChange;
 
         //Calculate and update the position values
-        robotGlobalXCoordinatePosition = robotGlobalXCoordinatePosition /*+ (p*Math.sin(robotOrientationRadians)*/ + n*Math.cos(robotOrientationRadians)/*)*/;
-        robotGlobalYCoordinatePosition = robotGlobalYCoordinatePosition + (p*Math.cos(robotOrientationRadians) /*- n*Math.sin(robotOrientationRadians)*/);
+        robotGlobalXCoordinatePosition = robotGlobalXCoordinatePosition + (p*Math.sin(robotOrientationRadians) + n*Math.cos(robotOrientationRadians));
+        robotGlobalYCoordinatePosition = robotGlobalYCoordinatePosition + (p*Math.cos(robotOrientationRadians) - n*Math.sin(robotOrientationRadians));
 
         previousVerticalLeftEncoderWheelPosition = verticalLeftEncoderWheelPosition;
         previousVerticalRightEncoderWheelPosition = verticalRightEncoderWheelPosition;

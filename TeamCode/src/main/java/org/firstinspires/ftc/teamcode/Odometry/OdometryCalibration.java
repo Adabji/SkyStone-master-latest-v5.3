@@ -42,8 +42,6 @@ public class OdometryCalibration extends LinearOpMode {
     double horizontalTickOffset = 0;
 
     //Text files to write the values to. The files are stored in the robot controller under Internal Storage\FIRST\settings
-    File wheelBaseSeparationFile = AppUtil.getInstance().getSettingsFile("wheelBaseSeparation.txt");
-    File horizontalTickOffsetFile = AppUtil.getInstance().getSettingsFile("horizontalTickOffset.txt");
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -72,7 +70,7 @@ public class OdometryCalibration extends LinearOpMode {
         waitForStart();
 
         //Begin calibration (if robot is unable to pivot at these speeds, please adjust the constant at the top of the code
-        while(getZAngle() < 90 && opModeIsActive()){
+        while(getZAngle() < 360 && opModeIsActive()){
             rightFrontWheel.setPower(-PIVOT_SPEED);
             rightBackWheel.setPower(-PIVOT_SPEED);
             leftFrontWheel.setPower(PIVOT_SPEED);
@@ -112,8 +110,10 @@ public class OdometryCalibration extends LinearOpMode {
         horizontalTickOffset = intakeMotor3.getCurrentPosition()/Math.toRadians(getZAngle());
 
         //Write the constants to text files
-        ReadWriteFile.writeFile(wheelBaseSeparationFile, String.valueOf(wheelBaseSeparation));
-        ReadWriteFile.writeFile(horizontalTickOffsetFile, String.valueOf(horizontalTickOffset));
+
+        OdometryGlobalCoordinatePosition globalPositionUpdate = new OdometryGlobalCoordinatePosition(intakeMotor1, intakeMotor2, intakeMotor3, COUNTS_PER_INCH, 75);
+        Thread positionThread = new Thread(globalPositionUpdate);
+        positionThread.start();
 
         while(opModeIsActive()){
             telemetry.addData("Odometry System Calibration Status", "Calibration Complete");
@@ -127,6 +127,7 @@ public class OdometryCalibration extends LinearOpMode {
             telemetry.addData("Vertical Right Position", intakeMotor1.getCurrentPosition());
             telemetry.addData("intakeMotor3  Position", intakeMotor3.getCurrentPosition());
             telemetry.addData("Vertical Encoder Offset", verticalEncoderTickOffsetPerDegree);
+            telemetry.addData("Orientation (Degrees)", globalPositionUpdate.returnOrientation());
 
             //Update values
             telemetry.update();

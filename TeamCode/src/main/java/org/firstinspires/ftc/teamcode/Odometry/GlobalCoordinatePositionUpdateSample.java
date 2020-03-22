@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Odometry;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,8 +15,13 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 @TeleOp(name = "Global Coordinate Position Test", group = "Calibration")
 public class GlobalCoordinatePositionUpdateSample extends LinearOpMode {
 
+    DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel;
+
     //Odometry encoder wheels
     DcMotor verticalRight, verticalLeft, horizontal;
+
+    //Defining the imu
+    BNO055IMU imu;
 
     //The amount of encoder ticks for each inch the robot moves. This will change for each robot and needs to be changed here
     final double COUNTS_PER_INCH = 1141.94659527;
