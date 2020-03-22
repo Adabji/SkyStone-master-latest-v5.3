@@ -79,7 +79,7 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
         //double horizontalChange = rawHorizontalChange - (changeInRobotOrientation*horizontalEncoderTickPerDegreeOffset);
 
         double rawHorizontalChange = (normalEncoderWheelPosition - prevNormalEncoderWheelPosition);
-        double horizontalChange = rawHorizontalChange - changeInRobotOrientation*horizontalOffset;
+        double horizontalChange = rawHorizontalChange - changeInRobotOrientation*horizontalOffset*1141.94659527;
 
         double p = ((rightChange + leftChange) / 2);
         double n = horizontalChange;
