@@ -69,19 +69,24 @@ public class OdometryCalibration extends LinearOpMode {
 
         waitForStart();
 
+        OdometryGlobalCoordinatePosition globalPositionUpdate = new OdometryGlobalCoordinatePosition(intakeMotor1, intakeMotor2, intakeMotor3, COUNTS_PER_INCH, 75);
+        Thread positionThread = new Thread(globalPositionUpdate);
+        positionThread.start();
+
         //Begin calibration (if robot is unable to pivot at these speeds, please adjust the constant at the top of the code
-        while(getZAngle() < 360 && opModeIsActive()){
+        while(getZAngle() < 180 && getZAngle() > -20 && opModeIsActive()){
             rightFrontWheel.setPower(-PIVOT_SPEED);
             rightBackWheel.setPower(-PIVOT_SPEED);
             leftFrontWheel.setPower(PIVOT_SPEED);
             leftBackWheel.setPower(PIVOT_SPEED);
-            if(getZAngle() < 60) {
+            if(getZAngle() < 150) {
                 setPowerAll(-PIVOT_SPEED, -PIVOT_SPEED, PIVOT_SPEED, PIVOT_SPEED);
             }else{
                 setPowerAll(-PIVOT_SPEED/2, -PIVOT_SPEED/2, PIVOT_SPEED/2, PIVOT_SPEED/2);
             }
 
             telemetry.addData("IMU Angle", getZAngle());
+            telemetry.addData("Orientation (Degrees)", globalPositionUpdate.returnOrientation());
             telemetry.update();
         }
 
@@ -92,7 +97,6 @@ public class OdometryCalibration extends LinearOpMode {
             telemetry.addData("IMU Angle", getZAngle());
             telemetry.update();
         }
-
         //Record IMU and encoder values to calculate the constants for the global position algorithm
         double angle = getZAngle();
 
@@ -111,11 +115,9 @@ public class OdometryCalibration extends LinearOpMode {
 
         //Write the constants to text files
 
-        OdometryGlobalCoordinatePosition globalPositionUpdate = new OdometryGlobalCoordinatePosition(intakeMotor1, intakeMotor2, intakeMotor3, COUNTS_PER_INCH, 75);
-        Thread positionThread = new Thread(globalPositionUpdate);
-        positionThread.start();
 
         while(opModeIsActive()){
+
             telemetry.addData("Odometry System Calibration Status", "Calibration Complete");
             //Display calculated constants
             telemetry.addData("Wheel Base Separation", wheelBaseSeparation);
