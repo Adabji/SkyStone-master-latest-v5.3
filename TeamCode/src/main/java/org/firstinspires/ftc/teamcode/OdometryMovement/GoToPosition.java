@@ -80,8 +80,8 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
 
            double goToPositionCalculations;
 
-            GoToPosition goToPosition = new GoToPosition();
-            goToPositionCalculations = goToPosition.goToPositionCalculations();
+            MotorPowerMecanum goToPosition = new MotorPowerMecanum();
+            goToPositionCalculations = MotorPowerMecanum.goToPositionCalculations(1,2,3);
 
             goToPositionCalculations();
 
