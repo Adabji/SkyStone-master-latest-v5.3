@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.OdometryMovement;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -26,14 +28,10 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
 
 
 
-    @Disabled
-    @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "GoToPosition", group = "Autonomous")
+@Config
+@Autonomous(name = "OdometryGoToPosition", group = "Autonomous")
 
     public class GoToPosition extends OpMode {
-
-        double desiredXPosition;
-        double desiredYPosition;
-        double desiredHeading;
 
         private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel;
 
@@ -88,9 +86,7 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
             double goToPositionInput;
 
             MotorPowerMecanum goToPosition = new MotorPowerMecanum();
-            goToPositionInput = goToPosition.goToPositionCalculations(desiredXPosition, desiredYPosition, desiredHeading);
-
-            goToPositionInput();
+            goToPosition.goToPositionCalculations(30, 30, 0);
 
         }
     }

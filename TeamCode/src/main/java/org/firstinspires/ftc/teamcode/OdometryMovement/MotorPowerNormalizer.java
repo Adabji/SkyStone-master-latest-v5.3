@@ -136,24 +136,26 @@ public class MotorPowerNormalizer extends OpMode{
         outputY = Math.sin(heading - Theta) * c;
     }
     public static void driveMecanum(double forwards, double horizontal, double turning, double reduction) {
-        double leftFront = outputY + outputX + turning;
-        double leftBack = outputY - outputX + turning;
-        double rightFront = outputY - outputX - turning;
-        double rightBack = outputY + outputX - turning;
+        double leftFrontPower = outputY + outputX + turning;
+        double leftBackPower = outputY - outputX + turning;
+        double rightFrontPower = outputY - outputX - turning;
+        double rightBackPower = outputY + outputX - turning;
 
-        double[] wheelPowers = {Math.abs(rightFront), Math.abs(leftFront), Math.abs(leftBack), Math.abs(rightBack)};
+        double[] wheelPowers = {Math.abs(rightFrontPower), Math.abs(leftFrontPower), Math.abs(leftBackPower), Math.abs(rightBackPower)};
         Arrays.sort(wheelPowers);
         double biggestInput = wheelPowers[3];
         if (biggestInput > 1) {
-            leftFront /= biggestInput;
-            leftBack /= biggestInput;
-            rightFront /= biggestInput;
-            rightBack /= biggestInput;
+            leftFrontPower /= biggestInput;
+            leftBackPower /= biggestInput;
+            rightFrontPower /= biggestInput;
+            rightBackPower /= biggestInput;
+
         }
 
-        leftFrontWheel.setPower(leftFront * reduction);
-        rightFrontWheel.setPower(rightFront * reduction);
-        leftBackWheel.setPower(leftBack * reduction);
-        rightBackWheel.setPower(rightBack * reduction);
+        leftFrontWheel.setPower(leftFrontPower);
+        rightFrontWheel.setPower(rightFrontPower);
+        leftBackWheel.setPower(leftBackPower);
+        rightBackWheel.setPower(rightBackPower);
+
     }
 }
