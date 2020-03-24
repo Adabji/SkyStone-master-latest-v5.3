@@ -28,7 +28,12 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
 
     @Disabled
     @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "GoToPosition", group = "Autonomous")
+
     public class GoToPosition extends OpMode {
+
+        double desiredXPosition;
+        double desiredYPosition;
+        double desiredHeading;
 
         private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel;
 
@@ -75,15 +80,17 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
 
         }
 
+
+
         @Override
         public void loop() {
 
-           double goToPositionCalculations;
+            double goToPositionInput;
 
             MotorPowerMecanum goToPosition = new MotorPowerMecanum();
-            goToPositionCalculations = MotorPowerMecanum.goToPositionCalculations(1,2,3);
+            goToPositionInput = goToPosition.goToPositionCalculations(desiredXPosition, desiredYPosition, desiredHeading);
 
-            goToPositionCalculations();
+            goToPositionInput();
 
         }
     }
