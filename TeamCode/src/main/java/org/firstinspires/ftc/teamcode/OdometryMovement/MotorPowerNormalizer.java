@@ -51,6 +51,7 @@ import java.util.Arrays;
 public class MotorPowerNormalizer extends OpMode{
     private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel;
 
+
     //Odometry encoder wheels
     DcMotor verticalRight, verticalLeft, horizontal;
 
@@ -65,6 +66,7 @@ public class MotorPowerNormalizer extends OpMode{
 
     private static double PosXAngPosY, PosXAngNegY, NegXAng, Theta, c, outputX, outputY, heading;
     public void init(){
+
         leftFrontWheel = hardwareMap.dcMotor.get("left front");
         leftBackWheel = hardwareMap.dcMotor.get("left back");
         rightFrontWheel = hardwareMap.dcMotor.get("right front");
@@ -108,12 +110,14 @@ public class MotorPowerNormalizer extends OpMode{
         globalPositionUpdate.reverseLeftEncoder();
         heading = globalPositionUpdate.returnOrientation();
 
+        outputX = -Math.cos(heading - Theta) * c;
+        outputY = Math.sin(heading - Theta) * c;
+
 
         // the negative signs in front of the gamepad inputs may need to be removed.
 
     }
     public static void motorPower (double xPower, double yPower, double turnPower, double reduction){
-        driveMecanum(xPower, yPower, turnPower, reduction);
 
        /*if (xPower >= 0 && yPower < 0) {
             JoyStickAngleRad = PosXAngPosY;
@@ -134,7 +138,9 @@ public class MotorPowerNormalizer extends OpMode{
 
         outputX = -Math.cos(heading - Theta) * c;
         outputY = Math.sin(heading - Theta) * c;
+        driveMecanum(xPower, yPower, turnPower, reduction);
     }
+
     public static void driveMecanum(double forwards, double horizontal, double turning, double reduction) {
         double leftFrontPower = outputY + outputX + turning;
         double leftBackPower = outputY - outputX + turning;

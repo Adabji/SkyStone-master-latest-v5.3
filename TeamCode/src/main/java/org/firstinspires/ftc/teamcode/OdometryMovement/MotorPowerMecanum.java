@@ -78,6 +78,7 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
         globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
         goToPositionCalculations(4,5,6);
 
+
         // the negative signs in front of the gamepad inputs may need to be removed.
 
     }
