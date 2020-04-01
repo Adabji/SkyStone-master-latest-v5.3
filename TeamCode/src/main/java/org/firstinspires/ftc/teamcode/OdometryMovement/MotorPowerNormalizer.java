@@ -43,6 +43,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
 import org.openftc.revextensions2.*;
 
+import java.util.ArrayList;
 import java.util.Locale;
 import java.lang.Math;
 import java.util.Arrays;
@@ -64,7 +65,9 @@ public class MotorPowerNormalizer extends OpMode{
     //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
     String verticalLeftEncoderName = "intake motor 2", verticalRightEncoderName = "intake motor 1", horizontalEncoderName = "intake motor 3";
 
-    private static double PosXAngPosY, PosXAngNegY, NegXAng, Theta, c, outputX, outputY, heading;
+    private static double PosXAngPosY, PosXAngNegY, NegXAng, Theta, c, heading;
+    private static double outputX = 0;
+    private static double outputY = 0;
     public void init(){
 
         leftFrontWheel = hardwareMap.dcMotor.get("left front");
@@ -117,15 +120,7 @@ public class MotorPowerNormalizer extends OpMode{
         // the negative signs in front of the gamepad inputs may need to be removed.
 
     }
-    public static void motorPower (double xPower, double yPower, double turnPower, double reduction){
-
-       /*if (xPower >= 0 && yPower < 0) {
-            JoyStickAngleRad = PosXAngPosY;
-        } else if (xPower >= 0 && yPower >= 0) {
-            JoyStickAngleRad = PosXAngNegY;
-        } else {
-            JoyStickAngleRad = NegXAng;
-        }*/
+    /*public static void motorPower (double xPower, double yPower, double turnPower, double reduction){
 
         c = Math.sqrt(xPower * xPower + yPower * yPower);
         if (yPower < 0) {
@@ -138,14 +133,27 @@ public class MotorPowerNormalizer extends OpMode{
 
         outputX = -Math.cos(heading - Theta) * c;
         outputY = Math.sin(heading - Theta) * c;
-        driveMecanum(xPower, yPower, turnPower, reduction);
-    }
+        //driveMecanum(xPower, yPower, turnPower, reduction);
+    }*/
 
-    public static void driveMecanum(double forwards, double horizontal, double turning, double reduction) {
-        double leftFrontPower = outputY + outputX + turning;
-        double leftBackPower = outputY - outputX + turning;
-        double rightFrontPower = outputY - outputX - turning;
-        double rightBackPower = outputY + outputX - turning;
+    public static double[] driveMecanum(double xPower, double yPower, double turnPower, double reduction) {
+
+        c = Math.sqrt(xPower * xPower + yPower * yPower);
+        if (yPower < 0) {
+            Theta = -Math.atan2(yPower, xPower);
+        }
+
+        if (yPower >= 0) {
+            Theta = 2 * Math.PI - Math.atan2(yPower, xPower);
+        }
+
+        outputX = -Math.cos(heading - Theta) * c;
+        outputY = Math.sin(heading - Theta) * c;
+
+        double leftFrontPower = outputY + outputX + turnPower;
+        double leftBackPower = outputY - outputX + turnPower;
+        double rightFrontPower = outputY - outputX - turnPower;
+        double rightBackPower = outputY + outputX - turnPower;
 
         double[] wheelPowers = {Math.abs(rightFrontPower), Math.abs(leftFrontPower), Math.abs(leftBackPower), Math.abs(rightBackPower)};
         Arrays.sort(wheelPowers);
@@ -156,12 +164,11 @@ public class MotorPowerNormalizer extends OpMode{
             rightFrontPower /= biggestInput;
             rightBackPower /= biggestInput;
 
+
         }
 
-        leftFrontWheel.setPower(leftFrontPower);
-        rightFrontWheel.setPower(rightFrontPower);
-        leftBackWheel.setPower(leftBackPower);
-        rightBackWheel.setPower(rightBackPower);
+        return wheelPowers;
 
     }
+
 }

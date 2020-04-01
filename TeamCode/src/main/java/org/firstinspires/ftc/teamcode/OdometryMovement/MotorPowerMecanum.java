@@ -4,13 +4,14 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
 import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer;
 import java.util.Locale;
 import java.lang.Math;
 import java.util.Arrays;
-import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.motorPower;
+import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.driveMecanum;
 
 @Disabled
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "MecanumMotorPowers", group = "Autonomous")
@@ -60,6 +61,7 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
         verticalLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         horizontal.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+
         //Init complete
         telemetry.addData("Status", "Init Complete");
         telemetry.update();
@@ -97,17 +99,14 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
 
         //Finding the reduction factor based off the distance to target
         double distanceTotarget = Math.sqrt(xPowerRatio*xPowerRatio+yPowerRatio*yPowerRatio);
-        double proportionPowerReduction = distanceTotarget/25;
+        double proportionPowerReduction = Range.clip(distanceTotarget/25, -1, 1);
+
 
         //Setting the turning power temporarily to 0
         double turnPower = 0;
 
-        if (proportionPowerReduction > 1) {
-            proportionPowerReduction = 1;
-        }
 
-        motorPower(xPowerRatio, yPowerRatio, turnPower, proportionPowerReduction);
-
+        driveMecanum(xPowerRatio, yPowerRatio, turnPower, proportionPowerReduction);
 
     }
 

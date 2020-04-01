@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.*;
+import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.*;
 import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum;
 
 import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
@@ -22,7 +24,7 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer;
 import java.util.Locale;
 import java.lang.Math;
 import java.util.Arrays;
-import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.motorPower;
+import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.driveMecanum;
 import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
 
 
@@ -88,6 +90,13 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
             MotorPowerMecanum goToPosition = new MotorPowerMecanum();
             goToPosition.goToPositionCalculations(30, 30, 0);
 
+            leftFrontWheel.setPower(leftFront/reduction);
+            rightFrontWheel.setPower(rightFront/reduction);
+            leftBackWheel.setPower(leftBack/reduction);
+            rightBackWheel.setPower(rightBack/reduction);
+
         }
+
+
     }
 
