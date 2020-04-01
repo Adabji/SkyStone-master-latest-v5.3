@@ -31,7 +31,7 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
 
     //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
     String verticalLeftEncoderName = "intake motor 2", verticalRightEncoderName = "intake motor 1", horizontalEncoderName = "intake motor 3";
-
+    public double globalXPos, globalYPos, xPowerRatio, yPowerRatio, distanceToTarget, proportionPowerReduction, turnPower, distanceTotarget;
 
     public void init(){
         leftFrontWheel = hardwareMap.dcMotor.get("left front");
@@ -67,6 +67,7 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
         telemetry.update();
 
 
+
 }
     @Override
     public void loop() {
@@ -90,20 +91,20 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
     public void goToPositionCalculations (double desiredXCoordinate, double desiredYCoordinate, double desiredHeading){
 
         //Converting the odometry readings in encoder ticks to inches
-        double globalXPos = globalXPosEncoderTicks/COUNTS_PER_INCH;
-        double globalYPos = globalYPosEncoderTicks/COUNTS_PER_INCH;
+        globalXPos = globalXPosEncoderTicks/COUNTS_PER_INCH;
+        globalYPos = globalYPosEncoderTicks/COUNTS_PER_INCH;
 
         //Getting the ratio of motor powers based off the distance to target in each axis
-        double xPowerRatio = desiredXCoordinate - globalXPos;
-        double yPowerRatio = desiredYCoordinate - globalYPos;
+        xPowerRatio = desiredXCoordinate - globalXPos;
+        yPowerRatio = desiredYCoordinate - globalYPos;
 
         //Finding the reduction factor based off the distance to target
-        double distanceTotarget = Math.sqrt(xPowerRatio*xPowerRatio+yPowerRatio*yPowerRatio);
-        double proportionPowerReduction = Range.clip(distanceTotarget/25, -1, 1);
+        distanceTotarget = Math.sqrt(xPowerRatio*xPowerRatio+yPowerRatio*yPowerRatio);
+        proportionPowerReduction = Range.clip(distanceTotarget/25, -1, 1);
 
 
         //Setting the turning power temporarily to 0
-        double turnPower = 0;
+        turnPower = 0;
 
 
         driveMecanum(xPowerRatio, yPowerRatio, turnPower, proportionPowerReduction);

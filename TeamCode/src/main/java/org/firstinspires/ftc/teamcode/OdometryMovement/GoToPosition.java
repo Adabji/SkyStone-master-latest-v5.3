@@ -90,10 +90,10 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
             MotorPowerMecanum goToPosition = new MotorPowerMecanum();
             goToPosition.goToPositionCalculations(30, 30, 0);
 
-            leftFrontWheel.setPower(leftFront/reduction);
-            rightFrontWheel.setPower(rightFront/reduction);
-            leftBackWheel.setPower(leftBack/reduction);
-            rightBackWheel.setPower(rightBack/reduction);
+            leftFrontWheel.setPower(leftFrontPower/powerReduction);
+            rightFrontWheel.setPower(rightFrontPower/powerReduction);
+            leftBackWheel.setPower(leftBackPower/powerReduction);
+            rightBackWheel.setPower(rightBackPower/powerReduction);
 
         }
 

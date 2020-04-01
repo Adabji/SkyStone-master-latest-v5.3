@@ -68,6 +68,7 @@ public class MotorPowerNormalizer extends OpMode{
     private static double PosXAngPosY, PosXAngNegY, NegXAng, Theta, c, heading;
     private static double outputX = 0;
     private static double outputY = 0;
+    public static double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower, powerReduction;
     public void init(){
 
         leftFrontWheel = hardwareMap.dcMotor.get("left front");
@@ -150,10 +151,12 @@ public class MotorPowerNormalizer extends OpMode{
         outputX = -Math.cos(heading - Theta) * c;
         outputY = Math.sin(heading - Theta) * c;
 
-        double leftFrontPower = outputY + outputX + turnPower;
-        double leftBackPower = outputY - outputX + turnPower;
-        double rightFrontPower = outputY - outputX - turnPower;
-        double rightBackPower = outputY + outputX - turnPower;
+        leftFrontPower = outputY + outputX + turnPower;
+        leftBackPower = outputY - outputX + turnPower;
+        rightFrontPower = outputY - outputX - turnPower;
+        rightBackPower = outputY + outputX - turnPower;
+
+        powerReduction = reduction;
 
         double[] wheelPowers = {Math.abs(rightFrontPower), Math.abs(leftFrontPower), Math.abs(leftBackPower), Math.abs(rightBackPower)};
         Arrays.sort(wheelPowers);
