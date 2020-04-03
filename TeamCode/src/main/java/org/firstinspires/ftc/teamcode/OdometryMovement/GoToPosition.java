@@ -77,6 +77,8 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
             telemetry.addData("Status", "Init Complete");
             telemetry.update();
 
+            rightFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
         }
 
@@ -88,12 +90,19 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
             double goToPositionInput;
 
             MotorPowerMecanum goToPosition = new MotorPowerMecanum();
-            goToPosition.goToPositionCalculations(30, 30, 0);
+            goToPosition.goToPositionCalculations(-15, -15, 0);
 
-            leftFrontWheel.setPower(leftFrontPower/powerReduction);
-            rightFrontWheel.setPower(rightFrontPower/powerReduction);
-            leftBackWheel.setPower(leftBackPower/powerReduction);
-            rightBackWheel.setPower(rightBackPower/powerReduction);
+            leftFrontWheel.setPower(leftFrontPower*powerReduction);
+            rightFrontWheel.setPower(rightFrontPower*powerReduction);
+            leftBackWheel.setPower(leftBackPower*powerReduction);
+            rightBackWheel.setPower(rightBackPower*powerReduction);
+
+                telemetry.addData("leftFrontPower", leftFrontPower*powerReduction);
+                telemetry.addData("rightFrontPower", rightFrontPower*powerReduction);
+                telemetry.addData("leftBackPower", leftBackPower*powerReduction);
+                telemetry.addData("rightBackPower", rightBackPower*powerReduction);
+                telemetry.update();
+
 
         }
 
