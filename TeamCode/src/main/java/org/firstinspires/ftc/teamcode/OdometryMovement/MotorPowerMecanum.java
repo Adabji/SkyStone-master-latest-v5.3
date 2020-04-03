@@ -83,6 +83,8 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
 
         // the negative signs in front of the gamepad inputs may need to be removed.
 
+
+
     }
 
 
@@ -100,7 +102,8 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
         //Finding the reduction factor based off the distance to target
         distanceTotarget = Math.sqrt(xPowerRatio*xPowerRatio+yPowerRatio*yPowerRatio);
         proportionPowerReduction = Range.clip(Math.abs(distanceTotarget/25), 0, 1);
-
+        telemetry.addData("rightBackPower", proportionPowerReduction);
+        telemetry.update();
 
         //Setting the turning power temporarily to 0
         turnPower = 0;

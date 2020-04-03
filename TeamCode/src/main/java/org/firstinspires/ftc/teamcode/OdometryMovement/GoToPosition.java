@@ -40,12 +40,17 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
         //Odometry encoder wheels
         DcMotor verticalRight, verticalLeft, horizontal;
 
+    MotorPowerMecanum goToPosition;
+
 
         //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
         String verticalLeftEncoderName = "intake motor 2", verticalRightEncoderName = "intake motor 1", horizontalEncoderName = "intake motor 3";
 
 
         public void init() {
+
+            goToPosition = new MotorPowerMecanum();
+
             leftFrontWheel = hardwareMap.dcMotor.get("left front");
             leftBackWheel = hardwareMap.dcMotor.get("left back");
             rightFrontWheel = hardwareMap.dcMotor.get("right front");
@@ -84,12 +89,13 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
 
 
 
+
         @Override
         public void loop() {
 
-            double goToPositionInput;
+            //MotorPowerMecanum goToPosition = new MotorPowerMecanum();
+            //goToPosition.goToPositionCalculations(-15, -15, 0);
 
-            MotorPowerMecanum goToPosition = new MotorPowerMecanum();
             goToPosition.goToPositionCalculations(-15, -15, 0);
 
             leftFrontWheel.setPower(leftFrontPower*powerReduction);
