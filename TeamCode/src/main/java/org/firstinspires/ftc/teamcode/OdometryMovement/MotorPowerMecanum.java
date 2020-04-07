@@ -66,6 +66,7 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
 
         globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 75);
         positionThread = new Thread(globalPositionUpdate);
+        positionThread.start();
 
         //Init complete
         telemetry.addData("Status", "Init Complete");
@@ -78,7 +79,6 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
     public void loop() {
 
         //Importing odometry readings
-        positionThread.start();
         heading = globalPositionUpdate.returnOrientation();
         globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
         globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();

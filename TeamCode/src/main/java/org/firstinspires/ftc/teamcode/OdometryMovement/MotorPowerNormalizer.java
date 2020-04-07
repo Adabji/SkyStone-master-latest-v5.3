@@ -52,6 +52,8 @@ import java.util.Arrays;
 public class MotorPowerNormalizer extends OpMode{
     private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel;
 
+    OdometryGlobalCoordinatePosition globalPositionUpdate;
+    Thread positionThread;
 
     //Odometry encoder wheels
     DcMotor verticalRight, verticalLeft, horizontal;
@@ -98,6 +100,10 @@ public class MotorPowerNormalizer extends OpMode{
         verticalLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         horizontal.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 75);
+        positionThread = new Thread(globalPositionUpdate);
+        positionThread.start();
+
         //Init complete
         telemetry.addData("Status", "Init Complete");
         telemetry.update();
@@ -106,10 +112,6 @@ public class MotorPowerNormalizer extends OpMode{
     }
     @Override
     public void loop() {
-
-        OdometryGlobalCoordinatePosition globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 75);
-        Thread positionThread = new Thread(globalPositionUpdate);
-        positionThread.start();
 
         globalPositionUpdate.reverseLeftEncoder();
         heading = Math.toRadians(globalPositionUpdate.returnOrientation());
