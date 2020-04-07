@@ -33,6 +33,9 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
     String verticalLeftEncoderName = "intake motor 2", verticalRightEncoderName = "intake motor 1", horizontalEncoderName = "intake motor 3";
     public double globalXPos, globalYPos, xPowerRatio, yPowerRatio, distanceToTarget, proportionPowerReduction, turnPower, distanceTotarget;
 
+    OdometryGlobalCoordinatePosition globalPositionUpdate;
+    Thread positionThread;
+
     public void init(){
         leftFrontWheel = hardwareMap.dcMotor.get("left front");
         leftBackWheel = hardwareMap.dcMotor.get("left back");
@@ -61,6 +64,8 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
         verticalLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         horizontal.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 75);
+        positionThread = new Thread(globalPositionUpdate);
 
         //Init complete
         telemetry.addData("Status", "Init Complete");
@@ -73,8 +78,6 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
     public void loop() {
 
         //Importing odometry readings
-        OdometryGlobalCoordinatePosition globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 75);
-        Thread positionThread = new Thread(globalPositionUpdate);
         positionThread.start();
         heading = globalPositionUpdate.returnOrientation();
         globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
