@@ -8,8 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.*;
-import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.*;
-import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum;
+//import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.*;
+import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
 
 import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
 
@@ -24,7 +24,11 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer;
 import java.util.Locale;
 import java.lang.Math;
 import java.util.Arrays;
-import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.driveMecanum;
+import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.driveMecanum;
+import static org.firstinspires.ftc.teamcode.OdometryMovement.PIDCalulations.d;
+import static org.firstinspires.ftc.teamcode.OdometryMovement.PIDCalulations.pidOutput;
+import static org.firstinspires.ftc.teamcode.OdometryMovement.PIDCalulations.p;
+
 import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
 
 
@@ -41,15 +45,32 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
         DcMotor verticalRight, verticalLeft, horizontal;
 
     MotorPowerMecanum goToPosition;
+    PIDCalulations pid;
+
+    public double currentTime, previousTime;
+    public double currentError, previousError;
+    /*public double p;
+    public double d;
+    public double pidOutput;*/
+    public double xError;
+    public double yError;
+    public double desiredXCoordinate = 25, desiredYCoordinate = 25, desiredHeading = 180;
+
 
 
         //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
         String verticalLeftEncoderName = "intake motor 2", verticalRightEncoderName = "intake motor 1", horizontalEncoderName = "intake motor 3";
 
+        OdometryGlobalCoordinatePosition globalPositionUpdate;
+        Thread positionThread;
+
+    final double COUNTS_PER_INCH = 1141.94659527;
+    public static double heading, globalXPosEncoderTicks, globalYPosEncoderTicks;
 
         public void init() {
 
             goToPosition = new MotorPowerMecanum();
+            pid = new PIDCalulations();
 
             leftFrontWheel = hardwareMap.dcMotor.get("left front");
             leftBackWheel = hardwareMap.dcMotor.get("left back");
@@ -63,6 +84,12 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
             verticalRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             verticalLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             horizontal.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 75);
+            positionThread = new Thread(globalPositionUpdate);
+            positionThread.start();
+
+            globalPositionUpdate.reverseLeftEncoder();
 
         /*
         Reverse the direction of the odometry wheels. THIS WILL CHANGE FOR EACH ROBOT. Adjust the direction (as needed) of each encoder wheel
@@ -96,17 +123,31 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
             //MotorPowerMecanum goToPosition = new MotorPowerMecanum();
             //goToPosition.goToPositionCalculations(-15, -15, 0);
 
-            goToPosition.goToPositionCalculations(-15, -15, 0);
+            heading = globalPositionUpdate.robotOrientationRadians;
+            globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
+            globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
 
-            leftFrontWheel.setPower(leftFrontPower*powerReduction);
-            rightFrontWheel.setPower(rightFrontPower*powerReduction);
-            leftBackWheel.setPower(leftBackPower*powerReduction);
-            rightBackWheel.setPower(rightBackPower*powerReduction);
+            goToPosition.goToPositionCalculations(desiredXCoordinate, desiredYCoordinate, desiredHeading);
+            pid.pidCalculations(c);
 
-                telemetry.addData("leftFrontPower", leftFrontPower*powerReduction);
-                telemetry.addData("rightFrontPower", rightFrontPower*powerReduction);
-                telemetry.addData("leftBackPower", leftBackPower*powerReduction);
-                telemetry.addData("rightBackPower", rightBackPower*powerReduction);
+            leftFrontWheel.setPower(leftFrontPower*pidOutput);
+            rightFrontWheel.setPower(rightFrontPower*pidOutput);
+            leftBackWheel.setPower(leftBackPower*pidOutput);
+            rightBackWheel.setPower(rightBackPower*pidOutput);
+
+                telemetry.addData("heading", heading);
+                telemetry.addData("Theta",Theta);
+                telemetry.addData("p", p);
+                telemetry.addData("d", d);
+                telemetry.addData("headingForTurning", headingForTurning);
+                telemetry.addData("distanceToTurn", distanceToTurn);
+                telemetry.addData("leftFrontPower", leftFrontPower*pidOutput);
+                telemetry.addData("rightFrontPower", rightFrontPower*pidOutput);
+                telemetry.addData("leftBackPower", leftBackPower*pidOutput);
+                telemetry.addData("rightBackPower", rightBackPower*pidOutput);
+                telemetry.addData("xPowerRatio", xPowerRatio);
+                telemetry.addData("yPowerRatio", yPowerRatio);
+                telemetry.addData("c", c);
                 telemetry.update();
 
 

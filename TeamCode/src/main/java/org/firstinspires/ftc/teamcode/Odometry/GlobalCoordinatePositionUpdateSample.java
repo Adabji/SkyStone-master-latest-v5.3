@@ -78,7 +78,7 @@ public class GlobalCoordinatePositionUpdateSample extends LinearOpMode {
             //Display Global (x, y, theta) coordinates
             telemetry.addData("X Position", globalPositionUpdate.returnXCoordinate() / COUNTS_PER_INCH);
             telemetry.addData("Y Position", globalPositionUpdate.returnYCoordinate() / COUNTS_PER_INCH);
-            telemetry.addData("Orientation (Degrees)", globalPositionUpdate.returnOrientation());
+            telemetry.addData("Orientation (Degrees)", globalPositionUpdate.robotOrientationRadians);
             telemetry.addData("Vertical Left Encoder Position", -verticalLeft.getCurrentPosition() / COUNTS_PER_INCH);
             telemetry.addData("Vertical Right Encoder Position", verticalRight.getCurrentPosition() / COUNTS_PER_INCH);
             telemetry.addData("Horizontal Encoder Position", horizontal.getCurrentPosition());

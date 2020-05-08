@@ -11,14 +11,24 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer;
 import java.util.Locale;
 import java.lang.Math;
 import java.util.Arrays;
-import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.driveMecanum;
+
+import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.globalXPosEncoderTicks;
+import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.globalYPosEncoderTicks;
+import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.heading;
+
 
 @Disabled
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "MecanumMotorPowers", group = "Autonomous")
     public class MotorPowerMecanum extends OpMode {
-
+    public static double PosXAngPosY, PosXAngNegY, NegXAng, Theta, c, linearDistance, rotationalDistance;
+    public static double outputX;
+    public static double outputY, headingForTurning;
+    public static double reductionDistance;
+    public static double distanceToTurn;
+    public static double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower, powerReduction;
+    public static double circumference = 64.42;
     private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel;
-    public double heading, globalXPosEncoderTicks, globalYPosEncoderTicks, desiredXCoordinate, desiredYCoordinate, desiredHeading;
+    public double desiredXCoordinate, desiredYCoordinate, desiredHeading;
 
     //Odometry encoder wheels
     DcMotor verticalRight, verticalLeft, horizontal;
@@ -31,8 +41,8 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
 
     //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
     String verticalLeftEncoderName = "intake motor 2", verticalRightEncoderName = "intake motor 1", horizontalEncoderName = "intake motor 3";
-    public double globalXPos, globalYPos, xPowerRatio, yPowerRatio, distanceToTarget, proportionPowerReduction, turnPower, distanceTotarget;
-
+    public static double globalXPos, globalYPos, distanceToTarget, proportionPowerReduction, turnPower, distanceTotarget;
+    public static double xPowerRatio, yPowerRatio, wheelOne, wheelTwo, largerPower;
     OdometryGlobalCoordinatePosition globalPositionUpdate;
     Thread positionThread;
 
@@ -64,9 +74,6 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
         verticalLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         horizontal.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 75);
-        positionThread = new Thread(globalPositionUpdate);
-        positionThread.start();
 
         //Init complete
         telemetry.addData("Status", "Init Complete");
@@ -79,9 +86,10 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
     public void loop() {
 
         //Importing odometry readings
-        heading = globalPositionUpdate.returnOrientation();
-        globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
-        globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
+        globalPositionUpdate.reverseLeftEncoder();
+
+        //outputX = Math.cos(heading - Theta) * c;
+        //outputY = Math.sin(heading - Theta) * c;
 
 
         // the negative signs in front of the gamepad inputs may need to be removed.
@@ -89,9 +97,6 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
 
 
     }
-
-
-
     public void goToPositionCalculations (double desiredXCoordinate, double desiredYCoordinate, double desiredHeading){
 
         //Converting the odometry readings in encoder ticks to inches
@@ -99,20 +104,70 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormaliz
         globalYPos = globalYPosEncoderTicks/COUNTS_PER_INCH;
 
         //Getting the ratio of motor powers based off the distance to target in each axis
-        xPowerRatio = -(desiredXCoordinate - globalXPos);
+        xPowerRatio = (desiredXCoordinate - globalXPos);
         yPowerRatio = (desiredYCoordinate - globalYPos);
 
         //Finding the reduction factor based off the distance to target
-        distanceTotarget = Math.sqrt(xPowerRatio*xPowerRatio+yPowerRatio*yPowerRatio);
-        proportionPowerReduction = Range.clip(Math.abs(distanceTotarget/25), 0, 1);
+        reductionDistance = Range.clip(c, 0, 25);
+        proportionPowerReduction = Range.clip(Math.sqrt(Math.abs(c/25)), 0, 1);
 
-        //Setting the turning power temporarily to 0
-        turnPower = 0;
+        if(heading >= 0) {
+            headingForTurning = heading;
+        }
+        if(heading < 0) {
+            headingForTurning = heading + 360;
+        }
+
+            distanceToTurn = desiredHeading - Math.toDegrees(heading);
 
 
-        driveMecanum(xPowerRatio, yPowerRatio, turnPower, proportionPowerReduction);
+        turnPower = distanceToTurn/360*circumference;
+
+        driveMecanum(xPowerRatio, yPowerRatio, turnPower, 0);
+
 
     }
+    public static void driveMecanum(double xPower, double yPower, double turnPower, double reduction) {
+
+        rotationalDistance = Math.abs((distanceToTurn/360)*circumference);
+        linearDistance = Math.sqrt(xPower * xPower + yPower * yPower);
+        c = Math.sqrt(xPower * xPower + yPower * yPower)+ Math.abs((distanceToTurn/360)*circumference);
+
+
+
+        Theta = Math.atan2(xPower, yPower);
+
+
+        outputY = Math.cos(heading - Theta)*linearDistance;
+        outputX = -Math.sin(heading - Theta)*linearDistance;
+
+
+
+        leftFrontPower = (outputY + outputX) + turnPower;
+        leftBackPower = (outputY - outputX) + turnPower;
+        rightFrontPower = (outputY - outputX) - turnPower;
+        rightBackPower = (outputY + outputX) - turnPower;
+
+
+        powerReduction = reduction;
+
+        double[] wheelPowers = {Math.abs(rightFrontPower), Math.abs(leftFrontPower), Math.abs(leftBackPower), Math.abs(rightBackPower)};
+        Arrays.sort(wheelPowers);
+        double biggestInput = wheelPowers[3];
+        if (biggestInput > 1) {
+            leftFrontPower /= biggestInput;
+            leftBackPower /= biggestInput;
+            rightFrontPower /= biggestInput;
+            rightBackPower /= biggestInput;
+
+
+        }
+
+
+    }
+
+
+
 
    /* public double returngoToPositionCalculations(){ return goToPositionCalculations(desiredXCoordinate, desiredYCoordinate, desiredHeading); }*/
 

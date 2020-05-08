@@ -139,7 +139,7 @@ public class MotorPowerNormalizer extends OpMode{
         //driveMecanum(xPower, yPower, turnPower, reduction);
     }*/
 
-    public static void driveMecanum(double xPower, double yPower, double turnPower, double reduction) {
+    /*public static void driveMecanum(double xPower, double yPower, double turnPower, double reduction) {
 
         c = Math.sqrt(xPower * xPower + yPower * yPower);
         if (yPower < 0) {
@@ -172,6 +172,6 @@ public class MotorPowerNormalizer extends OpMode{
 
         }
 
-    }
+    }*/
 
 }
