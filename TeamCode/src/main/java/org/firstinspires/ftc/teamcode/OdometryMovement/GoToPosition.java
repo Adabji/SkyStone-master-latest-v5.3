@@ -127,13 +127,25 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
             globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
 
-            goToPosition.goToPositionCalculations(desiredXCoordinate, desiredYCoordinate, desiredHeading);
-            pid.pidCalculations(c);
+            goToPosition.goToPositionCalculations(25, 25, 180);
 
+            pid.pidCalculations(c);
             leftFrontWheel.setPower(leftFrontPower*pidOutput);
             rightFrontWheel.setPower(rightFrontPower*pidOutput);
             leftBackWheel.setPower(leftBackPower*pidOutput);
             rightBackWheel.setPower(rightBackPower*pidOutput);
+
+            while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {
+                if (pidOutput < 0.08)
+                {
+                    break;
+                }
+            }
+
+            leftFrontWheel.setPower(0);
+            leftBackWheel.setPower(0);
+            rightFrontWheel.setPower(0);
+            rightBackWheel.setPower(0);
 
                 telemetry.addData("heading", heading);
                 telemetry.addData("Theta",Theta);

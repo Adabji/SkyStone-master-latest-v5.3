@@ -154,14 +154,13 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
         double[] wheelPowers = {Math.abs(rightFrontPower), Math.abs(leftFrontPower), Math.abs(leftBackPower), Math.abs(rightBackPower)};
         Arrays.sort(wheelPowers);
         double biggestInput = wheelPowers[3];
-        if (biggestInput > 1) {
-            leftFrontPower /= biggestInput;
-            leftBackPower /= biggestInput;
-            rightFrontPower /= biggestInput;
-            rightBackPower /= biggestInput;
+
+        leftFrontPower /= biggestInput;
+        leftBackPower /= biggestInput;
+        rightFrontPower /= biggestInput;
+        rightBackPower /= biggestInput;
 
 
-        }
 
 
     }
