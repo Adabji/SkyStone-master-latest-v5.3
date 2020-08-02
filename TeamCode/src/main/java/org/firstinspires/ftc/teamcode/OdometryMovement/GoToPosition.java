@@ -115,6 +115,17 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
         }
 
 
+        /*while (c < 1) {
+
+        goToPosition.goToPositionCalculations(25, 25, 180);
+    }
+        c = 4;
+
+        while (c < 1) {
+
+        goToPosition.goToPositionCalculations(25, 40, 200);
+    }*/
+
 
 
         @Override
@@ -127,21 +138,35 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
             globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
 
-            
-            goToPosition.goToPositionCalculations(25, 25, 180);
 
-            pid.pidCalculations(c);
-            leftFrontWheel.setPower(leftFrontPower*pidOutput);
-            rightFrontWheel.setPower(rightFrontPower*pidOutput);
-            leftBackWheel.setPower(leftBackPower*pidOutput);
-            rightBackWheel.setPower(rightBackPower*pidOutput);
+            c = 100;
+            while (c > 5) {
+                goToPosition.goToPositionCalculations(25, 25, 180);
+                pid.pidCalculations(c);
+                leftFrontWheel.setPower(leftFrontPower*pidOutput);
+                rightFrontWheel.setPower(rightFrontPower*pidOutput);
+                leftBackWheel.setPower(leftBackPower*pidOutput);
+                rightBackWheel.setPower(rightBackPower*pidOutput);
+            }
+            c = 100;
+            while (c > 5) {
+                goToPosition.goToPositionCalculations(10, 10, 90);
+                pid.pidCalculations(c);
+                leftFrontWheel.setPower(leftFrontPower*pidOutput);
+                rightFrontWheel.setPower(rightFrontPower*pidOutput);
+                leftBackWheel.setPower(leftBackPower*pidOutput);
+                rightBackWheel.setPower(rightBackPower*pidOutput);
+            }
 
-            while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {
-               /* if (pidOutput < 0.08)
+
+
+
+            /*while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {
+                if (pidOutput < 0.08)
                 {
                     break;
                 }
-            */}
+            }
 
             leftFrontWheel.setPower(0);
             leftBackWheel.setPower(0);
@@ -151,7 +176,7 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
                 Thread.sleep(2000);
             } catch(InterruptedException e) {
 
-            }
+            }*/
                 telemetry.addData("heading", heading);
                 telemetry.addData("Theta",Theta);
                 telemetry.addData("p", p);
