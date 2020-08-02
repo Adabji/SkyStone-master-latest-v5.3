@@ -97,34 +97,36 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
 
 
     }
+
+
+
     public void goToPositionCalculations (double desiredXCoordinate, double desiredYCoordinate, double desiredHeading){
 
-        //Converting the odometry readings in encoder ticks to inches
-        globalXPos = globalXPosEncoderTicks/COUNTS_PER_INCH;
-        globalYPos = globalYPosEncoderTicks/COUNTS_PER_INCH;
+            //Converting the odometry readings in encoder ticks to inches
+            globalXPos = globalXPosEncoderTicks / COUNTS_PER_INCH;
+            globalYPos = globalYPosEncoderTicks / COUNTS_PER_INCH;
 
-        //Getting the ratio of motor powers based off the distance to target in each axis
-        xPowerRatio = (desiredXCoordinate - globalXPos);
-        yPowerRatio = (desiredYCoordinate - globalYPos);
+            //Getting the ratio of motor powers based off the distance to target in each axis
+            xPowerRatio = (desiredXCoordinate - globalXPos);
+            yPowerRatio = (desiredYCoordinate - globalYPos);
 
-        //Finding the reduction factor based off the distance to target
-        reductionDistance = Range.clip(c, 0, 25);
-        proportionPowerReduction = Range.clip(Math.sqrt(Math.abs(c/25)), 0, 1);
+            //Finding the reduction factor based off the distance to target
+            reductionDistance = Range.clip(c, 0, 25);
+            proportionPowerReduction = Range.clip(Math.sqrt(Math.abs(c / 25)), 0, 1);
 
-        if(heading >= 0) {
-            headingForTurning = heading;
-        }
-        if(heading < 0) {
-            headingForTurning = heading + 360;
-        }
+            if (heading >= 0) {
+                headingForTurning = heading;
+            }
+            if (heading < 0) {
+                headingForTurning = heading + 360;
+            }
 
             distanceToTurn = desiredHeading - Math.toDegrees(heading);
 
 
-        turnPower = distanceToTurn/360*circumference;
+            turnPower = distanceToTurn / 360 * circumference;
 
-        driveMecanum(xPowerRatio, yPowerRatio, turnPower, 0);
-
+            driveMecanum(xPowerRatio, yPowerRatio, turnPower, 0);
 
     }
     public static void driveMecanum(double xPower, double yPower, double turnPower, double reduction) {
