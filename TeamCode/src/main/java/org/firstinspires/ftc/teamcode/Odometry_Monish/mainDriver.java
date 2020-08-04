@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
 import org.firstinspires.ftc.teamcode.Odometry_Monish.calculations;
 
 @Config
-@Autonomous(name = "OdometryGoToPosition", group = "Autonomous")
+@Autonomous(name = "OdometryLinOpMode", group = "Autonomous")
 public class mainDriver extends LinearOpMode {
     private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel;
 
