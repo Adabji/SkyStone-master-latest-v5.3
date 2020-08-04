@@ -27,6 +27,7 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
     public static double distanceToTurn;
     public static double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower, powerReduction;
     public static double circumference = 64.42;
+    public static int pointCounter = 0;
     private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel;
     public double desiredXCoordinate, desiredYCoordinate, desiredHeading;
 
@@ -100,15 +101,15 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
 
 
 
-    public void goToPositionCalculations (double desiredXCoordinate, double desiredYCoordinate, double desiredHeading){
+    public void goToPositionCalculations (double[] desiredXCoordinate, double[] desiredYCoordinate, double[] desiredHeading){
 
             //Converting the odometry readings in encoder ticks to inches
             globalXPos = globalXPosEncoderTicks / COUNTS_PER_INCH;
             globalYPos = globalYPosEncoderTicks / COUNTS_PER_INCH;
 
             //Getting the ratio of motor powers based off the distance to target in each axis
-            xPowerRatio = (desiredXCoordinate - globalXPos);
-            yPowerRatio = (desiredYCoordinate - globalYPos);
+            xPowerRatio = (desiredXCoordinate[pointCounter] - globalXPos);
+            yPowerRatio = (desiredYCoordinate[pointCounter] - globalYPos);
 
             //Finding the reduction factor based off the distance to target
             reductionDistance = Range.clip(c, 0, 25);
@@ -121,14 +122,21 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
                 headingForTurning = heading + 360;
             }
 
-            distanceToTurn = desiredHeading - Math.toDegrees(heading);
+            distanceToTurn = desiredHeading[pointCounter] - Math.toDegrees(heading);
 
 
             turnPower = distanceToTurn / 360 * circumference;
 
+            if (c < 5) {
+
+                pointCounter += 1;
+
+            }
+
             driveMecanum(xPowerRatio, yPowerRatio, turnPower, 0);
 
     }
+
     public static void driveMecanum(double xPower, double yPower, double turnPower, double reduction) {
 
         rotationalDistance = Math.abs((distanceToTurn/360)*circumference);
@@ -161,8 +169,6 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
         leftBackPower /= biggestInput;
         rightFrontPower /= biggestInput;
         rightBackPower /= biggestInput;
-
-
 
 
     }

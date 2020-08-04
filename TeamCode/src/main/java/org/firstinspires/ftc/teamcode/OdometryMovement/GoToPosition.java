@@ -54,7 +54,9 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
     public double pidOutput;*/
     public double xError;
     public double yError;
-    public double desiredXCoordinate = 25, desiredYCoordinate = 25, desiredHeading = 180;
+    public double[] desiredXCoordinates = {25, 10};
+    public double[] desiredYCoordinates = {25, 25};
+    public double[] desiredHeading = {180, 270};
 
 
 
@@ -139,24 +141,16 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
 
 
-            c = 100;
-            while (c > 5) {
-                goToPosition.goToPositionCalculations(25, 25, 180);
-                pid.pidCalculations(c);
+
+
+                goToPosition.goToPositionCalculations(desiredXCoordinates, desiredYCoordinates, desiredHeading);
+
                 leftFrontWheel.setPower(leftFrontPower*pidOutput);
                 rightFrontWheel.setPower(rightFrontPower*pidOutput);
                 leftBackWheel.setPower(leftBackPower*pidOutput);
                 rightBackWheel.setPower(rightBackPower*pidOutput);
-            }
-            c = 100;
-            while (c > 5) {
-                goToPosition.goToPositionCalculations(10, 10, 90);
-                pid.pidCalculations(c);
-                leftFrontWheel.setPower(leftFrontPower*pidOutput);
-                rightFrontWheel.setPower(rightFrontPower*pidOutput);
-                leftBackWheel.setPower(leftBackPower*pidOutput);
-                rightBackWheel.setPower(rightBackPower*pidOutput);
-            }
+
+
 
 
 
