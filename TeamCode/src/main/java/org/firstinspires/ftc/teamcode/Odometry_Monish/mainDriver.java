@@ -27,6 +27,9 @@ public class mainDriver extends LinearOpMode {
     final double COUNTS_PER_INCH = 1141.94659527;
     public static double heading, globalXPosEncoderTicks, globalYPosEncoderTicks;
 
+    static double[] powers;
+    static double pidOutput;
+
     public void runOpMode() {
         while (!opModeIsActive() && !isStopRequested()) {
             // goToPosition = new MotorPowerMecanum();
@@ -78,26 +81,12 @@ public class mainDriver extends LinearOpMode {
             globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
 
-            double[] powers = calculations.goToPositionCalculations(25, 25, 180);
+            // double[] powers = calculations.goToPositionCalculations(25, 25, 180);
+            // setPower(powers[0], powers[1], powers[2], powers[3], powers[4]);
 
-            setPower(powers[0], powers[1], powers[2], powers[3], powers[4]);
+            go(25, 25, 180);
         }
     }
-
-    /*telemetry.addData("heading", heading);
-    telemetry.addData("Theta",Theta);
-    telemetry.addData("p", p);
-    telemetry.addData("d", d);
-    telemetry.addData("headingForTurning", headingForTurning);
-    telemetry.addData("distanceToTurn", distanceToTurn);
-    telemetry.addData("leftFrontPower", leftFrontPower*pidOutput);
-    telemetry.addData("rightFrontPower", rightFrontPower*pidOutput);
-    telemetry.addData("leftBackPower", leftBackPower*pidOutput);
-    telemetry.addData("rightBackPower", rightBackPower*pidOutput);
-    telemetry.addData("xPowerRatio", xPowerRatio);
-    telemetry.addData("yPowerRatio", yPowerRatio);
-    telemetry.addData("c", c);
-    telemetry.update();*/
 
     public static void setPower(double lf, double lb, double rf, double rb, double c) {
         double pidOutput = calculations.pidCalculations(c);
@@ -105,5 +94,16 @@ public class mainDriver extends LinearOpMode {
         rightFrontWheel.setPower(rf*pidOutput);
         leftBackWheel.setPower(lb*pidOutput);
         rightBackWheel.setPower(rb*pidOutput);
+    }
+
+    public static void go(double x, double y, double heading) {
+        do {
+            powers = calculations.goToPositionCalculations(x, y, heading);
+            pidOutput = calculations.pidCalculations(powers[4]);
+            leftFrontWheel.setPower(powers[0]*pidOutput);
+            rightFrontWheel.setPower(powers[1]*pidOutput);
+            leftBackWheel.setPower(powers[2]*pidOutput);
+            rightBackWheel.setPower(powers[3]*pidOutput);
+        } while (powers[4] < 10);
     }
 }
