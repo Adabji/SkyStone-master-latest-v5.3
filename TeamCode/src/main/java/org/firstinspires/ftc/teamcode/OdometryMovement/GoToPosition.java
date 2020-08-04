@@ -73,7 +73,8 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
         goToPosition = new MotorPowerMecanum();
         pid = new PIDCalulations();
 
-        pointCounter = 0; 
+        pointCounter = 0;
+        reachedPointSignal = 0;
 
         leftFrontWheel = hardwareMap.dcMotor.get("left front");
         leftBackWheel = hardwareMap.dcMotor.get("left back");
@@ -144,10 +145,17 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
         goToPosition.goToPositionCalculations(desiredXCoordinates, desiredYCoordinates, desiredHeading);
         pid.pidCalculations(c);
 
-        leftFrontWheel.setPower(leftFrontPower * pidOutput);
-        rightFrontWheel.setPower(rightFrontPower * pidOutput);
-        leftBackWheel.setPower(leftBackPower * pidOutput);
-        rightBackWheel.setPower(rightBackPower * pidOutput);
+        if (reachedPointSignal == 0) {
+            leftFrontWheel.setPower(leftFrontPower * pidOutput);
+            rightFrontWheel.setPower(rightFrontPower * pidOutput);
+            leftBackWheel.setPower(leftBackPower * pidOutput);
+            rightBackWheel.setPower(rightBackPower * pidOutput);
+        } else {
+            leftFrontWheel.setPower(0);
+            rightFrontWheel.setPower(0);
+            leftBackWheel.setPower(0);
+            rightBackWheel.setPower(0);
+        }
 
         telemetry.addData("heading", heading);
         telemetry.addData("Theta", Theta);

@@ -29,6 +29,7 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
     public static double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower, powerReduction;
     public static double circumference = 64.42;
     public static int pointCounter = 0;
+    public static int reachedPointSignal = 0;
     private static DcMotor leftFrontWheel, leftBackWheel, rightFrontWheel, rightBackWheel;
     public double desiredXCoordinate, desiredYCoordinate, desiredHeading;
 
@@ -133,6 +134,15 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
             if (c < 5 && pointCounter != 2) {
 
                 pointCounter += 1;
+                reachedPointSignal = 1;
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+
+                }
+
+                reachedPointSignal = 0;
 
             }
 
