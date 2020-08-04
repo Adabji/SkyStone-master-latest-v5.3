@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.lang.Math;
 import java.util.Arrays;
 
+import static java.lang.Thread.sleep;
 import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.globalXPosEncoderTicks;
 import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.globalYPosEncoderTicks;
 import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.heading;
@@ -122,12 +123,14 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
                 headingForTurning = heading + 360;
             }
 
+
+
             distanceToTurn = desiredHeading[pointCounter] - Math.toDegrees(heading);
 
 
             turnPower = distanceToTurn / 360 * circumference;
 
-            if (c < 5) {
+            if (c < 5 && pointCounter != 2) {
 
                 pointCounter += 1;
 
