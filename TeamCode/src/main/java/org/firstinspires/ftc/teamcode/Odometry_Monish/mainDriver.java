@@ -8,8 +8,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
 
-import org.firstinspires.ftc.teamcode.Odometry_Monish.calculations;
-
 @Config
 @Autonomous(name = "OdometryLinOpMode", group = "Autonomous")
 public class mainDriver extends LinearOpMode {
@@ -86,26 +84,14 @@ public class mainDriver extends LinearOpMode {
     }
 
     // set power to each motor
-    public static void setPower(double lf, double lb, double rf, double rb) {
+    public void setPower(double lf, double lb, double rf, double rb) {
         leftFrontWheel.setPower(lf);
         leftBackWheel.setPower(lb);
         rightFrontWheel.setPower(rf);
         rightBackWheel.setPower(rb);
     }
 
-    public static void go(double x, double y, double heading) {
-        /*powers = calculations.goToPositionCalculations(x, y, heading);
-        pidOutput = calculations.pidCalculations(powers[4]);
-        while (powers[4] > 10) {
-            heading = globalPositionUpdate.robotOrientationRadians;
-            globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
-            globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
-
-            setPower(powers[0]*pidOutput, powers[1]*pidOutput, powers[2]*pidOutput, powers[3]*pidOutput);
-            powers = calculations.goToPositionCalculations(x, y, heading);
-            pidOutput = calculations.pidCalculations(powers[4]);
-        }*/
-
+    public void go(double x, double y, double heading) {
         do {
             // update global positions
             globalHeading = globalPositionUpdate.robotOrientationRadians;
@@ -121,5 +107,12 @@ public class mainDriver extends LinearOpMode {
         // stop
         while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {}
         setPower(0, 0, 0, 0);
+
+        telemetry.addData("globalX", globalXPosEncoderTicks);
+        telemetry.addData("globalY", globalYPosEncoderTicks);
+        telemetry.addData("globalHeading", globalHeading);
+        telemetry.addData("c", powers[4]);
+
+        sleep(2000);
     }
 }
