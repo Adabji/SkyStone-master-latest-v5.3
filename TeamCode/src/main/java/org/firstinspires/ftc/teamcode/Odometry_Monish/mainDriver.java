@@ -25,7 +25,7 @@ public class mainDriver extends LinearOpMode {
     Thread positionThread;
 
     final double COUNTS_PER_INCH = 1141.94659527;
-    public static double heading, globalXPosEncoderTicks, globalYPosEncoderTicks;
+    public static double globalHeading, globalXPosEncoderTicks, globalYPosEncoderTicks;
 
     static double[] powers;
     static double pidOutput;
@@ -108,7 +108,7 @@ public class mainDriver extends LinearOpMode {
 
         do {
             // update global positions
-            heading = globalPositionUpdate.robotOrientationRadians;
+            globalHeading = globalPositionUpdate.robotOrientationRadians;
             globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
 
