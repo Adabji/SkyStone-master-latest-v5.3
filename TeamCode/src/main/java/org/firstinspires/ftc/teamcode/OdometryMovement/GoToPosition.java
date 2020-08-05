@@ -57,7 +57,7 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
     public double yError;
     public double[] desiredXCoordinates = {70, 60, 0};
     public double[] desiredYCoordinates = {25, 15, 15};
-    public double[] desiredHeading = {180, 90, 90};
+    public double[] desiredHeading = {180, 180, 90};
 
 
     //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
@@ -76,6 +76,7 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
 
         pointCounter = 0;
         reachedPointSignal = 0;
+        c = 100;
 
         leftFrontWheel = hardwareMap.dcMotor.get("left front");
         leftBackWheel = hardwareMap.dcMotor.get("left back");
@@ -154,6 +155,7 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
 
 
         telemetry.addData("c", c);
+        telemetry.addData("rotationalDistance", rotationalDistance);
         telemetry.update();
 
     }

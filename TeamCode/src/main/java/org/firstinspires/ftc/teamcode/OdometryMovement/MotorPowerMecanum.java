@@ -133,7 +133,7 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
 
 
 
-            if (c < 3.9 && pointCounter != 2) {
+            if (c < 1 && pointCounter != 1 && rotationalDistance < 3) {
 
                 pointCounter += 1;
 
@@ -147,7 +147,7 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
 
         rotationalDistance = Math.abs((distanceToTurn/360)*circumference);
         linearDistance = Math.sqrt(xPower * xPower + yPower * yPower);
-        c = Math.sqrt(xPower * xPower + yPower * yPower)+ Math.abs((distanceToTurn/360)*circumference);
+        c = Math.sqrt(xPower * xPower + yPower * yPower)+ rotationalDistance;
 
 
 
