@@ -116,7 +116,7 @@ public class mainDriver extends LinearOpMode {
             powers = calculations.goToPositionCalculations(x, y, heading);
             pidOutput = calculations.pidCalculations(powers[4]);
             setPower(powers[0]*pidOutput, powers[1]*pidOutput, powers[2]*pidOutput, powers[3]*pidOutput);
-        } while (powers[4] > 10);
+        } while (powers[4] > 3);
 
         // stop
         while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {}
