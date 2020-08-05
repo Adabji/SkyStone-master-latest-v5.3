@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.mainDriver.globalXPosEncoderTicks;
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.mainDriver.globalYPosEncoderTicks;
-import static org.firstinspires.ftc.teamcode.Odometry_Monish.mainDriver.heading;
+import static org.firstinspires.ftc.teamcode.Odometry_Monish.mainDriver.globalHeading;
 
 public class calculations {
     public static double Theta, c, linearDistance, rotationalDistance;
@@ -55,14 +55,14 @@ public class calculations {
         reductionDistance = Range.clip(c, 0, 25);
         proportionPowerReduction = Range.clip(Math.sqrt(Math.abs(c / 25)), 0, 1);
 
-        if (heading >= 0) {
-            headingForTurning = heading;
+        if (globalHeading >= 0) {
+            headingForTurning = globalHeading;
         }
-        if (heading < 0) {
-            headingForTurning = heading + 360;
+        if (globalHeading < 0) {
+            headingForTurning = globalHeading + 360;
         }
 
-        distanceToTurn = desiredHeading - Math.toDegrees(heading);
+        distanceToTurn = desiredHeading - Math.toDegrees(globalHeading);
         turnPower = distanceToTurn / 360 * circumference;
         return driveMecanum(xPowerRatio, yPowerRatio, turnPower, 0);
     }
@@ -74,8 +74,8 @@ public class calculations {
 
         Theta = Math.atan2(xPower, yPower);
 
-        outputY = Math.cos(heading - Theta)*linearDistance;
-        outputX = -Math.sin(heading - Theta)*linearDistance;
+        outputY = Math.cos(globalHeading - Theta)*linearDistance;
+        outputX = -Math.sin(globalHeading - Theta)*linearDistance;
 
         leftFrontPower = (outputY + outputX) + turnPower;
         leftBackPower = (outputY - outputX) + turnPower;
