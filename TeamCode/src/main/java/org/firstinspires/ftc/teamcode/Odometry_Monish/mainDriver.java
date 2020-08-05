@@ -108,8 +108,8 @@ public class mainDriver extends LinearOpMode {
         while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {}
         setPower(0, 0, 0, 0);
 
-        telemetry.addData("globalX", globalXPosEncoderTicks);
-        telemetry.addData("globalY", globalYPosEncoderTicks);
+        telemetry.addData("globalX", globalXPosEncoderTicks/COUNTS_PER_INCH);
+        telemetry.addData("globalY", globalYPosEncoderTicks/COUNTS_PER_INCH);
         telemetry.addData("globalHeading", globalHeading);
         telemetry.addData("c", powers[4]);
         telemetry.update();
