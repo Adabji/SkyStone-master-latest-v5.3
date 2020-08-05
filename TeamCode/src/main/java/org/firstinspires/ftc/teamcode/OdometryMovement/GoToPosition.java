@@ -148,10 +148,25 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
         pid.pidCalculations(c);
 
 
-                leftFrontWheel.setPower(leftFrontPower * pidOutput);
-                rightFrontWheel.setPower(rightFrontPower * pidOutput);
-                leftBackWheel.setPower(leftBackPower * pidOutput);
-                rightBackWheel.setPower(rightBackPower * pidOutput);
+        if (reachedPointSignal == 0) {
+            leftFrontWheel.setPower(leftFrontPower * pidOutput);
+            rightFrontWheel.setPower(rightFrontPower * pidOutput);
+            leftBackWheel.setPower(leftBackPower * pidOutput);
+            rightBackWheel.setPower(rightBackPower * pidOutput);
+        } else {
+            leftFrontWheel.setPower(0);
+            rightFrontWheel.setPower(0);
+            leftBackWheel.setPower(0);
+            rightBackWheel.setPower(0);
+
+            try {
+                sleep(2000);
+            } catch (InterruptedException e) {
+
+            }
+
+            reachedPointSignal = 0;
+        }
 
 
         telemetry.addData("c", c);

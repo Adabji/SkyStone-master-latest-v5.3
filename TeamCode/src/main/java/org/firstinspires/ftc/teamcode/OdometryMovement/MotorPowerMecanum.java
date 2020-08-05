@@ -133,9 +133,10 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
 
 
 
-            if (c < 1 && pointCounter != 1 && rotationalDistance < 3) {
+            if (c < 2 && pointCounter != 2) {
 
                 pointCounter += 1;
+                reachedPointSignal = 1;
 
             }
 
