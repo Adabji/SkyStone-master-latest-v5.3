@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.*;
 //import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerNormalizer.*;
+import static java.lang.Thread.sleep;
 import static org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
 
 import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
@@ -54,9 +55,9 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
     public double pidOutput;*/
     public double xError;
     public double yError;
-    public double[] desiredXCoordinates = {25, 25, 40};
-    public double[] desiredYCoordinates = {25, 50, 25};
-    public double[] desiredHeading = {180, 180, 0};
+    public double[] desiredXCoordinates = {70, 60, 0};
+    public double[] desiredYCoordinates = {25, 15, 15};
+    public double[] desiredHeading = {180, 90, 90};
 
 
     //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
@@ -145,30 +146,13 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
         goToPosition.goToPositionCalculations(desiredXCoordinates, desiredYCoordinates, desiredHeading);
         pid.pidCalculations(c);
 
-        if (reachedPointSignal == 0) {
-            leftFrontWheel.setPower(leftFrontPower * pidOutput);
-            rightFrontWheel.setPower(rightFrontPower * pidOutput);
-            leftBackWheel.setPower(leftBackPower * pidOutput);
-            rightBackWheel.setPower(rightBackPower * pidOutput);
-        } else {
-            leftFrontWheel.setPower(0);
-            rightFrontWheel.setPower(0);
-            leftBackWheel.setPower(0);
-            rightBackWheel.setPower(0);
-        }
 
-        telemetry.addData("heading", heading);
-        telemetry.addData("Theta", Theta);
-        telemetry.addData("p", p);
-        telemetry.addData("d", d);
-        telemetry.addData("headingForTurning", headingForTurning);
-        telemetry.addData("distanceToTurn", distanceToTurn);
-        telemetry.addData("leftFrontPower", leftFrontPower * pidOutput);
-        telemetry.addData("rightFrontPower", rightFrontPower * pidOutput);
-        telemetry.addData("leftBackPower", leftBackPower * pidOutput);
-        telemetry.addData("rightBackPower", rightBackPower * pidOutput);
-        telemetry.addData("xPowerRatio", xPowerRatio);
-        telemetry.addData("yPowerRatio", yPowerRatio);
+                leftFrontWheel.setPower(leftFrontPower * pidOutput);
+                rightFrontWheel.setPower(rightFrontPower * pidOutput);
+                leftBackWheel.setPower(leftBackPower * pidOutput);
+                rightBackWheel.setPower(rightBackPower * pidOutput);
+
+
         telemetry.addData("c", c);
         telemetry.update();
 

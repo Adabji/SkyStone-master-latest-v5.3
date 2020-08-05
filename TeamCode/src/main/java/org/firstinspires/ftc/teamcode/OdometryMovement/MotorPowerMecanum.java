@@ -131,18 +131,11 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
 
             turnPower = distanceToTurn / 360 * circumference;
 
-            if (c < 5 && pointCounter != 2) {
+
+
+            if (c < 3.9 && pointCounter != 2) {
 
                 pointCounter += 1;
-                reachedPointSignal = 1;
-
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-
-                }
-
-                reachedPointSignal = 0;
 
             }
 
@@ -178,10 +171,15 @@ import static org.firstinspires.ftc.teamcode.OdometryMovement.GoToPosition.headi
         Arrays.sort(wheelPowers);
         double biggestInput = wheelPowers[3];
 
-        leftFrontPower /= biggestInput;
-        leftBackPower /= biggestInput;
-        rightFrontPower /= biggestInput;
-        rightBackPower /= biggestInput;
+
+
+            leftFrontPower /= biggestInput;
+            leftBackPower /= biggestInput;
+            rightFrontPower /= biggestInput;
+            rightBackPower /= biggestInput;
+
+
+
 
 
     }

@@ -53,8 +53,8 @@ public class PIDCalulations {
 
             currentTime = System.currentTimeMillis();
 
-            p = currentError / 18;
-            d = ((currentError - previousError) / (currentTime - previousTime)) / 100;
+            p = currentError/12;
+            d = ((currentError - previousError) / (currentTime - previousTime))/120;
             i = 0;
 
             pidOutput = Range.clip((p + i + d), 0, 1);
