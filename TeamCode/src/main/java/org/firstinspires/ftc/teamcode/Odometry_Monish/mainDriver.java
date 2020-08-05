@@ -112,6 +112,7 @@ public class mainDriver extends LinearOpMode {
         telemetry.addData("globalY", globalYPosEncoderTicks);
         telemetry.addData("globalHeading", globalHeading);
         telemetry.addData("c", powers[4]);
+        telemetry.update();
 
         sleep(2000);
     }
