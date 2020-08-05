@@ -21,7 +21,7 @@ public class mainDriver extends LinearOpMode {
     //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
     String verticalLeftEncoderName = "intake motor 2", verticalRightEncoderName = "intake motor 1", horizontalEncoderName = "intake motor 3";
 
-    OdometryGlobalCoordinatePosition globalPositionUpdate;
+    static OdometryGlobalCoordinatePosition globalPositionUpdate;
     Thread positionThread;
 
     final double COUNTS_PER_INCH = 1141.94659527;
@@ -77,33 +77,49 @@ public class mainDriver extends LinearOpMode {
         }
 
         if (opModeIsActive()) {
-            heading = globalPositionUpdate.robotOrientationRadians;
+            /*heading = globalPositionUpdate.robotOrientationRadians;
             globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
-            globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
-
-            // double[] powers = calculations.goToPositionCalculations(25, 25, 180);
-            // setPower(powers[0], powers[1], powers[2], powers[3], powers[4]);
+            globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();*/
 
             go(25, 25, 180);
         }
     }
 
-    public static void setPower(double lf, double lb, double rf, double rb, double c) {
-        double pidOutput = calculations.pidCalculations(c);
-        leftFrontWheel.setPower(lf*pidOutput);
-        rightFrontWheel.setPower(rf*pidOutput);
-        leftBackWheel.setPower(lb*pidOutput);
-        rightBackWheel.setPower(rb*pidOutput);
+    // set power to each motor
+    public static void setPower(double lf, double lb, double rf, double rb) {
+        leftFrontWheel.setPower(lf);
+        leftBackWheel.setPower(lb);
+        rightFrontWheel.setPower(rf);
+        rightBackWheel.setPower(rb);
     }
 
     public static void go(double x, double y, double heading) {
-        do {
+        /*powers = calculations.goToPositionCalculations(x, y, heading);
+        pidOutput = calculations.pidCalculations(powers[4]);
+        while (powers[4] > 10) {
+            heading = globalPositionUpdate.robotOrientationRadians;
+            globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
+            globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
+
+            setPower(powers[0]*pidOutput, powers[1]*pidOutput, powers[2]*pidOutput, powers[3]*pidOutput);
             powers = calculations.goToPositionCalculations(x, y, heading);
             pidOutput = calculations.pidCalculations(powers[4]);
-            leftFrontWheel.setPower(powers[0]*pidOutput);
-            rightFrontWheel.setPower(powers[1]*pidOutput);
-            leftBackWheel.setPower(powers[2]*pidOutput);
-            rightBackWheel.setPower(powers[3]*pidOutput);
-        } while (powers[4] < 10);
+        }*/
+
+        do {
+            // update global positions
+            heading = globalPositionUpdate.robotOrientationRadians;
+            globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
+            globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
+
+            // calculate powers and set them to the respective motors
+            powers = calculations.goToPositionCalculations(x, y, heading);
+            pidOutput = calculations.pidCalculations(powers[4]);
+            setPower(powers[0]*pidOutput, powers[1]*pidOutput, powers[2]*pidOutput, powers[3]*pidOutput);
+        } while (powers[4] > 10);
+
+        // stop
+        while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {}
+        setPower(0, 0, 0, 0);
     }
 }
