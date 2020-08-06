@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.d;
 import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
 
 @Config
@@ -102,17 +103,18 @@ public class mainDriver extends LinearOpMode {
             powers = calculations.goToPositionCalculations(x, y, heading);
             pidOutput = calculations.pidCalculations(powers[4]);
             setPower(powers[0]*pidOutput, powers[1]*pidOutput, powers[2]*pidOutput, powers[3]*pidOutput);
+            telemetry.addData("globalX", globalXPosEncoderTicks/COUNTS_PER_INCH);
+            telemetry.addData("globalY", globalYPosEncoderTicks/COUNTS_PER_INCH);
+            telemetry.addData("globalHeading", globalHeading);
+            telemetry.addData("c", powers[4]);
+            telemetry.addData("d", d);
+            telemetry.update();
         } while (powers[4] > 1);
 
         // stop
         while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {}
         setPower(0, 0, 0, 0);
 
-        telemetry.addData("globalX", globalXPosEncoderTicks/COUNTS_PER_INCH);
-        telemetry.addData("globalY", globalYPosEncoderTicks/COUNTS_PER_INCH);
-        telemetry.addData("globalHeading", globalHeading);
-        telemetry.addData("c", powers[4]);
-        telemetry.update();
 
         sleep(10000);
     }

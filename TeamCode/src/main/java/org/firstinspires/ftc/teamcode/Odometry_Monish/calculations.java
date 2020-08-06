@@ -25,19 +25,26 @@ public class calculations {
     public static double xPowerRatio, yPowerRatio;
 
     public static double previousError, previousTime, currentTime, p, i, d, pidOutput;
+    public static double prevD = 0;
 
     public static double pidCalculations(double currentError){
 
         currentTime = System.currentTimeMillis();
 
-        p = currentError / 18;
-        d = ((currentError - previousError) / (currentTime - previousTime)) / 100;
+        p = currentError / 17;
+        d = ((currentError - previousError) / (currentTime - previousTime))*6;
         i = 0;
 
-        pidOutput = Range.clip((p + i + d), 0, 1);
+        if(d != 0) {
+            pidOutput = Range.clip((p + i + d), -1, 1);
+        }
+        if(d == 0){
+            pidOutput = Range.clip((p + i + prevD), -1, 1);
+        }
 
         previousError = currentError;
         previousTime = currentTime;
+        prevD = d;
 
         return pidOutput;
     }
