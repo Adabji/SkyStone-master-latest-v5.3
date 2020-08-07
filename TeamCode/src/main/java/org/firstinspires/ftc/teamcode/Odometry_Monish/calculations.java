@@ -14,7 +14,7 @@ public class calculations {
     public static double outputY, headingForTurning;
     public static double reductionDistance;
     public static double distanceToTurn;
-    public static double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower, powerReduction;
+    public static double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower, powerReduction, changeInError, currentError;
     public static double circumference = 64.42;
 
     //The amount of encoder ticks for each inch the robot moves. This will change for each robot and needs to be changed here
@@ -24,30 +24,11 @@ public class calculations {
     public static double globalXPos, globalYPos, proportionPowerReduction, turnPower;
     public static double xPowerRatio, yPowerRatio;
 
-    public static double previousError, previousTime, currentTime, p, i, d, pidOutput;
+    public static double previousError, previousTime, currentTime, p, i, d, pidOutput, previousError2 = 0, previousError3 = 0,
+            previousError4 = 0, previousError5 = 0, previousError6 = 0, previousError7 = 0;
     public static double prevD = 0;
 
-    public static double pidCalculations(double currentError){
 
-        currentTime = System.currentTimeMillis();
-
-        p = currentError / 17;
-        d = ((currentError - previousError) / (currentTime - previousTime))*6;
-        i = 0;
-
-        if(d != 0) {
-            pidOutput = Range.clip((p + i + d), -1, 1);
-        }
-        if(d == 0){
-            pidOutput = Range.clip((p + i + prevD), -1, 1);
-        }
-
-        previousError = currentError;
-        previousTime = currentTime;
-        prevD = d;
-
-        return pidOutput;
-    }
 
     public static double[] goToPositionCalculations (double desiredXCoordinate, double desiredYCoordinate, double desiredHeading) {
         //Converting the odometry readings in encoder ticks to inches
@@ -59,8 +40,8 @@ public class calculations {
         yPowerRatio = (desiredYCoordinate - globalYPos);
 
         //Finding the reduction factor based off the distance to target
-        reductionDistance = Range.clip(c, 0, 25);
-        proportionPowerReduction = Range.clip(Math.sqrt(Math.abs(c / 25)), 0, 1);
+        /*reductionDistance = Range.clip(c, 0, 25);
+        proportionPowerReduction = Range.clip(Math.sqrt(Math.abs(c / 25)), 0, 1);*/
 
         if (globalHeading >= 0) {
             headingForTurning = globalHeading;
@@ -77,7 +58,7 @@ public class calculations {
     public static double[] driveMecanum(double xPower, double yPower, double turnPower, double reduction) {
         rotationalDistance = Math.abs((distanceToTurn/360)*circumference);
         linearDistance = Math.sqrt(xPower * xPower + yPower * yPower);
-        c = linearDistance+ Math.abs((distanceToTurn/360)*circumference);
+        c = linearDistance + Math.abs((distanceToTurn/360)*circumference);
 
         Theta = Math.atan2(xPower, yPower);
 
@@ -100,6 +81,27 @@ public class calculations {
         rightFrontPower /= biggestInput;
         rightBackPower /= biggestInput;
 
-        return new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower, c};
+        currentTime = System.currentTimeMillis();
+        changeInError = c - previousError7;
+
+        p = c / 17;
+        d = ((changeInError) / (currentTime - previousTime));
+        i = 0;
+
+
+        pidOutput = Range.clip((p + i + d), -1, 1);
+
+        previousError7 = previousError6;
+        previousError6 = previousError5;
+        previousError5 = previousError4;
+        previousError4 = previousError3;
+        previousError3 = previousError2;
+        previousError2 = previousError;
+        previousError = c;
+        previousTime = currentTime;
+        prevD = d;
+
+        return new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower, c, pidOutput};
     }
+
 }
