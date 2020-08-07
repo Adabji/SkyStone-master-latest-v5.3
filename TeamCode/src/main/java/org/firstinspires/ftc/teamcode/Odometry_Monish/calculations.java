@@ -91,7 +91,7 @@ public class calculations {
 
         pidOutput = Range.clip((p + i + d), -1, 1);
 
-        previousError7 = previousError6;
+        previousError7 = previousError6; 
         previousError6 = previousError5;
         previousError5 = previousError4;
         previousError4 = previousError3;
