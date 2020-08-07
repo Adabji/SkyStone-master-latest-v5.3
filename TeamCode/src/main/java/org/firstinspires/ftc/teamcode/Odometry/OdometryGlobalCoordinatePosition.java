@@ -51,7 +51,6 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
         this.verticalEncoderLeft = verticalEncoderLeft;
         this.verticalEncoderRight = verticalEncoderRight;
         this.horizontalEncoder = horizontalEncoder;
-        sleepTime = threadSleepDelay;
 
         robotEncoderWheelDistance = trackwidth * COUNTS_PER_INCH;
         this.horizontalEncoderTickPerDegreeOffset = Double.parseDouble(ReadWriteFile.readFile(horizontalTickOffsetFile).trim());
@@ -147,11 +146,11 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
     public void run() {
         while(isRunning) {
             globalCoordinatePositionUpdate();
-            try {
+            /*try {
                 Thread.sleep(sleepTime);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
         }
     }
 }

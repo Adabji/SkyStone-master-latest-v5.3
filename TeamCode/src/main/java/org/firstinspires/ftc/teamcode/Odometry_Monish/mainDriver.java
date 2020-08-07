@@ -81,7 +81,7 @@ public class mainDriver extends LinearOpMode {
             globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();*/
 
-            go(25, 25, 180);
+            go(24, 24, 180);
         }
     }
 
@@ -110,7 +110,7 @@ public class mainDriver extends LinearOpMode {
             telemetry.addData("d", d);
             telemetry.addData("changeInError", changeInError);
             telemetry.update();
-        } while (powers[4] > 1);
+        } while (powers[4] > -1);
 
         // stop
         while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {}

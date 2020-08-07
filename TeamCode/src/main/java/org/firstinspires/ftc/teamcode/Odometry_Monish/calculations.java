@@ -82,16 +82,16 @@ public class calculations {
         rightBackPower /= biggestInput;
 
         currentTime = System.currentTimeMillis();
-        changeInError = c - previousError7;
+        changeInError = c - previousError4;
 
-        p = c / 17;
-        d = ((changeInError) / (currentTime - previousTime));
+        p = c / 22;
+        d = ((changeInError) / (currentTime - previousTime))*1.5;
         i = 0;
 
 
         pidOutput = Range.clip((p + i + d), -1, 1);
 
-        previousError7 = previousError6; 
+        previousError7 = previousError6;
         previousError6 = previousError5;
         previousError5 = previousError4;
         previousError4 = previousError3;
