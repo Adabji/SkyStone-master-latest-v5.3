@@ -59,9 +59,8 @@ public class mainDriver extends LinearOpMode {
             such that when the verticalLeft and verticalRight encoders spin forward, they return positive values, and when the
             horizontal encoder travels to the right, it returns positive value
             */
-            verticalLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-            verticalRight.setDirection(DcMotorSimple.Direction.REVERSE);
-            horizontal.setDirection(DcMotorSimple.Direction.REVERSE);
+           // verticalLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+           // verticalRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
             //Set the mode of the odometry encoders to RUN_WITHOUT_ENCODER
             verticalRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -96,7 +95,7 @@ public class mainDriver extends LinearOpMode {
     public void go(double x, double y, double heading) {
         do {
             // update global positions
-            globalHeading = globalPositionUpdate.robotOrientationRadians;
+            globalHeading = globalPositionUpdate.returnOrientation();
             globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
 

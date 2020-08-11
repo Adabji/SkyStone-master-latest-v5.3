@@ -47,7 +47,7 @@ public class calculations {
             headingForTurning = globalHeading;
         }
         if (globalHeading < 0) {
-            headingForTurning = globalHeading + 360;
+            headingForTurning = globalHeading + Math.PI;
         }
 
         distanceToTurn = desiredHeading - Math.toDegrees(globalHeading);
@@ -84,8 +84,8 @@ public class calculations {
         currentTime = System.currentTimeMillis();
         changeInError = c - previousError4;
 
-        p = c / 22;
-        d = ((changeInError) / (currentTime - previousTime))*1.5;
+        p = c / 12.5;
+        d = ((changeInError) / (currentTime - previousTime))*3;
         i = 0;
 
 

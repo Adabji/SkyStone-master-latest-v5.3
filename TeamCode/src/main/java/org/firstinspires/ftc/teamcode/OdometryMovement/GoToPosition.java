@@ -98,7 +98,6 @@ import org.firstinspires.ftc.teamcode.OdometryMovement.MotorPowerMecanum.*;
         */
             verticalLeft.setDirection(DcMotorSimple.Direction.REVERSE);
             verticalRight.setDirection(DcMotorSimple.Direction.REVERSE);
-            horizontal.setDirection(DcMotorSimple.Direction.REVERSE);
 
             //Set the mode of the odometry encoders to RUN_WITHOUT_ENCODER
             verticalRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

@@ -22,7 +22,7 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
 
     //Position variables used for storage and calculations
     double verticalRightEncoderWheelPosition = 0, verticalLeftEncoderWheelPosition = 0, normalEncoderWheelPosition = 0,  changeInRobotOrientation = 0;
-    public double robotGlobalXCoordinatePosition = 0, robotGlobalYCoordinatePosition = 0, robotOrientationRadians = 0;
+    public double robotGlobalXCoordinatePosition = 0, rotationTest = 0, robotGlobalYCoordinatePosition = 0, robotOrientationRadians = 0;
     private double previousVerticalRightEncoderWheelPosition = 0, previousVerticalLeftEncoderWheelPosition = 0, prevNormalEncoderWheelPosition = 0;
 
     //Algorithm constants
@@ -85,13 +85,15 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
 
         //Calculate and update the position values
         robotGlobalXCoordinatePosition = robotGlobalXCoordinatePosition + (p*Math.sin(robotOrientationRadians) + n*Math.cos(robotOrientationRadians));
-        robotGlobalYCoordinatePosition = robotGlobalYCoordinatePosition + (p*Math.cos(robotOrientationRadians) - n*Math.sin(robotOrientationRadians));
+        robotGlobalYCoordinatePosition = robotGlobalYCoordinatePosition - (p*Math.cos(robotOrientationRadians) - n*Math.sin(robotOrientationRadians));
 
         previousVerticalLeftEncoderWheelPosition = verticalLeftEncoderWheelPosition;
         previousVerticalRightEncoderWheelPosition = verticalRightEncoderWheelPosition;
         prevNormalEncoderWheelPosition = normalEncoderWheelPosition;
+        rotationTest += horizontalChange;
     }
 
+    public double returnRotationTest() { return rotationTest; }
     /**
      * Returns the robot's global x coordinate
      * @return global x coordinate
@@ -108,7 +110,7 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
      * Returns the robot's global orientation
      * @return global orientation, in degrees
      */
-    public double returnOrientation(){ return Math.toDegrees(robotOrientationRadians); }
+    public double returnOrientation(){ return -robotOrientationRadians; }
 
     /**
      * Stops the position update thread
