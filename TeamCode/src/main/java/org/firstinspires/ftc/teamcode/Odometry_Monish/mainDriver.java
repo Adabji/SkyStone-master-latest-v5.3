@@ -10,8 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.changeInError;
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.d;
 import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
-import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveBase;
-import org.firstinspires.ftc.teamcode.drive.mecanum.SampleMecanumDriveREV;
+
 
 @Config
 @Autonomous(name = "OdometryLinOpMode", group = "Autonomous")
@@ -21,7 +20,6 @@ public class mainDriver extends LinearOpMode {
     //Odometry encoder wheels
     DcMotor verticalRight, verticalLeft, horizontal;
     private Servo foundationServo, foundationServoRight, rightStoneGrabber, grabberLeft, tapeMeasure, liftHoExt, wrist, grabber;
-    private DcMotor intakeMotor1, intakeMotor2, intakeMotor3;
 
     //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
     String verticalLeftEncoderName = "intake motor 2", verticalRightEncoderName = "intake motor 1", horizontalEncoderName = "intake motor 3";
@@ -36,6 +34,8 @@ public class mainDriver extends LinearOpMode {
     static double pidOutput;
 
     public void runOpMode() {
+
+
         while (!opModeIsActive() && !isStopRequested()) {
             // goToPosition = new MotorPowerMecanum();
             // pid = new PIDCalulations();
@@ -48,11 +48,6 @@ public class mainDriver extends LinearOpMode {
             liftHoExt = hardwareMap.servo.get("liftHoExt");
             wrist = hardwareMap.servo.get("liftGrabberRotater");
             grabber = hardwareMap.servo.get("liftGrabber");
-            intakeMotor1 = hardwareMap.dcMotor.get("intake motor 1");
-            intakeMotor2 = hardwareMap.dcMotor.get("intake motor 2");
-            intakeMotor3 = hardwareMap.dcMotor.get("intake motor 3");
-            intakeMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
-            intakeMotor3.setDirection(DcMotorSimple.Direction.REVERSE);
 
             leftFrontWheel = hardwareMap.dcMotor.get("left front");
             leftBackWheel = hardwareMap.dcMotor.get("left back");
@@ -100,7 +95,7 @@ public class mainDriver extends LinearOpMode {
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();*/
 
             foundationDownGrabberUp();
-            go(70, 24, 180);
+            go(84, 22, 180);
             foundationDownGrabberDown();
 
         }
@@ -117,7 +112,7 @@ public class mainDriver extends LinearOpMode {
     public void go(double x, double y, double heading) {
         do {
             // update global positions
-            globalHeading = globalPositionUpdate.returnOrientation();
+            globalHeading = globalPositionUpdate.returnOrientation() /*+(Actual Starting Position)*/;
             globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
 
@@ -131,7 +126,7 @@ public class mainDriver extends LinearOpMode {
             telemetry.addData("d", d);
             telemetry.addData("changeInError", changeInError);
             telemetry.update();
-        } while (powers[4] > 1.5);
+        } while (powers[4] > 1.5 || d > 0.001);
 
         // stop
         while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {}
@@ -139,14 +134,15 @@ public class mainDriver extends LinearOpMode {
 
     }
     private void foundationDownGrabberUp(){
-        foundationServoRight.setPosition(0.95);
-        grabberLeft.setPosition(.3);
+        foundationServoRight.setPosition(0.96);
+        grabberLeft.setPosition(.2);
     }
     private void foundationUpGrabberDown(){
         foundationServoRight.setPosition(.63);  // originally .6
         grabberLeft.setPosition(.7);
     }
-    private void foundationDownGrabberDown(){
-        foundationServoRight.setPosition(.95);
+    private void foundationDownGrabberDown() {
+        foundationServoRight.setPosition(1);
         grabberLeft.setPosition(.78);
+    }
 }

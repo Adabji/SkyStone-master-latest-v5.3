@@ -82,10 +82,10 @@ public class calculations {
         rightBackPower /= biggestInput;
 
         currentTime = System.currentTimeMillis();
-        changeInError = c - previousError4;
+        changeInError = c - previousError3;
 
-        p = c / 12.2;
-        d = ((changeInError) / (currentTime - previousTime))*5;
+        p = c / 13;
+        d = ((changeInError) / (currentTime - previousTime))*5.3;
         i = 0;
 
 
