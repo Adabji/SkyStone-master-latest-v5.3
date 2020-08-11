@@ -84,8 +84,8 @@ public class calculations {
         currentTime = System.currentTimeMillis();
         changeInError = c - previousError4;
 
-        p = c / 12.5;
-        d = ((changeInError) / (currentTime - previousTime))*3;
+        p = c / 12.2;
+        d = ((changeInError) / (currentTime - previousTime))*5;
         i = 0;
 
 
