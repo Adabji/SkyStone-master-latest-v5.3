@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.changeInError;
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.d;
+
+import org.firstinspires.ftc.teamcode.Odometry.OdometryCalculations;
 import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
 
 
@@ -26,6 +28,9 @@ public class mainDriver extends LinearOpMode {
 
     static OdometryGlobalCoordinatePosition globalPositionUpdate;
     Thread positionThread;
+
+    static OdometryCalculations odometryCalculations;
+    Thread updateOdometry;
 
     final double COUNTS_PER_INCH = 1141.94659527;
     public static double globalHeading, globalXPosEncoderTicks, globalYPosEncoderTicks;
@@ -66,6 +71,10 @@ public class mainDriver extends LinearOpMode {
             positionThread = new Thread(globalPositionUpdate);
             positionThread.start();
 
+            updateOdometry = new Thread(odometryCalculations);
+            updateOdometry.start();
+
+
             globalPositionUpdate.reverseLeftEncoder();
 
             /*
@@ -94,9 +103,9 @@ public class mainDriver extends LinearOpMode {
             globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();*/
 
-            foundationDownGrabberUp();
-            go(84, 22, 180);
-            foundationDownGrabberDown();
+            //foundationDownGrabberUp();
+            go(90, 24, 180);
+            //foundationDownGrabberDown();
 
         }
     }
@@ -116,6 +125,10 @@ public class mainDriver extends LinearOpMode {
             globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
 
+            //globalHeading = odometryCalculations.coordinatePositionUpdate()[2];
+            //globalXPosEncoderTicks = odometryCalculations.coordinatePositionUpdate()[0];
+            //globalYPosEncoderTicks = odometryCalculations.coordinatePositionUpdate()[1];
+
             // calculate powers and set them to the respective motors
             powers = calculations.goToPositionCalculations(x, y, heading);
             setPower(powers[0]*powers[5], powers[1]*powers[5], powers[2]*powers[5], powers[3]*powers[5]);
@@ -126,7 +139,7 @@ public class mainDriver extends LinearOpMode {
             telemetry.addData("d", d);
             telemetry.addData("changeInError", changeInError);
             telemetry.update();
-        } while (powers[4] > 1.5 || d > 0.001);
+        } while (powers[4] > -1/*powers[4] > 1.5 || d > 0.001*/);
 
         // stop
         while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {}

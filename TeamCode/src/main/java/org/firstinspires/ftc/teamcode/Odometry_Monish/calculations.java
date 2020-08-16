@@ -84,8 +84,8 @@ public class calculations {
         currentTime = System.currentTimeMillis();
         changeInError = c - previousError3;
 
-        p = c / 13;
-        d = ((changeInError) / (currentTime - previousTime))*5.3;
+        p = c / 14;
+        d = ((changeInError) / (currentTime - previousTime))*4.22;
         i = 0;
 
 
@@ -100,6 +100,7 @@ public class calculations {
         previousError = c;
         previousTime = currentTime;
         prevD = d;
+        if (d )
 
         return new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower, c, pidOutput};
     }

@@ -27,33 +27,20 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
 
     //Algorithm constants
     private double robotEncoderWheelDistance;
-    private double horizontalEncoderTickPerDegreeOffset;
 
-    //Sleep time interval (milliseconds) for the position update thread
-    private int sleepTime;
 
     //Files to access the algorithm constants
-    private File wheelBaseSeparationFile = AppUtil.getInstance().getSettingsFile("wheelBaseSeparation.txt");
-    private File horizontalTickOffsetFile = AppUtil.getInstance().getSettingsFile("horizontalTickOffset.txt");
 
     private int verticalLeftEncoderPositionMultiplier = 1;
     private int verticalRightEncoderPositionMultiplier = 1;
     private int normalEncoderPositionMultiplier = 1;
 
-    /**
-     * Constructor for GlobalCoordinatePosition Thread
-     * @param verticalEncoderLeft left odometry encoder, facing the vertical direction
-     * @param verticalEncoderRight right odometry encoder, facing the vertical direction
-     * @param horizontalEncoder horizontal odometry encoder, perpendicular to the other two odometry encoder wheels
-     * @param threadSleepDelay delay in milliseconds for the GlobalPositionUpdate thread (50-75 milliseconds is suggested)
-     */
     public OdometryGlobalCoordinatePosition(DcMotor verticalEncoderLeft, DcMotor verticalEncoderRight, DcMotor horizontalEncoder, double COUNTS_PER_INCH, int threadSleepDelay){
         this.verticalEncoderLeft = verticalEncoderLeft;
         this.verticalEncoderRight = verticalEncoderRight;
         this.horizontalEncoder = horizontalEncoder;
 
         robotEncoderWheelDistance = trackwidth * COUNTS_PER_INCH;
-        this.horizontalEncoderTickPerDegreeOffset = Double.parseDouble(ReadWriteFile.readFile(horizontalTickOffsetFile).trim());
 
     }
 
