@@ -11,23 +11,22 @@ import static android.os.Looper.loop;
 import static org.firstinspires.ftc.teamcode.Odometry.OdometryVariables.horizontalOffset;
 import static org.firstinspires.ftc.teamcode.Odometry.OdometryVariables.trackwidth;
 
-public class OdometryCalculations implements Runnable{
+public class OdometryCalculations {
 
     private DcMotor verticalEncoderLeft, verticalEncoderRight, horizontalEncoder;
-    private double verticalLeftEncoderWheelPosition, verticalRightEncoderWheelPosition, previousVerticalLeftEncoderWheelPosition, previousVerticalRightEncoderWheelPosition;
-    private double changeInRobotOrientation, headingRadians, normalEncoderWheelPosition,prevNormalEncoderWheelPosition;
-    public double COUNTS_PER_INCH = 1141.94659527;
-    public double robotEncoderWheelDistance = trackwidth*COUNTS_PER_INCH;
-    public double globalXPos, globalYPos;
-    public boolean isRunning = true;
+    private static double verticalLeftEncoderWheelPosition, verticalRightEncoderWheelPosition, previousVerticalLeftEncoderWheelPosition, previousVerticalRightEncoderWheelPosition;
+    private static double changeInRobotOrientation, headingRadians, normalEncoderWheelPosition,prevNormalEncoderWheelPosition;
+    public static double COUNTS_PER_INCH = 1141.94659527;
+    public static double robotEncoderWheelDistance = trackwidth*COUNTS_PER_INCH;
+    public static double globalXPos, globalYPos;
 
 
 
 
-    public double[] coordinatePositionUpdate(){
+    public static double[] coordinatePositionUpdate (double leftEncoderPosition, double rightEncoderPosition, double horizontalEncoderPosition){
         //Get Current Positions
-        verticalLeftEncoderWheelPosition = (verticalEncoderLeft.getCurrentPosition()*-1);
-        verticalRightEncoderWheelPosition = (verticalEncoderRight.getCurrentPosition());
+        verticalLeftEncoderWheelPosition = (leftEncoderPosition*-1);
+        verticalRightEncoderWheelPosition = (rightEncoderPosition);
 
         double leftChange = verticalLeftEncoderWheelPosition - previousVerticalLeftEncoderWheelPosition;
         double rightChange = verticalRightEncoderWheelPosition - previousVerticalRightEncoderWheelPosition;
@@ -37,7 +36,7 @@ public class OdometryCalculations implements Runnable{
         headingRadians = ((headingRadians + changeInRobotOrientation));
 
         //Get the components of the motion
-        normalEncoderWheelPosition = (horizontalEncoder.getCurrentPosition());
+        normalEncoderWheelPosition = (horizontalEncoderPosition);
         //double rawHorizontalChange = normalEncoderWheelPosition - prevNormalEncoderWheelPosition;
         //double horizontalChange = rawHorizontalChange - (changeInRobotOrientation*horizontalEncoderTickPerDegreeOffset);
 
@@ -59,9 +58,5 @@ public class OdometryCalculations implements Runnable{
 
         return new  double[] {globalXPos, globalYPos, -headingRadians};
     }
-    public void run(){
-        while(isRunning){
-            coordinatePositionUpdate();
-        }
-    }
+
 }

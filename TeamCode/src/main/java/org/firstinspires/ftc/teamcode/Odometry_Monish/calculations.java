@@ -16,6 +16,8 @@ public class calculations {
     public static double distanceToTurn;
     public static double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower, powerReduction, changeInError, currentError;
     public static double circumference = 64.42;
+    public static double dIsZero = 0;
+    public static double dIsNotZero = 0;
 
     //The amount of encoder ticks for each inch the robot moves. This will change for each robot and needs to be changed here
     final static double COUNTS_PER_INCH = 1141.94659527;
@@ -56,14 +58,14 @@ public class calculations {
     }
 
     public static double[] driveMecanum(double xPower, double yPower, double turnPower, double reduction) {
-        rotationalDistance = Math.abs((distanceToTurn/360)*circumference);
+        rotationalDistance = Math.abs((distanceToTurn / 360) * circumference);
         linearDistance = Math.sqrt(xPower * xPower + yPower * yPower);
-        c = linearDistance + Math.abs((distanceToTurn/360)*circumference);
+        c = linearDistance + Math.abs((distanceToTurn / 360) * circumference);
 
         Theta = Math.atan2(xPower, yPower);
 
-        outputY = Math.cos(globalHeading - Theta)*linearDistance;
-        outputX = -Math.sin(globalHeading - Theta)*linearDistance;
+        outputY = Math.cos(globalHeading - Theta) * linearDistance;
+        outputX = -Math.sin(globalHeading - Theta) * linearDistance;
 
         leftFrontPower = (outputY + outputX) + turnPower;
         leftBackPower = (outputY - outputX) + turnPower;
@@ -85,8 +87,9 @@ public class calculations {
         changeInError = c - previousError3;
 
         p = c / 14;
-        d = ((changeInError) / (currentTime - previousTime))*4.22;
+        d = (changeInError / (currentTime - previousTime)) * 4.22;
         i = 0;
+
 
 
         pidOutput = Range.clip((p + i + d), -1, 1);
@@ -100,7 +103,12 @@ public class calculations {
         previousError = c;
         previousTime = currentTime;
         prevD = d;
-        if (d )
+        if (d == 0) {
+            dIsZero += 1;
+        }
+        if (d != 0) {
+            dIsNotZero += 1;
+        }
 
         return new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower, c, pidOutput};
     }

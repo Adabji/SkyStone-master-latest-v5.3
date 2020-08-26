@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.changeInError;
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.d;
+import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.dIsNotZero;
+import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.dIsZero;
 
 import org.firstinspires.ftc.teamcode.Odometry.OdometryCalculations;
 import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
@@ -135,6 +137,8 @@ public class mainDriver extends LinearOpMode {
             telemetry.addData("globalX", globalXPosEncoderTicks/COUNTS_PER_INCH);
             telemetry.addData("globalY", globalYPosEncoderTicks/COUNTS_PER_INCH);
             telemetry.addData("globalHeading", globalHeading);
+            telemetry.addData("when D is 0", dIsZero);
+            telemetry.addData("when D is NOT 0", dIsNotZero);
             telemetry.addData("c", powers[4]);
             telemetry.addData("d", d);
             telemetry.addData("changeInError", changeInError);
