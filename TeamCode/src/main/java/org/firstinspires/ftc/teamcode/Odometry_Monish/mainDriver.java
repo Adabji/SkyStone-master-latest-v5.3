@@ -73,9 +73,6 @@ public class mainDriver extends LinearOpMode {
             positionThread = new Thread(globalPositionUpdate);
             positionThread.start();
 
-            updateOdometry = new Thread(odometryCalculations);
-            updateOdometry.start();
-
 
             globalPositionUpdate.reverseLeftEncoder();
 
