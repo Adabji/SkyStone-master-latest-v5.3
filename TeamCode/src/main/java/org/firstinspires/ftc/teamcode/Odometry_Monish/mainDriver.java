@@ -11,6 +11,7 @@ import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.change
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.d;
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.dIsNotZero;
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.calculations.dIsZero;
+import static org.firstinspires.ftc.teamcode.Odometry.OdometryCalculations.coordinatePositionUpdate;
 
 import org.firstinspires.ftc.teamcode.Odometry.OdometryCalculations;
 import org.firstinspires.ftc.teamcode.Odometry.OdometryGlobalCoordinatePosition;
@@ -39,6 +40,7 @@ public class mainDriver extends LinearOpMode {
 
     static double[] powers;
     static double pidOutput;
+    public static double verticalLeftPosition, verticalRightPosition, horizontalPosition;
 
     public void runOpMode() {
 
@@ -69,10 +71,9 @@ public class mainDriver extends LinearOpMode {
             verticalLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             horizontal.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-            globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeft, verticalRight, horizontal, COUNTS_PER_INCH, 75);
-            positionThread = new Thread(globalPositionUpdate);
-            positionThread.start();
-
+            verticalLeftPosition = verticalLeft.getCurrentPosition();
+            verticalRightPosition = verticalRight.getCurrentPosition();
+            horizontalPosition = horizontal.getCurrentPosition();
 
             globalPositionUpdate.reverseLeftEncoder();
 
@@ -95,6 +96,8 @@ public class mainDriver extends LinearOpMode {
 
             rightFrontWheel.setDirection(DcMotorSimple.Direction.REVERSE);
             rightBackWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+
+            coordinatePositionUpdate(verticalLeftPosition, verticalRightPosition, horizontalPosition);
         }
 
         if (opModeIsActive()) {
