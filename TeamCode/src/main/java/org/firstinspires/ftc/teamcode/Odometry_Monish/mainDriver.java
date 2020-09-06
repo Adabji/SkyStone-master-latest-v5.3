@@ -123,9 +123,15 @@ public class mainDriver extends LinearOpMode {
     public void go(double x, double y, double heading) {
         do {
             // update global positions
-            globalHeading = globalPositionUpdate.returnOrientation() /*+(Actual Starting Position)*/;
-            globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
-            globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();
+            verticalLeftPosition = verticalLeft.getCurrentPosition();
+            verticalRightPosition = verticalRight.getCurrentPosition();
+            horizontalPosition = horizontal.getCurrentPosition();
+
+            globalXPosEncoderTicks = coordinatePositionUpdate(verticalLeftPosition, verticalRightPosition, horizontalPosition)[0];
+            globalYPosEncoderTicks = coordinatePositionUpdate(verticalLeftPosition, verticalRightPosition, horizontalPosition)[1];
+            globalHeading = coordinatePositionUpdate(verticalLeftPosition, verticalRightPosition, horizontalPosition)[2];
+
+            coordinatePositionUpdate(verticalLeftPosition, verticalRightPosition, horizontalPosition);
 
             //globalHeading = odometryCalculations.coordinatePositionUpdate()[2];
             //globalXPosEncoderTicks = odometryCalculations.coordinatePositionUpdate()[0];
