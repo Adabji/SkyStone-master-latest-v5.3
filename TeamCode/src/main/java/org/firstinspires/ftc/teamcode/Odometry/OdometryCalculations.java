@@ -25,7 +25,7 @@ public class OdometryCalculations {
 
     public static double[] coordinatePositionUpdate (double leftEncoderPosition, double rightEncoderPosition, double horizontalEncoderPosition){
         //Get Current Positions
-        verticalLeftEncoderWheelPosition = (leftEncoderPosition*-1);
+        verticalLeftEncoderWheelPosition = -(leftEncoderPosition);
         verticalRightEncoderWheelPosition = (rightEncoderPosition);
 
         double leftChange = verticalLeftEncoderWheelPosition - previousVerticalLeftEncoderWheelPosition;

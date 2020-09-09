@@ -4,9 +4,12 @@ import com.qualcomm.robotcore.util.Range;
 
 import java.util.Arrays;
 
+import static org.firstinspires.ftc.teamcode.Odometry_Monish.mainDriver.finalPoint;
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.mainDriver.globalXPosEncoderTicks;
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.mainDriver.globalYPosEncoderTicks;
 import static org.firstinspires.ftc.teamcode.Odometry_Monish.mainDriver.globalHeading;
+import static org.firstinspires.ftc.teamcode.Odometry_Monish.mainDriver.coordinateNumber;
+import static org.firstinspires.ftc.teamcode.Odometry_Monish.mainDriver.lastPoint;
 
 public class calculations {
     public static double Theta, c, linearDistance, rotationalDistance;
@@ -18,6 +21,7 @@ public class calculations {
     public static double circumference = 64.42;
     public static double dIsZero = 0;
     public static double dIsNotZero = 0;
+    public static double lastPointisTrue;
 
     //The amount of encoder ticks for each inch the robot moves. This will change for each robot and needs to be changed here
     final static double COUNTS_PER_INCH = 1141.94659527;
@@ -29,17 +33,19 @@ public class calculations {
     public static double previousError, previousTime, currentTime, p, i, d, pidOutput, previousError2 = 0, previousError3 = 0,
             previousError4 = 0, previousError5 = 0, previousError6 = 0, previousError7 = 0;
     public static double prevD = 0;
+    public static int arraySize;
+    public double decreasePower;
 
 
 
-    public static double[] goToPositionCalculations (double desiredXCoordinate, double desiredYCoordinate, double desiredHeading) {
+    public static double[] goToPositionCalculations (double[] desiredXCoordinate, double[] desiredYCoordinate, double[] desiredHeading) {
         //Converting the odometry readings in encoder ticks to inches
         globalXPos = globalXPosEncoderTicks / COUNTS_PER_INCH;
         globalYPos = globalYPosEncoderTicks / COUNTS_PER_INCH;
 
         //Getting the ratio of motor powers based off the distance to target in each axis
-        xPowerRatio = (desiredXCoordinate - globalXPos);
-        yPowerRatio = (desiredYCoordinate - globalYPos);
+        xPowerRatio = (desiredXCoordinate[coordinateNumber] - globalXPos);
+        yPowerRatio = (desiredYCoordinate[coordinateNumber] - globalYPos);
 
         //Finding the reduction factor based off the distance to target
         /*reductionDistance = Range.clip(c, 0, 25);
@@ -52,12 +58,28 @@ public class calculations {
             headingForTurning = globalHeading + Math.PI;
         }
 
-        distanceToTurn = desiredHeading - Math.toDegrees(globalHeading);
+        arraySize = desiredHeading.length - 1;
+
+        if (c < 4 && coordinateNumber != arraySize) {
+            coordinateNumber += 1;
+        } if (coordinateNumber > arraySize) {
+            coordinateNumber = arraySize;
+        } if (coordinateNumber != arraySize) {
+            lastPoint = 0;
+        } else {
+            lastPoint = 1;
+        }
+
+
+
+        distanceToTurn = desiredHeading[coordinateNumber] - Math.toDegrees(globalHeading);
         turnPower = distanceToTurn / 360 * circumference;
-        return driveMecanum(xPowerRatio, yPowerRatio, turnPower, 0);
+        return driveMecanum(xPowerRatio, yPowerRatio, turnPower, 0, arraySize, coordinateNumber, lastPoint);
+
+
     }
 
-    public static double[] driveMecanum(double xPower, double yPower, double turnPower, double reduction) {
+    public static double[] driveMecanum(double xPower, double yPower, double turnPower, double reduction, double array, double coordinate, double finalPoint) {
         rotationalDistance = Math.abs((distanceToTurn / 360) * circumference);
         linearDistance = Math.sqrt(xPower * xPower + yPower * yPower);
         c = linearDistance + Math.abs((distanceToTurn / 360) * circumference);
@@ -84,33 +106,25 @@ public class calculations {
         rightBackPower /= biggestInput;
 
         currentTime = System.currentTimeMillis();
-        changeInError = c - previousError3;
+        changeInError = c - previousError;
 
-        p = c / 14;
-        d = (changeInError / (currentTime - previousTime)) * 4.22;
+        p = c * 0.25;
+        d = (changeInError / (currentTime - previousTime)) * 25;
         i = 0;
 
 
+        if (coordinate != array) {
+            pidOutput = 1;
+        } else {
+            pidOutput = Range.clip((p + i + d), -1, 1);
+        }
 
-        pidOutput = Range.clip((p + i + d), -1, 1);
-
-        previousError7 = previousError6;
-        previousError6 = previousError5;
-        previousError5 = previousError4;
-        previousError4 = previousError3;
-        previousError3 = previousError2;
-        previousError2 = previousError;
         previousError = c;
         previousTime = currentTime;
-        prevD = d;
-        if (d == 0) {
-            dIsZero += 1;
-        }
-        if (d != 0) {
-            dIsNotZero += 1;
-        }
 
-        return new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower, c, pidOutput};
+        lastPointisTrue = finalPoint;
+
+        return new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower, c, pidOutput, lastPointisTrue};
     }
 
 }

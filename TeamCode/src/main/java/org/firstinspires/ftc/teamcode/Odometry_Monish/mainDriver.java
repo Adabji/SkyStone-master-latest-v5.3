@@ -24,6 +24,7 @@ public class mainDriver extends LinearOpMode {
 
     //Odometry encoder wheels
     DcMotor verticalRight, verticalLeft, horizontal;
+    private DcMotor intakeMotor1, intakeMotor2, intakeMotor3;
     private Servo foundationServo, foundationServoRight, rightStoneGrabber, grabberLeft, tapeMeasure, liftHoExt, wrist, grabber;
 
     //Hardware map names for the encoder wheels. Again, these will change for each robot and need to be updated below
@@ -38,9 +39,30 @@ public class mainDriver extends LinearOpMode {
     final double COUNTS_PER_INCH = 1141.94659527;
     public static double globalHeading, globalXPosEncoderTicks, globalYPosEncoderTicks;
 
+    public static boolean finalPoint = false;
     static double[] powers;
     static double pidOutput;
     public static double verticalLeftPosition, verticalRightPosition, horizontalPosition;
+
+    public static int coordinateNumber = 0;
+
+    public static double lastPoint = 0;
+
+    private double[] xCoordinates1 = {28.6};
+    private double [] yCoordinates1 = {4};
+    private double [] headings1 = {-90};
+
+    private double[] xCoordinates2 = {23, 20, 28.5};
+    private double[] yCoordinates2 = {20, 50, 84};
+    private double[] headings2 = {-90, -90, -90};
+
+    private double[] xCoordinates3 = {28.5, 14, 14};
+    private double[] yCoordinates3 = {80, 70, 77};
+    private double[] headings3 = {-120, -180, -180};
+
+    private double[] xCoordinates4 = {22, 22, 47, 47, 22, 22};
+    private double[] yCoordinates4 = {60, 10, -20, -20, 10, 75};
+    private double[] headings4 = {-180, -240, -240, -240, -240, -180};
 
     public void runOpMode() {
 
@@ -62,6 +84,9 @@ public class mainDriver extends LinearOpMode {
             leftBackWheel = hardwareMap.dcMotor.get("left back");
             rightFrontWheel = hardwareMap.dcMotor.get("right front");
             rightBackWheel = hardwareMap.dcMotor.get("right back");
+            intakeMotor1 = hardwareMap.dcMotor.get("intake motor 1");
+            intakeMotor2 = hardwareMap.dcMotor.get("intake motor 2");
+            intakeMotor3 = hardwareMap.dcMotor.get("intake motor 3");
             verticalLeft = hardwareMap.dcMotor.get(verticalLeftEncoderName);
             verticalRight = hardwareMap.dcMotor.get(verticalRightEncoderName);
             horizontal = hardwareMap.dcMotor.get(horizontalEncoderName);
@@ -74,8 +99,6 @@ public class mainDriver extends LinearOpMode {
             verticalLeftPosition = verticalLeft.getCurrentPosition();
             verticalRightPosition = verticalRight.getCurrentPosition();
             horizontalPosition = horizontal.getCurrentPosition();
-
-            globalPositionUpdate.reverseLeftEncoder();
 
             /*
             Reverse the direction of the odometry wheels. THIS WILL CHANGE FOR EACH ROBOT. Adjust the direction (as needed) of each encoder wheel
@@ -105,9 +128,20 @@ public class mainDriver extends LinearOpMode {
             globalXPosEncoderTicks = globalPositionUpdate.returnXCoordinate();
             globalYPosEncoderTicks = globalPositionUpdate.returnYCoordinate();*/
 
-            //foundationDownGrabberUp();
-            go(90, 24, 180);
-            //foundationDownGrabberDown();
+            foundationDownGrabberUp();
+            go(xCoordinates1, yCoordinates1, headings1);
+            foundationDownGrabberDown();
+            sleep(600);
+            foundationUpGrabberDown();
+            sleep(300);
+            go(xCoordinates2, yCoordinates2, headings2);
+            grabFoundation();
+            sleep(800);
+            go(xCoordinates3, yCoordinates3, headings3);
+            releaseFoundation();
+            sleep(200);
+            intakeOn();
+            go(xCoordinates4, yCoordinates4, headings4);
 
         }
     }
@@ -115,17 +149,18 @@ public class mainDriver extends LinearOpMode {
     // set power to each motor
     public void setPower(double lf, double lb, double rf, double rb) {
         leftFrontWheel.setPower(lf);
-        leftBackWheel.setPower(lb);
-        rightFrontWheel.setPower(rf);
-        rightBackWheel.setPower(rb);
+       leftBackWheel.setPower(lb);
+       rightFrontWheel.setPower(rf);
+       rightBackWheel.setPower(rb);
     }
 
-    public void go(double x, double y, double heading) {
+    public void go(double[] x, double[] y, double[] heading) {
         do {
             // update global positions
             verticalLeftPosition = verticalLeft.getCurrentPosition();
             verticalRightPosition = verticalRight.getCurrentPosition();
             horizontalPosition = horizontal.getCurrentPosition();
+
 
             globalXPosEncoderTicks = coordinatePositionUpdate(verticalLeftPosition, verticalRightPosition, horizontalPosition)[0];
             globalYPosEncoderTicks = coordinatePositionUpdate(verticalLeftPosition, verticalRightPosition, horizontalPosition)[1];
@@ -149,23 +184,39 @@ public class mainDriver extends LinearOpMode {
             telemetry.addData("d", d);
             telemetry.addData("changeInError", changeInError);
             telemetry.update();
-        } while (powers[4] > -1/*powers[4] > 1.5 || d > 0.001*/);
+        } while (powers[6] == 0 || powers[4] > 1 || d > 0.001);
 
         // stop
-        while (leftFrontWheel.isBusy() && rightFrontWheel.isBusy() && leftBackWheel.isBusy() && rightBackWheel.isBusy()) {}
         setPower(0, 0, 0, 0);
+        coordinateNumber = 0;
 
     }
     private void foundationDownGrabberUp(){
-        foundationServoRight.setPosition(0.96);
-        grabberLeft.setPosition(.2);
+        foundationServoRight.setPosition(0.92);
+        grabberLeft.setPosition(.17);
     }
     private void foundationUpGrabberDown(){
         foundationServoRight.setPosition(.63);  // originally .6
-        grabberLeft.setPosition(.7);
+        grabberLeft.setPosition(.65);
     }
     private void foundationDownGrabberDown() {
-        foundationServoRight.setPosition(1);
-        grabberLeft.setPosition(.78);
+        foundationServoRight.setPosition(0.92);
+        grabberLeft.setPosition(0.65);
     }
+    private void grabFoundation() {
+        foundationServoRight.setPosition(0.93);
+        foundationServo.setPosition(0.28);
+        rightStoneGrabber.setPosition(.8);
+        grabberLeft.setPosition(.28);
+    }
+    private void releaseFoundation() {
+        foundationServoRight.setPosition(.5);
+        foundationServo.setPosition(0.75);
+    }
+    private void intakeOn() {
+        intakeMotor1.setPower(-1);
+        intakeMotor2.setPower(1);
+        intakeMotor3.setPower(-1);
+    }
+
 }
